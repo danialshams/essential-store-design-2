@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {useState} from "react";
 import Image from "next/image";
 import {useRouter} from "next/navigation";
 import {Heart,ArrowUpLeft,ShoppingBag} from "lucide-react";
@@ -18,6 +19,8 @@ function colorOf(label:string){
 }
 export function ProductCard({product,compact=false}:{product:Product,compact?:boolean}){
  const router=useRouter();
+ const [hover,setHover]=useState(false);
+ const alternate=product.gallery?.find((image)=>image!==product.image);
  const {add,isFavorite,toggleFavorite}=useShop();
  const available=product.variants?.length?product.variants.some(v=>v.inventory>0):product.inventory>0;
  const colors=product.variants?.map(variant=>({id:variant.id,label:variant.label,color:colorOf(variant.label)})).filter(variant=>variant.color)||[];
@@ -27,9 +30,10 @@ export function ProductCard({product,compact=false}:{product:Product,compact?:bo
    add(product);
  }
  return <article className={`premium-product-card ${compact?"is-compact":""}`}>
-  <div className="premium-product-media">
+  <div className="premium-product-media" onMouseEnter={()=>{if(window.matchMedia("(hover:hover)").matches)setHover(true)}} onMouseLeave={()=>setHover(false)}>
     <Link href={`/product/${product.slug}`} aria-label={`مشاهده ${product.name}`}>
       <Image src={product.image} alt={product.name} width={660} height={760} loading="lazy" unoptimized={product.image.startsWith("http")} className="premium-product-photo"/>
+      {alternate&&hover&&<Image src={alternate} alt={`${product.name}، نمای دوم`} width={660} height={760} loading="lazy" unoptimized={alternate.startsWith("http")} className="premium-product-photo premium-product-second"/>}
     </Link>
     {isNew?<span className="premium-product-label">جدید</span>:product.comparePrice&&product.comparePrice>product.price?<span className="premium-product-label">پیشنهاد ویژه</span>:null}
     <button type="button" className={`premium-product-fav ${isFavorite(product.id)?"is-active":""}`} onClick={()=>toggleFavorite(product.id)} aria-label={isFavorite(product.id)?"حذف از علاقه‌مندی‌ها":"افزودن به علاقه‌مندی‌ها"} aria-pressed={isFavorite(product.id)}><Heart size={18} strokeWidth={1.6} fill={isFavorite(product.id)?"currentColor":"none"}/></button>

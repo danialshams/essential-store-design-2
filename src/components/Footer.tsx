@@ -19,6 +19,7 @@ export function Footer(){
         <div className="premium-footer-contact"><h3>در ارتباط باشیم</h3><span><Phone size={16}/>{store.settings.contactPhone||"شماره تماس هنوز ثبت نشده"}</span><span><Mail size={16}/>{store.settings.contactEmail||"ایمیل هنوز ثبت نشده"}</span><span><MapPin size={16}/>{store.settings.address||"آدرس از پنل مدیریت قابل تنظیم است"}</span>{store.settings.instagram&&<a href={store.settings.instagram.startsWith("https://")?store.settings.instagram:`https://instagram.com/${store.settings.instagram.replace(/^@/,"")}`} rel="noopener noreferrer" target="_blank"><Instagram size={16}/> اینستاگرام</a>}</div>
       </div>
     </div>
+    <div className="premium-footer-wordmark premium-container" aria-hidden="true"><span>{store.settings.storeName}</span><small>THE EDITORIAL COLLECTION / 02</small></div>
     <div className="premium-footer-bottom premium-container">
       <span>© ۱۴۰۵ {store.settings.storeName} — تمامی حقوق محفوظ است.</span>
       <strong>ESSENTIAL — EDITION 02</strong>
