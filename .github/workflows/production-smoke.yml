@@ -1,0 +1,72 @@
+name: Edition 02 production integration smoke
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-live-commerce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Validate public pages, images, live products and safe order relay
+        run: |
+          python3 - <<'PY'
+          import json, time, urllib.request, urllib.error
+          admin='https://studio-commerce-admin.vercel.app'
+          store='https://essential-store-design-2.vercel.app'
+          def fetch(path):
+              req=urllib.request.Request(store+path,headers={'User-Agent':'Edition2-Smoke/1.0'})
+              with urllib.request.urlopen(req,timeout=20) as response:
+                  return response.status,response.headers,response.read()
+          def read_json(url):
+              req=urllib.request.Request(url,headers={'User-Agent':'Edition2-Smoke/1.0'})
+              with urllib.request.urlopen(req,timeout=20) as response:
+                  if response.status!=200: raise AssertionError('Bad HTTP status')
+                  return json.load(response)
+          for attempt in range(30):
+              try:
+                  for page in ['/', '/products', '/category/bags', '/product/minimal-leather-bag',
+                               '/cart', '/checkout', '/account', '/blog', '/info/privacy']:
+                      status, headers, body=fetch(page)
+                      if status!=200 or b'<html' not in body.lower():
+                          raise AssertionError('Page unavailable: '+page)
+                  for asset in ['/images/editorial-hero.webp','/images/editorial-portrait.webp','/images/editorial-bag.webp']:
+                      status, headers, body=fetch(asset)
+                      if status!=200 or len(body)<10000 or 'image/webp' not in headers.get('Content-Type',''):
+                          raise AssertionError('Demo asset unavailable: '+asset)
+                  admin_data=read_json(admin+'/api/store/bootstrap')
+                  store_data=read_json(store+'/api/catalog')
+                  if admin_data.get('mode')!='live' or store_data.get('demo') is not False:
+                      raise AssertionError('Edition 02 not using live admin')
+                  remote={p['slug']:p for p in admin_data['products']}
+                  local={p['slug']:p for p in store_data['products']}
+                  if len(local)<8 or set(remote)!=set(local):
+                      raise AssertionError('Live product set not synchronized')
+                  for slug,product in remote.items():
+                      for key in ('id','name','price','inventory'):
+                          if product[key]!=local[slug][key]:
+                              raise AssertionError('Catalog mismatch: '+slug+' '+key)
+                  req=urllib.request.Request(store+'/api/store/order',
+                      data=json.dumps({
+                          'buyer':{'name':'بررسی اتصال','phone':'09120000000','province':'تهران','city':'تهران','address':'تست'},
+                          'items':[{'productId':'not-a-valid-test-product','quantity':1}],
+                          'shippingId':'demo-post'
+                      },ensure_ascii=False).encode('utf8'),
+                      method='POST',headers={'Content-Type':'application/json','Origin':store})
+                  try:
+                      with urllib.request.urlopen(req,timeout=20) as response:
+                          raise AssertionError('Invalid order accepted: '+str(response.status))
+                  except urllib.error.HTTPError as e:
+                      if e.code!=409: raise AssertionError('Invalid order HTTP code: '+str(e.code))
+                      response=json.loads(e.read().decode('utf8'))
+                      if 'کالا' not in response.get('error',''):
+                          raise AssertionError('Order relay did not reach the admin validation API: '+str(response))
+                  print('PASS: 9 rendered pages + 3 editorial images + 8 admin-synced products + safe order relay')
+                  break
+              except Exception as e:
+                  print('Attempt',attempt+1,'failed:',type(e).__name__,str(e),flush=True)
+                  if attempt==29: raise
+                  time.sleep(6)
+          PY
