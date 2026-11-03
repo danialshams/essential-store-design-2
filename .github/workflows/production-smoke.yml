@@ -32,6 +32,12 @@ jobs:
                       status, headers, body=fetch(page)
                       if status!=200 or b'<html' not in body.lower():
                           raise AssertionError('Page unavailable: '+page)
+                  status, headers, home=fetch('/')
+                  for marker in [b'ed-chapter',b'ed-hero-line-mask',b'ed-story-collage',
+                                 b'ed-lookbook-detail',b'premium-drawer-editorial']:
+                      if marker not in home:
+                          raise AssertionError('The current cinematic edition did not render: '+marker.decode())
+                  print('PASS: live cinematic homepage and Maison menu markup are present')
                   for asset in ['/images/editorial-hero.webp','/images/editorial-portrait.webp','/images/editorial-bag.webp']:
                       status, headers, body=fetch(asset)
                       if status!=200 or len(body)<10000 or 'image/webp' not in headers.get('Content-Type',''):
