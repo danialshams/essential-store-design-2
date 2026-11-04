@@ -119,8 +119,8 @@ const {chromium}=require("playwright");
   assert.ok(mobileHero.photograph.height>=240,"Editorial mobile photograph is too small");
   assert.ok(Math.abs(mobileHero.photograph.bottom-mobileHero.copy.top)<4,
     "Photo and text must be consecutive panels, not separate scroll chapters");
-  assert.ok(mobileHero.cta.bottom<=mobileHero.navigation.top+10 &&
-    mobileHero.controls.bottom<=mobileHero.navigation.top+10,
+  assert.ok(mobileHero.cta.bottom<=mobileHero.navigation.top+2 &&
+    mobileHero.controls.bottom<=mobileHero.navigation.top+2,
     "Mobile customer cannot see photo, copy and slide controls together: "+JSON.stringify(mobileHero));
   assert.ok(!mobileHero.heroText.includes("\\n"),
     "Hero title leaked a literal backslash-n escape");
@@ -184,8 +184,8 @@ const {chromium}=require("playwright");
     const cta=document.querySelector(".ed-hero-links .ed-dark-button").getBoundingClientRect();
     return {navTop:nav.top,photoBottom:photo.bottom,copyBottom:copy.bottom,ctaBottom:cta.bottom};
   });
-  assert.ok(smallView.ctaBottom<=smallView.navTop+10 &&
-    smallView.copyBottom<=smallView.navTop+10,
+  assert.ok(smallView.ctaBottom<=smallView.navTop+2 &&
+    smallView.copyBottom<=smallView.navTop+2,
     "Hero is longer than one viewport on short mobile screens: "+JSON.stringify(smallView));
   await small.screenshot({path:"artifacts/edition02-mobile-hero-short-phone.png",
     fullPage:false,animations:"disabled"});
