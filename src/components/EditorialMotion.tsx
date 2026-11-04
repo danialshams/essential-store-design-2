@@ -178,9 +178,12 @@ export function EditorialMotion({children}:{children:ReactNode}){
     }
     // Zoom starts only AFTER the image has unveiled; this is a separate,
     // intentionally restrained 2.1s camera pull-back, not a hover effect.
-    if(img)tl.to(img,{scale:1,duration:2.1,ease:"sine.out",
-     clearProps:"transform,transformOrigin"},mode==="fade"?.79:1.0);
+    if(img)tl.to(img,{scale:1,duration:2.1,ease:"sine.out"},
+     mode==="fade"?.79:1.0);
     tl.eventCallback("onComplete",()=>{
+     // Keep a precise, stable final frame. Clearing the transform would
+     // restore legacy :hover CSS and could jump back to a zoomed state.
+     if(img)gsap.set(img,{scale:1,transformOrigin:"center center"});
      frame.setAttribute("data-photo-reveal-complete","true");
     });
     register(frame,tl,img);
