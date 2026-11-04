@@ -44,13 +44,13 @@ export function EditorialMotion({children}:{children:ReactNode}){
     if(entry.isIntersecting)callbacks.get(entry.target)?.forEach(enter=>enter());
    }
   },{root:null,rootMargin:window.innerWidth<=760?
-   "0px 0px -28% 0px":"0px 0px -20% 0px",threshold:0});
+   "0px 0px -17% 0px":"0px 0px -16% 0px",threshold:0});
   const seen=new Set<Element>();
   const animations:gsap.core.Timeline[]=[];
   const registered:Array<{node:Element;enter:()=>void;settle:()=>void}>=[];
   const visible=(node:Element)=>{
    const r=node.getBoundingClientRect();
-   return r.height>0&&r.width>0&&r.bottom>0&&r.top<innerHeight*(innerWidth<=760?.72:.8);
+   return r.height>0&&r.width>0&&r.bottom>0&&r.top<innerHeight*(innerWidth<=760?.83:.84);
   };
   const near=(node:Element)=>{
    const r=node.getBoundingClientRect();
