@@ -269,7 +269,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
 
    $(".ed-journal-card").forEach((card:Element,i:number)=>{
     const photo=card.querySelector(".ed-journal-photo");
-    if(photo)image(photo,i%2?"left":"right");
+    if(photo)image(photo,i%2?"fade":"right");
     Array.from(card.children).filter(x=>x!==photo).forEach((child,j)=>{
      (child.matches("a,button")?action:text)(child,child,j);
     });
