@@ -7,7 +7,7 @@ import {useEffect,useRef,useState,type FormEvent,type KeyboardEvent as ReactKeyb
 import {ArrowLeft,ArrowUpLeft,Heart,Search,ShoppingBag,UserRound,X} from "lucide-react";
 import {useShop} from "@/components/ShopProvider";
 
-const fallbackPhoto="/images/editorial/story-portrait.webp";
+const fallbackPhoto="/images/editorial/category-bags.webp";
 const demoCategoryImages:Record<string,string>={clothing:"/images/editorial/category-clothing.webp",bags:"/images/editorial/category-bags.webp",shoes:"/images/editorial/category-shoes.webp",accessories:"/images/editorial/category-accessories.webp"};
 export function Header(){
  const pathname=usePathname(),router=useRouter();
@@ -90,7 +90,7 @@ export function Header(){
       <nav aria-label="ناوبری منوی بازشده">{menuItems.map((item,index)=><Link key={`${item.href}-${index}`} href={item.href} className={pathname===item.href?"current":""} onMouseEnter={()=>showMenuPhoto(item.image)} onFocus={()=>showMenuPhoto(item.image)} style={{animationDelay:`${Math.min(index,8)*58}ms`}}><small>{String(index+1).padStart(2,"0")}</small><span>{item.label}</span><ArrowUpLeft size={20} strokeWidth={1.3}/></Link>)}</nav>
       <div className="premium-drawer-bottom"><span>ESSENTIAL / A QUIETER KIND OF LUXURY</span><p>جزئیات، تفاوت می‌سازند.</p></div>
      </div>
-     <div className="premium-drawer-editorial"><div className="premium-drawer-image"><Image key={menuPhoto} src={menuPhoto} alt="تصویر منتخب کالکشن" fill sizes="(max-width: 760px) 100vw, 43vw" unoptimized={menuPhoto.startsWith("http")}/></div><div className="premium-drawer-image-caption"><span>AN EDITORIAL PERSPECTIVE</span><span>EST. MMXXVI</span></div></div>
+     <div className="premium-drawer-editorial"><div className="premium-drawer-image"><Image key={`background-${menuPhoto}`} src={menuPhoto} alt="" aria-hidden="true" fill sizes="(max-width: 760px) 100vw, 43vw" unoptimized={menuPhoto.startsWith("http")} className="premium-drawer-image-bg"/><Image key={`foreground-${menuPhoto}`} src={menuPhoto} alt="تصویر منتخب کالکشن" fill sizes="(max-width: 760px) 100vw, 43vw" unoptimized={menuPhoto.startsWith("http")} className="premium-drawer-image-main"/></div><div className="premium-drawer-image-caption"><span>AN EDITORIAL PERSPECTIVE</span><span>EST. MMXXVI</span></div></div>
     </div>
    </aside>
   </div>
