@@ -4,6 +4,8 @@
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const {chromium}=require("playwright");
+const {spawnSync}=require("node:child_process");
+const systemChrome=spawnSync("which",["google-chrome"]).status===0;
 (async()=>{
  fs.mkdirSync("artifacts",{recursive:true});
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
