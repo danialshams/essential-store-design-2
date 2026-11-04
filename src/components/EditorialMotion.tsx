@@ -170,7 +170,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
       frame.setAttribute("data-photo-reveal-progress",state.value.toFixed(3));
      };
      render();
-     tl.to(state,{value:1,duration:1.04,ease:"power2.inOut",
+     tl.to(state,{value:1,duration:.95,ease:"power2.out",
       onUpdate:render,onComplete:()=>{
        surface.style.clipPath="";
        frame.setAttribute("data-photo-reveal-progress","1.000");
