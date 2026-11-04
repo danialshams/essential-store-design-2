@@ -414,7 +414,7 @@ header.premium-header .premium-search-panel.is-open{
 header.premium-header .premium-search-form input,
 header.premium-header .premium-search-form input:focus,
 header.premium-header .premium-search-form input:focus-visible{
- outline:none!important;outline-offset:0!important;
+ outline:none!important;outline-style:none!important;outline-width:0!important;outline-offset:0!important;
  border:0!important;box-shadow:none!important;
 }
 header.premium-header .premium-search-form{
