@@ -3,213 +3,184 @@ import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from "react";
 import {usePathname} from "next/navigation";
 import {useShop} from "@/components/ShopProvider";
 import gsap from "gsap";
-import {ScrollTrigger} from "gsap/ScrollTrigger";
 
-/** Keep all client route entries anchored at the top, not stale scroll/pin coordinates. */
 export function SiteMotion({children}:{children:ReactNode}){
- const root=useRef<HTMLDivElement>(null);
- const previousPath=useRef<string|null>(null);
  const pathname=usePathname();
  const {store}=useShop();
- const [introPhase,setIntroPhase]=useState<"loading"|"leaving"|"done">("loading");
+ const root=useRef<HTMLDivElement>(null);
+ const priorRoute=useRef<string|null>(null);
+ const [intro,setIntro]=useState<"loading"|"leaving"|"done">("loading");
 
- // A single, restrained first-visit curtain. Start hero choreography only
- // when its lead photograph and fonts are ready, or after a bounded fallback.
  useEffect(()=>{
-  let disposed=false;
+  let active=true;
   let exitTimer:ReturnType<typeof setTimeout>|undefined;
+  document.documentElement.dataset.introState="loading";
   const delay=(ms:number)=>new Promise<void>(resolve=>setTimeout(resolve,ms));
-  const firstPhoto=document.querySelector<HTMLImageElement>(".ed-hero-slide.is-active .ed-hero-photo:not(.ed-hero-backdrop)");
-  const leadImage=firstPhoto?(typeof firstPhoto.decode==="function"
-   ?firstPhoto.decode().then(()=>undefined,()=>undefined)
-   :new Promise<void>(resolve=>{
-      if(firstPhoto.complete){resolve();return}
-      firstPhoto.addEventListener("load",()=>resolve(),{once:true});
-      firstPhoto.addEventListener("error",()=>resolve(),{once:true});
-     })):Promise.resolve();
-  const fonts=document.fonts?.ready?.then(()=>undefined,()=>undefined)??Promise.resolve();
-  const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const first=document.querySelector<HTMLImageElement>(".ed-hero-slide.is-active .ed-hero-photo");
+  const image=first?.decode?.().then(()=>undefined,()=>undefined)??Promise.resolve();
+  const font=document.fonts?.ready?.then(()=>undefined,()=>undefined)??Promise.resolve();
+  const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
   void Promise.all([
-   delay(reduced?90:1000),
-   Promise.race([Promise.all([leadImage,fonts]),delay(2800)])
+   delay(reduced?90:440),
+   Promise.race([Promise.all([image,font]),delay(1900)])
   ]).then(()=>{
-   if(disposed)return;
+   if(!active)return;
    document.documentElement.dataset.introState="ready";
-   setIntroPhase("leaving");
-   exitTimer=setTimeout(()=>{if(!disposed)setIntroPhase("done")},780);
+   setIntro("leaving");
+   exitTimer=setTimeout(()=>{if(active)setIntro("done")},reduced?100:480);
   });
-  return()=>{disposed=true;if(exitTimer)clearTimeout(exitTimer)};
+  return()=>{active=false;if(exitTimer)clearTimeout(exitTimer)};
  },[]);
 
  useLayoutEffect(()=>{
-  const previous=previousPath.current;
-  previousPath.current=pathname;
-  if(previous===null&&window.location.hash)return; // honor intentional deep links
+  priorRoute.current=pathname;
+  if(window.location.hash)return;
   const html=document.documentElement;
-  const prior=html.style.scrollBehavior;
+  const previous=html.style.scrollBehavior;
   html.style.scrollBehavior="auto";
-  if("scrollRestoration" in window.history)window.history.scrollRestoration="manual";
+  if("scrollRestoration" in history)history.scrollRestoration="manual";
   window.scrollTo(0,0);
-  const frame=requestAnimationFrame(()=>{
+  const raf=requestAnimationFrame(()=>{
    window.scrollTo(0,0);
-   html.style.scrollBehavior=prior;
+   html.style.scrollBehavior=previous;
   });
-  return()=>cancelAnimationFrame(frame);
+  return()=>cancelAnimationFrame(raf);
  },[pathname]);
 
  useLayoutEffect(()=>{
   const el=root.current;
   if(!el)return;
-  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-   el.dataset.pageMotion="reduced";return;
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches){
+   el.dataset.pageMotion="reduced";
+   return;
   }
-  gsap.registerPlugin(ScrollTrigger);
   if(el.querySelector(".ed-home")){
    el.dataset.pageMotion="homepage";
    return;
   }
-  let alive=true;
-  // Independent viewport observer guarantees that scroll jumps cannot leave
-  // commerce images or text hidden if ScrollTrigger misses a callback.
-  const pending=new WeakMap<Element,gsap.core.Timeline>();
-  const safetyObserver=new IntersectionObserver(entries=>{
-   for(const entry of entries){
-    if(!entry.isIntersecting)continue;
-    pending.get(entry.target)?.play();
-    safetyObserver.unobserve(entry.target);
-   }
-  },{rootMargin:"0px 0px -20% 0px",threshold:0.01});
-  const context=gsap.context(()=>{
-   const $=gsap.utils.selector(el);
-   const inView=(node:Element,tl:gsap.core.Timeline,start="top 78%")=>{
-    pending.set(node,tl);
-    safetyObserver.observe(node);
-    return ScrollTrigger.create({trigger:node,start,once:true,invalidateOnRefresh:true,
-      onEnter:()=>tl.play(),onEnterBack:()=>tl.play()});
-   };
-   const show=(target:Element,items:Element[],from:gsap.TweenVars={},delay=0,start="top 78%")=>{
-    if(!items.length)return;
-    const tl=gsap.timeline({paused:true});
-    tl.fromTo(items,{autoAlpha:0,y:23,...from},{
-     autoAlpha:1,x:0,y:0,scale:1,duration:1.03,stagger:.13,
-     ease:"power3.out",clearProps:"transform"
-    },delay);
-    inView(target,tl,start);
-   };
 
-   // Introductory breadcrumb and heading are above the fold, so they should
-   // enter immediately after route change, never wait for the second scroll.
-   const breadcrumbs=$(".breadcrumbs")[0] as Element|undefined;
-   if(breadcrumbs)gsap.fromTo(breadcrumbs,{y:11,autoAlpha:0},{
-    y:0,autoAlpha:1,duration:.68,ease:"power3.out"
-   });
-   const heading=$(".collection-heading,.page-title-group,.info-hero")[0] as Element|undefined;
-   if(heading)show(heading,Array.from(heading.children),{y:30},0,"top 92%");
-
-   // Navigation chips, filter/sidebar and search tools enter independently.
-   const pills=$(".category-pills")[0] as Element|undefined;
-   if(pills)show(pills,Array.from(pills.children),{x:14,y:0},0,"top 81%");
-   const sidebar=$(".filter-sidebar")[0] as Element|undefined;
-   if(sidebar)show(sidebar,[sidebar],{x:32,y:0},0,"top 78%");
-   const results=$(".results-toolbar")[0] as Element|undefined;
-   if(results)show(results,Array.from(results.children),{y:18},0,"top 77%");
-
-   // Category and editorial product cards: each photograph triggers on its
-   // own visibility, including rows below the fold and narrow mobile grids.
-   const grids=$(".collection-grid,.related-section .product-grid,.favorites-grid,.standard-page>.product-grid");
-   const seen=new Set<Element>();
-   grids.forEach((grid:Element)=>{
-    Array.from(grid.children).forEach((card:Element,index:number)=>{
-     if(seen.has(card))return;
-     seen.add(card);
-     const photo=card.querySelector("img");
-     const info=card.querySelector(".premium-product-info,.product-card-body");
-     const tl=gsap.timeline({paused:true});
-     tl.fromTo(card,{autoAlpha:0,y:30},{
-      autoAlpha:1,y:0,duration:1.05,ease:"power3.out"
-     },0);
-     if(photo)tl.fromTo(photo,{scale:1.095,scaleX:1.045},{
-      scale:1,scaleX:1,duration:1.52,ease:"power2.out",clearProps:"transform"
-     },0);
-     if(info)tl.fromTo(Array.from(info.children),{autoAlpha:0,y:14},{
-      autoAlpha:1,y:0,stagger:.08,duration:.8,ease:"power3.out"
-     },.34);
-     inView(card,tl,"top 80%");
+  // Accounts and checkout are utilities, not fashion chapters.
+  // No full-panel masks, horizontal slides, or animated form controls.
+  const functional=Boolean(el.querySelector(".account-page,.checkout-page,.cart-layout"));
+  const scope=gsap.context(()=>{
+   if(functional){
+    const pieces=Array.from(el.querySelectorAll<HTMLElement>(
+     ".page-title-group,.demo-warning,.account-menu,.account-panel,.checkout-layout,.cart-layout"
+    ));
+    gsap.fromTo(pieces,{opacity:.92},{
+     opacity:1,duration:.46,stagger:.045,ease:"power1.out",
+     overwrite:"auto"
     });
-   });
-
-   // Detail page: never clip the whole image frame (it must always remain
-   // functional). Instead unfold the photo itself with a gentle zoom-out.
-   const photo=$(".product-main-photo img")[0] as Element|undefined;
-   if(photo){
-    const tl=gsap.timeline({paused:true});
-    tl.fromTo(photo,{scale:1.075,filter:"brightness(1.06)"},{
-     scale:1,filter:"brightness(1)",duration:1.65,ease:"power2.out",
-     clearProps:"transform,filter"
-    },0);
-    inView(photo,tl,"top 88%");
+    return;
    }
-   const thumb=$(".gallery-thumbnails")[0] as Element|undefined;
-   if(thumb)show(thumb,Array.from(thumb.children),{autoAlpha:0,y:14},0,"top 81%");
-   const info=$(".product-information")[0] as Element|undefined;
-   if(info){
-    Array.from(info.children).forEach((part:Element)=>{
-     const tl=gsap.timeline({paused:true});
-     tl.fromTo(part,{autoAlpha:0,y:22},{autoAlpha:1,y:0,duration:1.05,ease:"power3.out"});
-     inView(part,tl,"top 82%");
-    });
-   }
-
-   // Product detail tabs and related-section titles trigger when visible.
-   $ (".product-extra,.related-section .section-heading").forEach((section:Element)=>{
-    show(section,Array.from(section.children),{y:20},0,"top 79%");
-   });
-
-   // Cart, checkout, account: independent layout blocks. Forms remain fully
-   // interactive and never animate the user's input as the value changes.
-   $(".cart-layout,.checkout-layout,.account-layout").forEach((parent:Element)=>{
-    Array.from(parent.children).forEach((block:Element,i:number)=>{
-     show(block,[block],{y:i%2?35:22,x:i%2?-16:16},0,"top 79%");
-    });
-   });
-   $(".cart-line,.form-card,.checkout-summary-item,.shipping-options>label,.demo-order-card").forEach((part:Element)=>{
-    if(part.closest(".cart-layout,.checkout-layout,.account-layout")){
-     // Parent covers entry; nested items are interactive, avoid double
-     // animations that would reorder or obscure form fields.
-     return;
+   const observer=new IntersectionObserver(entries=>{
+    for(const entry of entries){
+     if(!entry.isIntersecting)continue;
+     const callback=callbacks.get(entry.target);
+     callback?.();
     }
-    show(part,[part],{y:18},0,"top 80%");
-   });
+   },{rootMargin:"0px 0px -7% 0px",threshold:.075});
+   const callbacks=new WeakMap<Element,()=>void>();
+   const pending=new Set<gsap.core.Timeline>();
 
-   // Pages with prose, shipping terms, privacy, articles and empty states:
-   // each meaningful block has its own paper-reveal as it enters view.
-   $(".info-card,.demo-warning,.account-panel,.empty-cart,.success-card").forEach((section:Element)=>{
-    if(section.closest(".cart-layout,.checkout-layout,.account-layout"))return;
-    const content=Array.from(section.children).filter(child=>
-     !child.matches("button,input,select,textarea")
-    );
-    show(section,content.length?content:[section],{y:21},0,"top 79%");
+   const stage=(trigger:Element,targets:Element[],opts:{
+    from?:gsap.TweenVars;duration?:number;stagger?:number;photo?:HTMLImageElement|null;
+   }={})=>{
+    if(!targets.length)return;
+    const from={autoAlpha:0,y:opts.photo?0:14,...opts.from};
+    gsap.set(targets,from);
+    const timeline=gsap.timeline({paused:true});
+    timeline.to(targets,{
+     autoAlpha:1,y:0,x:0,scale:1,
+     duration:opts.duration??.74,stagger:opts.stagger??.09,
+     ease:"power2.out",clearProps:"transform,clipPath"
+    });
+    pending.add(timeline);
+    let decoded=!opts.photo;
+    let started=false;
+    let loading=false;
+    const inside=()=>{
+     const b=trigger.getBoundingClientRect();
+     return b.bottom>0&&b.top<innerHeight*.94;
+    };
+    const start=()=>{
+     if(started||!decoded||!inside())return;
+     started=true;observer.unobserve(trigger);timeline.play();
+    };
+    const enter=()=>{
+     if(started)return;
+     if(!loading&&opts.photo){
+      loading=true;
+      const deadline=new Promise<void>(resolve=>setTimeout(resolve,4200));
+      const finished=new Promise<void>(resolve=>{
+       const image=opts.photo;
+       if(!image){resolve();return}
+       const done=()=>{
+        if(image.naturalWidth&&image.decode)
+         void image.decode().then(()=>resolve(),()=>resolve());
+        else resolve();
+       };
+       if(image.complete)done();
+       else{
+        image.addEventListener("load",done,{once:true});
+        image.addEventListener("error",()=>resolve(),{once:true});
+       }
+      });
+      void Promise.race([finished,deadline]).then(()=>{
+       decoded=true;requestAnimationFrame(start);
+      });
+     }else start();
+    };
+    callbacks.set(trigger,enter);
+    observer.observe(trigger);
+    if(inside())enter();
+   };
+   const pick=(query:string)=>Array.from(el.querySelectorAll<HTMLElement>(query));
+
+   for(const heading of pick(".collection-heading,.page-title-group,.info-hero")){
+    stage(heading,Array.from(heading.children),{stagger:.1,duration:.72});
+   }
+   for(const node of pick(".category-pills,.results-toolbar,.filter-sidebar,.breadcrumbs")){
+    stage(node,[node],{from:{autoAlpha:0,y:9},duration:.56});
+   }
+   for(const card of pick(
+    ".collection-grid .premium-product-card,.related-section .premium-product-card,"+
+    ".favorites-grid .premium-product-card,.standard-page>.product-grid .premium-product-card"
+   )){
+    const media=card.querySelector<HTMLElement>(".premium-product-media");
+    const image=media?.querySelector<HTMLImageElement>("img");
+    if(media)stage(media,[media],{
+     from:{clipPath:"inset(0 0 100% 0)"},
+     duration:.96,photo:image
+    });
+    const details=card.querySelector<HTMLElement>(".premium-product-info");
+    if(details)stage(details,Array.from(details.children),{duration:.62,stagger:.065});
+   }
+   const detailPhoto=el.querySelector<HTMLImageElement>(".product-main-photo img");
+   if(detailPhoto)stage(detailPhoto,[detailPhoto],{
+    from:{opacity:.45,scale:1.025},
+    duration:1.1,photo:detailPhoto
    });
-   $(".contact-items>div,.success-actions>a,.success-actions>button").forEach((part:Element,i:number)=>{
-    show(part,[part],{y:15,x:i%2?-12:12},0,"top 81%");
-   });
+   for(const node of pick(
+    ".product-information>*,.gallery-thumbnails,.product-extra,.related-section .section-heading,"+
+    ".info-card,.empty-cart,.success-card,.contact-items>div"
+   )){
+    stage(node,[node],{from:{autoAlpha:0,y:11},duration:.69});
+   }
+   return()=>{observer.disconnect();pending.forEach(t=>t.kill())};
   },el);
   el.dataset.pageMotion="ready";
-  const refresh=()=>{if(alive)ScrollTrigger.refresh()};
-  void document.fonts?.ready.then(refresh).catch(()=>{});
-  window.addEventListener("load",refresh,{once:true});
-  return()=>{
-   alive=false;
-   safetyObserver.disconnect();
-   window.removeEventListener("load",refresh);
-   context.revert();
-  };
+  return()=>{scope.revert()};
  },[pathname]);
 
  return <>
-  {introPhase!=="done"&&<div className={`maison-intro ${introPhase==="leaving"?"is-leaving":""}`} role="status" aria-label="در حال آماده‌سازی مجموعه" aria-live="polite">
-   <div className="maison-intro-center"><span className="maison-intro-kicker">THE EDITION / 02</span><span className="maison-intro-word" lang={/[\u0600-\u06FF]/.test(store.settings.storeName)?"fa":"en"}>{store.settings.storeName||"THE EDITION"}</span><span className="maison-intro-rule"/><span className="maison-intro-caption">یک روایت از سادگی</span></div>
-  </div>}
+  {intro!=="done"&&<div className={`maison-intro ${intro==="leaving"?"is-leaving":""}`}
+    role="status" aria-label="در حال آماده‌سازی صفحه">
+    <span className="maison-intro-word"
+     lang={/[\u0600-\u06ff]/.test(store.settings.storeName)?"fa":"en"}>
+     {store.settings.storeName||"ESSENTIAL"}
+    </span>
+   </div>}
   <div ref={root} className="editorial-page-shell" data-page-motion="initial">{children}</div>
  </>;
 }

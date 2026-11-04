@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {useLayoutEffect,useRef} from "react";
 import gsap from "gsap";
-import {ScrollTrigger} from "gsap/ScrollTrigger";
 import {ArrowLeft, Instagram, Mail, MapPin, Phone} from "lucide-react";
 import {useShop} from "@/components/ShopProvider";
 
@@ -11,39 +10,72 @@ export function Footer(){
   const {store}=useShop();
   const footerRef=useRef<HTMLElement>(null);
   useLayoutEffect(()=>{
-    const el=footerRef.current;
-    if(!el||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
-    gsap.registerPlugin(ScrollTrigger);
-    const pending=new WeakMap<Element,gsap.core.Timeline>();
-    const observer=new IntersectionObserver(entries=>{
-      for(const entry of entries){
-        if(!entry.isIntersecting)continue;
-        pending.get(entry.target)?.play();
-        observer.unobserve(entry.target);
-      }
-    },{rootMargin:"0px 0px -20% 0px",threshold:0.01});
+    const root=footerRef.current;
+    if(!root||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    const registered:Array<{node:Element;settle:()=>void}>=[];
     const context=gsap.context(()=>{
-      const stage=(target:Element,items:Element[],from:gsap.TweenVars,start="top 77%",stagger=.14)=>{
-        if(!items.length)return;
-        const timeline=gsap.timeline({paused:true});
-        timeline.fromTo(items,{opacity:.24,y:21,...from},{opacity:1,x:0,y:0,duration:1,
-          stagger,ease:"power3.out",clearProps:"transform"});
-        pending.set(target,timeline);
-        observer.observe(target);
-        ScrollTrigger.create({trigger:target,start,once:true,
-          onEnter:()=>timeline.play(),onEnterBack:()=>timeline.play()});
+      const pending=new WeakMap<Element,()=>void>();
+      const observer=new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting)pending.get(entry.target)?.();
+        });
+      },{rootMargin:"0px 0px -7% 0px",threshold:.08});
+      const one=(item:Element,order=0,mode:"text"|"link"|"word"="text")=>{
+        const rise=mode==="link"?5:mode==="word"?12:14;
+        const duration=mode==="link"?.49:mode==="word"?.88:.69;
+        gsap.set(item,{autoAlpha:0,y:rise});
+        let played=false;
+        const settle=()=>{
+          if(played)return;
+          played=true;
+          observer.unobserve(item);
+          gsap.set(item,{autoAlpha:1,y:0,clearProps:"transform"});
+        };
+        registered.push({node:item,settle});
+        const enter=()=>{
+          if(played)return;
+          const bounds=item.getBoundingClientRect();
+          if(bounds.top>=innerHeight*.95||bounds.bottom<=0)return;
+          played=true;
+          observer.unobserve(item);
+          gsap.to(item,{autoAlpha:1,y:0,duration,
+            delay:order*.075,ease:"power2.out",clearProps:"transform"});
+        };
+        pending.set(item,enter);
+        observer.observe(item);
+        if(item.getBoundingClientRect().top<innerHeight*.93)enter();
       };
-      const story=el.querySelector(".premium-footer-story");
-      if(story)stage(story,Array.from(story.children),{y:28},"top 76%",.2);
-      const cols=Array.from(el.querySelectorAll(".premium-footer-links>div"));
-      cols.forEach((col,i)=>stage(col,Array.from(col.children),
-        {x:i%2?-11:11,y:17},"top 78%",.12));
-      const wordmark=el.querySelector(".premium-footer-wordmark");
-      if(wordmark)stage(wordmark,[wordmark],{x:38},"top 80%");
-      const bottom=el.querySelector(".premium-footer-bottom");
-      if(bottom)stage(bottom,Array.from(bottom.children),{y:14},"top 81%",.12);
-    },el);
-    return()=>{observer.disconnect();context.revert()};
+      const story=root.querySelector(".premium-footer-story");
+      if(story)Array.from(story.children).forEach((item,i)=>
+        one(item,i,item.tagName==="A"?"link":"text"));
+      const columns=root.querySelectorAll(".premium-footer-links>div");
+      columns.forEach((column,j)=>
+        Array.from(column.children).forEach((item,i)=>
+          one(item,j*2+i,item.tagName==="A"?"link":"text"))
+      );
+      const mark=root.querySelector(".premium-footer-wordmark");
+      if(mark)Array.from(mark.children).forEach((item,i)=>one(item,i,"word"));
+      const bottom=root.querySelector(".premium-footer-bottom");
+      if(bottom)Array.from(bottom.children).forEach((item,i)=>one(item,i,"text"));
+      return()=>observer.disconnect();
+    },root);
+    let frame=0;
+    const settlePassed=()=>{
+      frame=0;
+      for(const {node,settle} of registered){
+        if(node.getBoundingClientRect().bottom<-innerHeight*.22)settle();
+      }
+    };
+    const onScroll=()=>{
+      if(!frame)frame=requestAnimationFrame(settlePassed);
+    };
+    window.addEventListener("scroll",onScroll,{passive:true});
+    frame=requestAnimationFrame(settlePassed);
+    return()=>{
+      if(frame)cancelAnimationFrame(frame);
+      window.removeEventListener("scroll",onScroll);
+      context.revert();
+    };
   },[]);
   return <footer ref={footerRef} className="premium-footer">
     <div className="premium-footer-top premium-container">
