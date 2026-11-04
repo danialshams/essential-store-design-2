@@ -10,6 +10,7 @@ const {chromium}=require("playwright");
  try{
   const desktop=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
   const page=await desktop.newPage();
+  await page.clock.install();
   const errors=[];
   page.on("pageerror",err=>errors.push(String(err)));
   await page.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded",timeout:65000});
@@ -19,6 +20,21 @@ const {chromium}=require("playwright");
   assert.equal(status,"ready","GSAP motion engine failed to initialize on homepage");
   const initialSlides=await page.locator(".ed-hero-slide").count();
   assert.ok(initialSlides>=3,"Hero must have 3 editorial slides");
+  // A resting pointer previously froze the interval forever. Real simulated
+  // clock advancement verifies auto-change, explicit pause, and resume.
+  await page.locator(".ed-hero-carousel").hover();
+  const heroIndex=()=>page.locator(".ed-hero-slide").evaluateAll(els=>
+    els.findIndex(el=>el.classList.contains("is-active")));
+  const firstSlide=await heroIndex();
+  await page.clock.fastForward(9150);
+  await page.waitForTimeout(90);
+  const secondSlide=await heroIndex();
+  assert.notEqual(secondSlide,firstSlide,"Autoplay must advance while hovering the hero");
+  await page.locator(".ed-carousel-play").click();
+  await page.clock.fastForward(9150);
+  await page.waitForTimeout(70);
+  assert.equal(await heroIndex(),secondSlide,"Explicit pause must stop autoplay");
+  await page.locator(".ed-carousel-play").click();
   const textAnimation=await page.locator(".ed-hero-copy-frame").evaluate(el=>getComputedStyle(el).animationName);
   assert.notEqual(textAnimation,"none","Hero text has no first-load animation");
   // Scroll every sequence as a real visitor would: full-page screenshots
@@ -45,7 +61,12 @@ const {chromium}=require("playwright");
   }));
   console.log("HOME GSAP",status,"hero animation",textAnimation,"category",category);
   assert.equal(errors.length,0,"Uncaught browser errors: "+errors.join(" / "));
-  await page.goto("http://127.0.0.1:3000/products",{waitUntil:"domcontentloaded"});
+  // Real Next Link client navigation from the page bottom must scroll to top.
+  await page.locator('.premium-footer-links a[href="/products"]').first().click();
+  await page.waitForURL("**/products");
+  await page.waitForTimeout(220);
+  const routeScroll=await page.evaluate(()=>window.scrollY);
+  assert.ok(routeScroll<80,"Client navigation retained old scroll position: "+routeScroll);
   await page.locator(".collection-heading").waitFor();
   await page.waitForTimeout(800);
   assert.equal(await page.locator(".editorial-page-shell").getAttribute("data-page-motion"),"ready");
@@ -78,6 +99,15 @@ const {chromium}=require("playwright");
   await mp.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
   await mp.locator(".ed-hero-slide.is-active").waitFor();
   await mp.waitForTimeout(1500);
+  const quiet=mp.locator(".ed-quiet-strip");
+  const quietInitial=await quiet.locator("span").first().evaluate(el=>
+    Number(getComputedStyle(el).opacity));
+  assert.ok(quietInitial<.9,"Under-hero interlude animated before it entered the mobile viewport");
+  await quiet.scrollIntoViewIfNeeded();
+  await mp.waitForTimeout(1450);
+  const quietVisible=await quiet.locator("span").first().evaluate(el=>
+    Number(getComputedStyle(el).opacity));
+  assert.ok(quietVisible>.92,"Under-hero interlude never appeared on entering viewport");
   for(const selector of ['.ed-categories-grid','#ed-selected','[data-scene="campaign"]',
    '[data-scene="story"]','.ed-mobile-chapters','[data-scene="journal"]','.ed-benefits']){
    const section=mp.locator(selector).first();
@@ -86,12 +116,25 @@ const {chromium}=require("playwright");
     await mp.waitForTimeout(800);
    }
   }
+  for(const copy of await mp.locator(".ed-mobile-chapter-copy").all()){
+   await copy.scrollIntoViewIfNeeded();
+   await mp.waitForTimeout(1450);
+   const opacity=await copy.locator("h2").evaluate(el=>Number(getComputedStyle(el).opacity));
+   assert.ok(opacity>.9,"Mobile chapter headline failed to animate when visible");
+  }
   await mp.screenshot({path:"artifacts/edition02-home-mobile.png",fullPage:true,animations:"disabled"});
   await mp.getByRole("button",{name:"باز کردن فهرست"}).click();
   await mp.locator(".premium-drawer-root.is-open").waitFor();
   await mp.waitForTimeout(1000);
   const objectFit=await mp.locator(".premium-drawer-image-main").evaluate(img=>getComputedStyle(img).objectFit);
   assert.equal(objectFit,"contain","Mobile Maison image crop is still cutting off the portrait");
+  const closeColor=await mp.locator(".premium-drawer-head button svg").evaluate(el=>
+    getComputedStyle(el).color);
+  const channel=closeColor.match(/\d+(?:\.\d+)?/g)?.slice(0,3).map(Number)||[];
+  if(channel.length===3)assert.ok(
+    channel[2]<=channel[0]*1.12 || channel[2]<=channel[1]*1.1,
+    "Maison close icon has a blue accent: "+closeColor
+  );
   const visible=await mp.locator(".premium-drawer-editorial").isVisible();
   assert.ok(visible,"Mobile Maison editorial is hidden");
   await mp.screenshot({path:"artifacts/edition02-maison-mobile.png",fullPage:false,animations:"disabled"});
