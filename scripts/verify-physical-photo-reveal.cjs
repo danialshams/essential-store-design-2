@@ -137,7 +137,7 @@ const scaleFromMatrix=(m)=>{
   fs.writeFileSync(out+"/results.json",JSON.stringify(reports,null,2));
   console.log("PASS PHYSICAL GSAP REVEALS",reports.map(r=>({
    photo:r.label,mode:r.during.mode,clip:r.during.clip,opacity:r.during.opacity,
-   progress:r.during.progress,zoomFrom:r.revealed.zoom,zoomTo:r.zoomed.zoom
+   progress:r.during.progress,zoomFrom:r.revealed?.zoom,zoomTo:r.zoomed?.zoom
   })));
  }finally{await browser.close()}
 })().catch(err=>{
