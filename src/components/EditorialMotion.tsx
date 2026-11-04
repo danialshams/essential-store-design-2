@@ -19,11 +19,23 @@ export function EditorialMotion({children}:{children:ReactNode}){
   }
   gsap.registerPlugin(ScrollTrigger);
   let alive=true;
+  // IntersectionObserver is a safety net for fast wheel swipes, programmatic
+  // jumps and mobile browsers that occasionally skip ScrollTrigger callbacks.
+  const pending=new WeakMap<Element,gsap.core.Timeline>();
+  const visibilityFallback=new IntersectionObserver(entries=>{
+    for(const entry of entries){
+      if(!entry.isIntersecting)continue;
+      pending.get(entry.target)?.play();
+      visibilityFallback.unobserve(entry.target);
+    }
+  },{root:null,rootMargin:"0px 0px -20% 0px",threshold:0.01});
   const context=gsap.context(()=>{
    const $=gsap.utils.selector(element);
    const ease="power3.out";
    // 78% is visibly INSIDE the viewport, including on 390px mobile screens.
    const inView=(trigger:Element,tl:gsap.core.Timeline,start="top 78%")=>{
+    pending.set(trigger,tl);
+    visibilityFallback.observe(trigger);
     ScrollTrigger.create({
      trigger,start,once:true,invalidateOnRefresh:true,
      onEnter:()=>tl.play(),
@@ -296,6 +308,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
   window.addEventListener("orientationchange",refresh,{passive:true});
   return()=>{
    alive=false;
+   visibilityFallback.disconnect();
    window.removeEventListener("load",refresh);
    window.removeEventListener("orientationchange",refresh);
    context.revert();
