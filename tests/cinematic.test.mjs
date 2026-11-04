@@ -29,7 +29,7 @@ test("Homepage uses independent editorial art direction and all data-managed sec
 });
 test("Motion is scoped, progressive, efficient and respects mobile/reduced motion",()=>{
  const motion=load("src/components/EditorialMotion.tsx");
- for(const pattern of [/prefers-reduced-motion/,/gsap\.context/,/context\.revert\(\)/,/ScrollTrigger/,/clipPath/,/once:true/,/gsap\.matchMedia/,/pin:true/,/data-motion-status/,/data-editorial-grid/,/data-campaign/])assert.match(motion,pattern);
+ for(const pattern of [/prefers-reduced-motion/,/gsap\.context/,/context\.revert\(\)/,/ScrollTrigger/,/clipPath/,/once:true/,/gsap\.matchMedia/,/pin:true/,/data-motion-status/,/data-editorial-grid/,/data-scene=/])assert.match(motion,pattern);
  assert.doesNotMatch(motion,/repeat:\s*-1/);
 });
 test("High-resolution local demo photographs have explicit provenance",()=>{
