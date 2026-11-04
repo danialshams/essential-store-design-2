@@ -4,10 +4,28 @@ import {usePathname} from "next/navigation";
 import gsap from "gsap";
 import {ScrollTrigger} from "gsap/ScrollTrigger";
 
-/** Site-wide luxury page reveals. Homepage has its own dedicated motion director. */
+/** Keep all client route entries anchored at the top, not stale scroll/pin coordinates. */
 export function SiteMotion({children}:{children:ReactNode}){
  const root=useRef<HTMLDivElement>(null);
+ const previousPath=useRef<string|null>(null);
  const pathname=usePathname();
+
+ useLayoutEffect(()=>{
+  const previous=previousPath.current;
+  previousPath.current=pathname;
+  if(previous===null&&window.location.hash)return; // honor intentional deep links
+  const html=document.documentElement;
+  const prior=html.style.scrollBehavior;
+  html.style.scrollBehavior="auto";
+  if("scrollRestoration" in window.history)window.history.scrollRestoration="manual";
+  window.scrollTo(0,0);
+  const frame=requestAnimationFrame(()=>{
+   window.scrollTo(0,0);
+   html.style.scrollBehavior=prior;
+  });
+  return()=>cancelAnimationFrame(frame);
+ },[pathname]);
+
  useLayoutEffect(()=>{
   const el=root.current;
   if(!el)return;
@@ -15,90 +33,133 @@ export function SiteMotion({children}:{children:ReactNode}){
    el.dataset.pageMotion="reduced";return;
   }
   gsap.registerPlugin(ScrollTrigger);
-  // Avoid double-animating the editorial homepage, whose sections have their
-  // own carefully choreographed GSAP timelines.
-  if(el.querySelector(".ed-home")){el.dataset.pageMotion="homepage";return;}
+  if(el.querySelector(".ed-home")){
+   el.dataset.pageMotion="homepage";
+   return;
+  }
+  let alive=true;
   const context=gsap.context(()=>{
    const $=gsap.utils.selector(el);
-   const first=(selector:string)=>$(selector)[0] as HTMLElement|undefined;
-   const reveal=(node:Element|undefined,from:gsap.TweenVars,to:gsap.TweenVars)=>{
-    if(!node)return;
-    gsap.fromTo(node,from,{...to,scrollTrigger:{trigger:node,start:"top 92%",once:true}});
+   const inView=(node:Element,tl:gsap.core.Timeline,start="top 78%")=>
+    ScrollTrigger.create({trigger:node,start,once:true,invalidateOnRefresh:true,
+      onEnter:()=>tl.play(),onEnterBack:()=>tl.play()});
+   const show=(target:Element,items:Element[],from:gsap.TweenVars={},delay=0,start="top 78%")=>{
+    if(!items.length)return;
+    const tl=gsap.timeline({paused:true});
+    tl.fromTo(items,{autoAlpha:0,y:23,...from},{
+     autoAlpha:1,x:0,y:0,scale:1,duration:1.03,stagger:.13,
+     ease:"power3.out",clearProps:"transform"
+    },delay);
+    inView(target,tl,start);
    };
-   const breadcrumbs=first(".breadcrumbs");
-   const title=first(".collection-heading, .page-title-group, .info-hero");
-   // The typographic hierarchy arrives before the product imagery.
-   if(breadcrumbs)gsap.fromTo(breadcrumbs,{y:10,autoAlpha:0},{y:0,autoAlpha:1,duration:.65,ease:"power2.out"});
-   if(title){
-    const kids=Array.from(title.children);
-    gsap.fromTo(kids,{y:28,autoAlpha:0},{y:0,autoAlpha:1,duration:.9,stagger:.16,
-      ease:"power3.out",delay:.12});
-   }
-   const pills=first(".category-pills");
-   if(pills)gsap.fromTo(Array.from(pills.children),{y:12,autoAlpha:0},
-     {y:0,autoAlpha:1,duration:.66,stagger:.07,delay:.28,ease:"power3.out"});
-   const filter=first(".filter-sidebar");
-   if(filter)reveal(filter,{autoAlpha:0,x:36},{autoAlpha:1,x:0,duration:1.12,ease:"power3.out"});
-   const tools=first(".results-toolbar");
-   if(tools)reveal(tools,{autoAlpha:0,y:17},{autoAlpha:1,y:0,duration:.78,ease:"power3.out"});
 
-   // Products: display images like a printed lookbook, with a deliberate
-   // photographic zoom-out rather than identical fade animations.
-   $(".collection-grid, .related-section .product-grid, .favorites-grid").forEach((grid:Element)=>{
-    const cards=Array.from(grid.children);
-    if(!cards.length)return;
-    const timeline=gsap.timeline({paused:true});
-    cards.forEach((card,i)=>{
-     timeline.fromTo(card,{autoAlpha:0,y:34},{autoAlpha:1,y:0,duration:.91,ease:"power3.out"},i*.09);
-     const image=card.querySelector("img");
-     if(image)timeline.fromTo(image,{scale:1.055},{scale:1,duration:1.18,ease:"power2.out",clearProps:"transform"},i*.09);
+   // Introductory breadcrumb and heading are above the fold, so they should
+   // enter immediately after route change, never wait for the second scroll.
+   const breadcrumbs=$(".breadcrumbs")[0] as Element|undefined;
+   if(breadcrumbs)gsap.fromTo(breadcrumbs,{y:11,autoAlpha:0},{
+    y:0,autoAlpha:1,duration:.68,ease:"power3.out"
+   });
+   const heading=$(".collection-heading,.page-title-group,.info-hero")[0] as Element|undefined;
+   if(heading)show(heading,Array.from(heading.children),{y:30},0,"top 92%");
+
+   // Navigation chips, filter/sidebar and search tools enter independently.
+   const pills=$(".category-pills")[0] as Element|undefined;
+   if(pills)show(pills,Array.from(pills.children),{x:14,y:0},0,"top 81%");
+   const sidebar=$(".filter-sidebar")[0] as Element|undefined;
+   if(sidebar)show(sidebar,[sidebar],{x:32,y:0},0,"top 78%");
+   const results=$(".results-toolbar")[0] as Element|undefined;
+   if(results)show(results,Array.from(results.children),{y:18},0,"top 77%");
+
+   // Category and editorial product cards: each photograph triggers on its
+   // own visibility, including rows below the fold and narrow mobile grids.
+   const grids=$(".collection-grid,.related-section .product-grid,.favorites-grid,.standard-page>.product-grid");
+   const seen=new Set<Element>();
+   grids.forEach((grid:Element)=>{
+    Array.from(grid.children).forEach((card:Element,index:number)=>{
+     if(seen.has(card))return;
+     seen.add(card);
+     const photo=card.querySelector("img");
+     const info=card.querySelector(".premium-product-info,.product-card-body");
+     const tl=gsap.timeline({paused:true});
+     tl.fromTo(card,{autoAlpha:0,y:30},{
+      autoAlpha:1,y:0,duration:1.05,ease:"power3.out"
+     },0);
+     if(photo)tl.fromTo(photo,{scale:1.095,scaleX:1.045},{
+      scale:1,scaleX:1,duration:1.52,ease:"power2.out",clearProps:"transform"
+     },0);
+     if(info)tl.fromTo(Array.from(info.children),{autoAlpha:0,y:14},{
+      autoAlpha:1,y:0,stagger:.08,duration:.8,ease:"power3.out"
+     },.34);
+     inView(card,tl,"top 80%");
     });
-    ScrollTrigger.create({trigger:grid,start:"top 94%",once:true,onEnter:()=>timeline.play()});
    });
-   const productGallery=first(".product-gallery");
-   const productInfo=first(".product-information");
-   if(productGallery){
-    const image=productGallery.querySelector(".product-main-photo");
-    if(image){
-     // Never hide or clip the whole product photo frame: the main product
-     // photograph must remain visible even during slow loads or reduced FPS.
-     const photo=image.querySelector("img");
-     if(photo)gsap.fromTo(photo,{scale:1.055,filter:"brightness(1.08)"},
-       {scale:1,filter:"brightness(1)",duration:1.5,ease:"power2.out",clearProps:"transform,filter"});
-    }
-    const thumb=productGallery.querySelector(".gallery-thumbnails");
-    if(thumb)gsap.fromTo(thumb,{y:16,autoAlpha:0},{y:0,autoAlpha:1,duration:.85,delay:.6,ease:"power3.out"});
+
+   // Detail page: never clip the whole image frame (it must always remain
+   // functional). Instead unfold the photo itself with a gentle zoom-out.
+   const photo=$(".product-main-photo img")[0] as Element|undefined;
+   if(photo){
+    const tl=gsap.timeline({paused:true});
+    tl.fromTo(photo,{scale:1.075,filter:"brightness(1.06)"},{
+     scale:1,filter:"brightness(1)",duration:1.65,ease:"power2.out",
+     clearProps:"transform,filter"
+    },0);
+    inView(photo,tl,"top 88%");
    }
-   if(productInfo){
-    gsap.fromTo(Array.from(productInfo.children),{autoAlpha:0,y:22},
-     {autoAlpha:1,y:0,duration:1,stagger:.14,ease:"power3.out",delay:.17});
+   const thumb=$(".gallery-thumbnails")[0] as Element|undefined;
+   if(thumb)show(thumb,Array.from(thumb.children),{autoAlpha:0,y:14},0,"top 81%");
+   const info=$(".product-information")[0] as Element|undefined;
+   if(info){
+    Array.from(info.children).forEach((part:Element)=>{
+     const tl=gsap.timeline({paused:true});
+     tl.fromTo(part,{autoAlpha:0,y:22},{autoAlpha:1,y:0,duration:1.05,ease:"power3.out"});
+     inView(part,tl,"top 82%");
+    });
    }
-   $(".product-extra,.related-section").forEach((section:Element,i:number)=>{
-    reveal(section,{autoAlpha:0,y:28},{autoAlpha:1,y:0,duration:1.05+i*.13,ease:"power3.out"});
+
+   // Product detail tabs and related-section titles trigger when visible.
+   $ (".product-extra,.related-section .section-heading").forEach((section:Element)=>{
+    show(section,Array.from(section.children),{y:20},0,"top 79%");
    });
-   // Checkout and account: clean section-by-section entrances, without
-   // animation on input values, button state or forms once mounted.
+
+   // Cart, checkout, account: independent layout blocks. Forms remain fully
+   // interactive and never animate the user's input as the value changes.
    $(".cart-layout,.checkout-layout,.account-layout").forEach((parent:Element)=>{
-    const blocks=Array.from(parent.children);
-    gsap.fromTo(blocks,{autoAlpha:0,y:24},{autoAlpha:1,y:0,duration:1.02,
-      stagger:.15,ease:"power3.out",delay:.12});
+    Array.from(parent.children).forEach((block:Element,i:number)=>{
+     show(block,[block],{y:i%2?35:22,x:i%2?-16:16},0,"top 79%");
+    });
    });
-   $(".info-card,.demo-warning,.cart-items,.account-panel,.form-card").forEach((panel:Element)=>{
-    if(panel.closest(".cart-layout,.checkout-layout,.account-layout"))return;
-    reveal(panel,{autoAlpha:0,y:26},{autoAlpha:1,y:0,duration:1.05,ease:"power3.out"});
+   $(".cart-line,.form-card,.checkout-summary-item,.shipping-options>label,.demo-order-card").forEach((part:Element)=>{
+    if(part.closest(".cart-layout,.checkout-layout,.account-layout")){
+     // Parent covers entry; nested items are interactive, avoid double
+     // animations that would reorder or obscure form fields.
+     return;
+    }
+    show(part,[part],{y:18},0,"top 80%");
    });
-   // Article index and article detail; do not retarget interactive content.
-   $(".standard-page .product-grid").forEach((grid:Element)=>{
-    if(grid.classList.contains("related-section"))return;
-    gsap.fromTo(Array.from(grid.children),{autoAlpha:0,y:28},
-      {autoAlpha:1,y:0,duration:.99,stagger:.14,ease:"power3.out",
-       scrollTrigger:{trigger:grid,start:"top 93%",once:true}});
+
+   // Pages with prose, shipping terms, privacy, articles and empty states:
+   // each meaningful block has its own paper-reveal as it enters view.
+   $(".info-card,.demo-warning,.account-panel,.empty-cart,.success-card").forEach((section:Element)=>{
+    if(section.closest(".cart-layout,.checkout-layout,.account-layout"))return;
+    const content=Array.from(section.children).filter(child=>
+     !child.matches("button,input,select,textarea")
+    );
+    show(section,content.length?content:[section],{y:21},0,"top 79%");
+   });
+   $(".contact-items>div,.success-actions>a,.success-actions>button").forEach((part:Element,i:number)=>{
+    show(part,[part],{y:15,x:i%2?-12:12},0,"top 81%");
    });
   },el);
   el.dataset.pageMotion="ready";
-  const refresh=()=>ScrollTrigger.refresh();
+  const refresh=()=>{if(alive)ScrollTrigger.refresh()};
   void document.fonts?.ready.then(refresh).catch(()=>{});
-  return()=>{context.revert()};
+  window.addEventListener("load",refresh,{once:true});
+  return()=>{
+   alive=false;
+   window.removeEventListener("load",refresh);
+   context.revert();
+  };
  },[pathname]);
+
  return <div ref={root} className="editorial-page-shell" data-page-motion="initial">{children}</div>;
 }
