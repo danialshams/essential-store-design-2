@@ -68,7 +68,7 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   const searchTransition=await page.locator(".premium-search-panel")
     .evaluate(el=>getComputedStyle(el).transitionDuration);
   assert.notEqual(searchTransition,"0s","Search close is abrupt, not eased");
-  await page.locator(".ed-hero-visual").click({position:{x:16,y:40}});
+  await page.mouse.click(22,875); // physically outside the open search dropdown
   await page.waitForTimeout(420);
   assert.equal(await page.locator(".premium-search-panel").getAttribute("aria-hidden"),"true",
     "Clicking outside did not dismiss search");
