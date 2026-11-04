@@ -191,6 +191,12 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   ).filter(el=>el.getBoundingClientRect().bottom<-innerHeight*.22&&
      /100%/.test(getComputedStyle(el).clipPath)).map(el=>el.className));
   assert.deepEqual(missedFrames,[],"Some mobile photographs remained hidden after scroll");
+  const skippedFooter=await mp.evaluate(()=>Array.from(
+   document.querySelectorAll(".premium-footer-links a,.premium-footer-contact>span")
+  ).filter(el=>el.getBoundingClientRect().bottom<-innerHeight*.22&&
+   Number(getComputedStyle(el).opacity)<.95).map(el=>el.textContent?.trim()));
+  assert.deepEqual(skippedFooter,[],"Passed footer links stayed invisible after fast scroll: "+skippedFooter.join(","));
+
   await mp.screenshot({path:"artifacts/edition02-home-mobile.png",fullPage:true,animations:"disabled"});
   await mp.getByRole("button",{name:"باز کردن فهرست"}).click();
   await mp.locator(".premium-drawer-root.is-open").waitFor();
