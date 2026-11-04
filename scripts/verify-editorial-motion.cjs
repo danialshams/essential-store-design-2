@@ -163,6 +163,10 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   mp.on("pageerror",err=>mobileErrors.push(String(err)));
   await mp.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
   await mp.locator(".ed-hero-slide.is-active").waitFor();
+  await mp.locator(".maison-intro").waitFor();
+  await mp.waitForTimeout(660);
+  await mp.screenshot({path:"artifacts/edition02-loader-mobile.png",
+    fullPage:false,animations:"allow"});
   await mp.locator('html[data-intro-state="complete"]').waitFor({timeout:16000});
   await mp.waitForTimeout(540);
   // The second category row is below the fold. It must start its own wipe
@@ -247,6 +251,21 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   assert.deepEqual(skippedFooter,[],"Passed footer links stayed invisible after fast scroll: "+skippedFooter.join(","));
 
   await mp.screenshot({path:"artifacts/edition02-home-mobile.png",fullPage:true,animations:"disabled"});
+  // The mobile search must render live result cards directly beneath the
+  // input; tapping outside should close it without submitting navigation.
+  await mp.evaluate(()=>window.scrollTo(0,0));
+  await mp.getByRole("button",{name:"جستجو",exact:true}).click();
+  await mp.getByRole("combobox",{name:"جستجوی محصول"}).fill("کفش");
+  const mobileResults=mp.locator(".premium-search-result");
+  await mobileResults.first().waitFor();
+  assert.ok(await mobileResults.count()>=1,
+    "Mobile live search did not show any product suggestions");
+  await mp.screenshot({path:"artifacts/edition02-mobile-live-search.png",
+    fullPage:false,animations:"disabled"});
+  await mp.mouse.click(12,720);
+  await mp.waitForTimeout(400);
+  assert.equal(await mp.locator(".premium-search-panel").getAttribute("aria-hidden"),"true",
+    "Mobile search did not close after an outside touch");
   await mp.getByRole("button",{name:"باز کردن فهرست"}).click();
   await mp.locator(".premium-drawer-root.is-open").waitFor();
   await mp.waitForTimeout(1000);
