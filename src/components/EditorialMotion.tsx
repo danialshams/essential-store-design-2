@@ -27,6 +27,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
   },{root:null,rootMargin:"0px 0px -7% 0px",threshold:.06});
   const seen=new Set<Element>();
   const animations:gsap.core.Timeline[]=[];
+  const registered:Array<{node:Element;settle:()=>void}>=[];
   const visible=(node:Element)=>{
    const r=node.getBoundingClientRect();
    return r.height>0&&r.width>0&&r.bottom>0&&r.top<innerHeight*.94;
@@ -36,6 +37,14 @@ export function EditorialMotion({children}:{children:ReactNode}){
    let loaded=!image;
    let decoding=false;
    let started=false;
+   const settle=()=>{
+    if(started||!active)return;
+    started=true;
+    observer.unobserve(trigger);
+    // If a jump skips an entrance, complete it only AFTER passing view.
+    tl.progress(1).pause();
+   };
+   registered.push({node:trigger,settle});
    const start=()=>{
     if(!active||started||!loaded||!visible(trigger))return;
     started=true;observer.unobserve(trigger);
@@ -222,6 +231,22 @@ export function EditorialMotion({children}:{children:ReactNode}){
   },el);
 
   el.dataset.motionStatus="ready";
+  let frameId=0;
+  const completePassed=()=>{
+   frameId=0;
+   if(!active)return;
+   const height=window.innerHeight;
+   for(const {node,settle} of registered){
+    const rect=node.getBoundingClientRect();
+    if(rect.bottom < -height*.22)settle();
+   }
+  };
+  const onScroll=()=>{
+   if(frameId||!active)return;
+   frameId=requestAnimationFrame(completePassed);
+  };
+  window.addEventListener("scroll",onScroll,{passive:true});
+  frameId=requestAnimationFrame(completePassed);
   const refresh=()=>{if(active)ScrollTrigger.refresh()};
   void document.fonts?.ready.then(refresh).catch(()=>{});
   window.addEventListener("load",refresh,{once:true});
@@ -231,6 +256,8 @@ export function EditorialMotion({children}:{children:ReactNode}){
    observer.disconnect();
    window.removeEventListener("load",refresh);
    window.removeEventListener("orientationchange",refresh);
+   if(frameId)cancelAnimationFrame(frameId);
+   window.removeEventListener("scroll",onScroll);
    animations.forEach(tl=>tl.kill());
    context.revert();
   };
