@@ -16,7 +16,7 @@ from PIL import Image, ImageOps
 PHOTOS = [
  ("hero-main",31845548,"rasul lotfi","cream editorial fashion portrait",1600),
  ("hero-mobile",9853293,"Ron Lach","beige fashion study",1100),
- ("category-clothing",8346027,"Ron Lach","neutral clothes on rail",1200),
+ ("category-clothing",8346027,"Ron Lach","minimal clothing rail with intentional negative space",1800),
  ("category-bags",8502477,"Mohamed Hergafi","brown leather handbag",1200),
  ("category-shoes",13560373,"Sandro Tavares","white sneakers",1200),
  ("category-accessories",2433862,"julie aagaard","leather accessory editorial",1200),
