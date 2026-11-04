@@ -83,6 +83,7 @@ const scaleFromMatrix=(m)=>{
     await page.waitForFunction(({selector,index})=>
       document.querySelectorAll(selector)[index]?.getAttribute("data-photo-reveal-complete")==="true",
       job,{timeout:7000});
+    await page.waitForTimeout(140); // allow final style and paint to settle
     const zoomed=await node.evaluate(reading);
     const result={...job,before,during,revealed,zoomed,errors};
     reports.push(result);
