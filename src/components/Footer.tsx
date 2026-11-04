@@ -12,6 +12,7 @@ export function Footer(){
   useLayoutEffect(()=>{
     const root=footerRef.current;
     if(!root||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    const registered:Array<{node:Element;settle:()=>void}>=[];
     const context=gsap.context(()=>{
       const pending=new WeakMap<Element,()=>void>();
       const observer=new IntersectionObserver(entries=>{
@@ -19,13 +20,18 @@ export function Footer(){
           if(entry.isIntersecting)pending.get(entry.target)?.();
         });
       },{rootMargin:"0px 0px -7% 0px",threshold:.08});
-
       const one=(item:Element,order=0,mode:"text"|"link"|"word"="text")=>{
         const rise=mode==="link"?5:mode==="word"?12:14;
         const duration=mode==="link"?.49:mode==="word"?.88:.69;
-        // Each element gets its OWN entry. No parent-level early reveal.
         gsap.set(item,{autoAlpha:0,y:rise});
         let played=false;
+        const settle=()=>{
+          if(played)return;
+          played=true;
+          observer.unobserve(item);
+          gsap.set(item,{autoAlpha:1,y:0,clearProps:"transform"});
+        };
+        registered.push({node:item,settle});
         const enter=()=>{
           if(played)return;
           const bounds=item.getBoundingClientRect();
@@ -39,13 +45,13 @@ export function Footer(){
         observer.observe(item);
         if(item.getBoundingClientRect().top<innerHeight*.93)enter();
       };
-
       const story=root.querySelector(".premium-footer-story");
       if(story)Array.from(story.children).forEach((item,i)=>
         one(item,i,item.tagName==="A"?"link":"text"));
       const columns=root.querySelectorAll(".premium-footer-links>div");
       columns.forEach((column,j)=>
-        Array.from(column.children).forEach((item,i)=>one(item,j*2+i,item.tagName==="A"?"link":"text"))
+        Array.from(column.children).forEach((item,i)=>
+          one(item,j*2+i,item.tagName==="A"?"link":"text"))
       );
       const mark=root.querySelector(".premium-footer-wordmark");
       if(mark)Array.from(mark.children).forEach((item,i)=>one(item,i,"word"));
@@ -53,7 +59,23 @@ export function Footer(){
       if(bottom)Array.from(bottom.children).forEach((item,i)=>one(item,i,"text"));
       return()=>observer.disconnect();
     },root);
-    return()=>context.revert();
+    let frame=0;
+    const settlePassed=()=>{
+      frame=0;
+      for(const {node,settle} of registered){
+        if(node.getBoundingClientRect().bottom<-innerHeight*.22)settle();
+      }
+    };
+    const onScroll=()=>{
+      if(!frame)frame=requestAnimationFrame(settlePassed);
+    };
+    window.addEventListener("scroll",onScroll,{passive:true});
+    frame=requestAnimationFrame(settlePassed);
+    return()=>{
+      if(frame)cancelAnimationFrame(frame);
+      window.removeEventListener("scroll",onScroll);
+      context.revert();
+    };
   },[]);
   return <footer ref={footerRef} className="premium-footer">
     <div className="premium-footer-top premium-container">
