@@ -1,69 +1,75 @@
-"""Import separately licensed, high-resolution Unsplash demo photography.
+"""Build the 13 distinct, local editorial demo images from Pexels free photo originals.
 
-Each selected photograph is identified by its verified free Unsplash photo ID.
-Only demo fallback assets: real merchant uploads from the admin remain authoritative.
-The source manifest preserves photographer/photo attribution and usage provenance.
+Each source below was selected from a published Pexels photo page with a visible
+free-license label. Direct CDN image URLs avoid the 401/429 download-page blocker.
+Provenance is kept in public/images/editorial/manifest.json. These are only
+fictional storefront demo images, not representations of products for sale.
 """
 from pathlib import Path
-import io
+from io import BytesIO
 import json
 import time
 import requests
 from PIL import Image, ImageOps
 
-ASSETS = [
-    ("hero-main",       "8f4Gq4IoXEY", 1600, "Redd Francisco", "fashion editorial portrait"),
-    ("hero-mobile",     "IDC7g-ccgv0", 1100, "Dmitry Reshetnikov", "beige trench coat"),
-    ("category-clothing", "bEN4kFj4Fm8", 1200, "lena ruffinatto", "neutral fashion"),
-    ("category-bags",  "jCTG4bl-gMI", 1200, "Ansuman Mishra", "brown handbag"),
-    ("category-shoes", "r_9YnoTmfQI", 1200, "Jonathan Borba", "shoes and watch"),
-    ("category-accessories", "cMP0tw8uZ28", 1200, "Valentina Schick", "neutral accessory flatlay"),
-    ("campaign",        "MOXm5jc8I0A", 1800, "Khaled Ghareeb", "beige couture fashion"),
-    ("story-portrait",  "6FRQpPxqF-o", 1400, "Artem Artemov", "fashion portrait"),
-    ("story-detail",    "JAn9b51aFE4", 1000, "Amari Shutters", "handbag closeup"),
-    ("chapter-form",    "_ZGvkavajjQ", 1500, "morgane leisser", "fashion study"),
-    ("chapter-detail", "NrYN2sYd9sg", 1500, "Apostolos Vamvouras", "natural light portrait"),
-    ("journal-style",  "888HU1GauzY", 1300, "mr lee", "editorial styling flatlay"),
-    ("journal-details", "FxxokxEX4nI", 1300, "Filipp Romanovski", "fashion editorial"),
+# slug, Pexels public photo ID, photographer, semantic subject, target max width
+PHOTOS = [
+ ("hero-main",31845548,"rasul lotfi","cream editorial fashion portrait",1600),
+ ("hero-mobile",9853293,"Ron Lach","beige fashion study",1100),
+ ("category-clothing",8346027,"Ron Lach","neutral clothes on rail",1200),
+ ("category-bags",8502477,"Mohamed Hergafi","brown leather handbag",1200),
+ ("category-shoes",13560373,"Sandro Tavares","white sneakers",1200),
+ ("category-accessories",2433862,"julie aagaard","leather accessory editorial",1200),
+ ("campaign",8484082,"Sasha Kim","two-model beige fashion campaign",1700),
+ ("story-portrait",3888214,"cottonbro studio","tailored beige blazer fashion",1300),
+ ("story-detail",10340652,"Kristian Bøgh","brown leather detail macro",1000),
+ ("chapter-form",10084484,"Iryna Khamulyak","neutral catwalk form",1400),
+ ("chapter-detail",9853292,"Ron Lach","atelier fabric and dress details",1400),
+ ("journal-style",19354531,"Berna","woman holding leather bag and book",1200),
+ ("journal-details",30330369,"Jimmy Elizarraras","minimalist fashion portrait",1200),
 ]
-out = Path("public/images/editorial")
-out.mkdir(parents=True, exist_ok=True)
-session = requests.Session()
-session.headers.update({"User-Agent":"Mozilla/5.0 (compatible; EditorialDemoBot/1.0)", "Accept": "image/avif,image/webp,image/*,*/*"})
-manifest = {"license":"https://unsplash.com/license", "assets":[], "failed":[]}
-for name, photo, width, photographer, subject in ASSETS:
-    url=f"https://unsplash.com/photos/{photo}/download?force=true&w={width}"
-    photo_page=f"https://unsplash.com/photos/{photo}"
-    data=None
+out=Path("public/images/editorial")
+out.mkdir(parents=True,exist_ok=True)
+session=requests.Session()
+session.headers.update({"User-Agent":"Mozilla/5.0","Accept":"image/jpeg,image/webp,image/*"})
+manifest={"license":"https://www.pexels.com/license/","source":"Pexels free editorial demo photographs","assets":[],"failed":[]}
+for name,photo_id,photographer,subject,width in PHOTOS:
+    url=f"https://images.pexels.com/photos/{photo_id}/pexels-photo-{photo_id}.jpeg?auto=compress&cs=tinysrgb&w={width}"
+    page=f"https://www.pexels.com/photo/{photo_id}/"
     error=""
+    content=None
     for attempt in range(3):
         try:
-            response=session.get(url, timeout=(20,70))
+            response=session.get(url,timeout=(20,90))
             response.raise_for_status()
             if not response.headers.get("Content-Type","").startswith("image/"):
-                raise ValueError(f"Not an image: {response.status_code} {response.url} {response.headers.get('Content-Type')}")
-            data=response.content
+                raise RuntimeError("Unexpected non-image content")
+            content=response.content
             break
-        except Exception as ex:
-            error=str(ex)
-            time.sleep(1.5*(attempt+1))
-    if not data:
-        manifest["failed"].append({"name":name,"photo":photo,"error":error})
-        print("SKIPPED", name, error, flush=True)
+        except Exception as exc:
+            error=str(exc)
+            time.sleep(1.4*(attempt+1))
+    if content is None:
+        manifest["failed"].append({"name":name,"source":page,"error":error})
+        print("FAILED",name,error,flush=True)
         continue
     try:
-        image=Image.open(io.BytesIO(data))
-        image=ImageOps.exif_transpose(image).convert("RGB")
-        if image.width > width:
-            image.thumbnail((width, max(1,int(image.height*width/image.width))), Image.Resampling.LANCZOS)
-        path=out/f"{name}.webp"
-        image.save(path,format="WEBP",quality=86,method=6)
-        manifest["assets"].append({"name":name,"file":path.as_posix(),"source":photo_page,"photographer":photographer,"subject":subject,"pixels":[image.width,image.height],"bytes":path.stat().st_size})
-        print("SAVED",path,image.size,path.stat().st_size,flush=True)
-    except Exception as ex:
-        manifest["failed"].append({"name":name,"photo":photo,"error":str(ex)})
-        print("INVALID",name,ex,flush=True)
-(out/"manifest.json").write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+"\n")
-print("RESULT",len(manifest["assets"]),"photos saved;",len(manifest["failed"]),"failed")
-if len(manifest["assets"]) < 9:
-    raise SystemExit("Insufficient editorial photography; abort to avoid committing incomplete imagery")
+        image=ImageOps.exif_transpose(Image.open(BytesIO(content))).convert("RGB")
+        if image.width>width:image.thumbnail((width,3000),Image.Resampling.LANCZOS)
+        if image.width<750 or image.height<600:
+            raise RuntimeError(f"Source resolution too small: {image.size}")
+        dest=out/f"{name}.webp"
+        image.save(dest,format="WEBP",quality=87,method=6)
+        if dest.stat().st_size<25000:
+            raise RuntimeError(f"Unexpectedly small output {dest.stat().st_size} B")
+        manifest["assets"].append({"name":name,"file":str(dest),"source":page,
+            "cdnUrl":url,"photographer":photographer,"subject":subject,
+            "pixels":[image.width,image.height],"bytes":dest.stat().st_size})
+        print("SAVED",dest,image.size,dest.stat().st_size,flush=True)
+    except Exception as exc:
+        manifest["failed"].append({"name":name,"source":page,"error":str(exc)})
+        print("INVALID",name,exc,flush=True)
+(out/"manifest.json").write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+print("ASSET RESULT",len(manifest["assets"]),"of",len(PHOTOS))
+if len(manifest["assets"])!=len(PHOTOS):
+    raise SystemExit(f"Not publishing an incomplete photo set: {len(manifest['assets'])}/{len(PHOTOS)}")
