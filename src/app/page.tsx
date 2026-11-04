@@ -4,6 +4,7 @@ import {ArrowLeft, ArrowUpLeft, Headphones, PackageCheck, RotateCcw, Truck} from
 import {loadStore,type StoreCategory} from "@/lib/live-store";
 import {ProductCard} from "@/components/ProductCard";
 import {EditorialMotion} from "@/components/EditorialMotion";
+import {HeroCarousel,type EditorialSlide} from "@/components/HeroCarousel";
 
 const editorialImages:Record<string,string>={
   clothing:"/images/editorial/category-clothing.webp",
@@ -41,38 +42,27 @@ export default async function Home(){
   const storyDetail=editorialHeading?.secondaryImageUrl||"/images/editorial/story-detail.webp";
   const storyCta=editorialHeading?.ctaHref?.startsWith("/")?editorialHeading.ctaHref:"/info/about";
   const heading=hero?.title||"زیبایی در سادگی\nاتفاق می‌افتد.";
-  const titleLines=heading.split(/\n/).filter(Boolean);
   const heroCta=hero?.ctaHref?.startsWith("/")?hero.ctaHref:"/products";
+  const heroSlides:EditorialSlide[]=[
+   {id:"edition-primary",image:heroImage,mobileImage:heroMobileImage,title:heading,
+    description:hero?.description||"انتخاب‌هایی برای کسانی که زیبایی را در جزئیات پیدا می‌کنند؛ ساده، ماندگار و به دور از تکرار.",
+    eyebrow:"کالکشن منتخب فصل",ctaLabel:hero?.ctaLabel||"کشف کالکشن",ctaHref:heroCta,alt:"کمپین اصلی کالکشن ادیتوریال"},
+   {id:"edition-form",image:storyImage,mobileImage:storyImage,title:editorialHeading?.title||"فرم‌های ساده.\\nاثر ماندگار.",
+    description:editorialHeading?.description||"آرامش در فرم و کیفیت در انتخاب؛ نگاهی تازه به استایل هر روز.",
+    eyebrow:"روایت دوم / فرم و سبک",ctaLabel:editorialHeading?.ctaLabel||"کشف داستان",ctaHref:storyCta,alt:"عکاسی مد با پالت خنثی"},
+   {id:"edition-details",image:lookbookImage,mobileImage:lookbookImage,title:firstBanner?.title||"زیبایی در\\nجزئیات است.",
+    description:firstBanner?.subtitle||"بافت، متریال و جزئیاتی که انتخاب‌های ماندگار را از دیگران متمایز می‌کنند.",
+    eyebrow:"روایت سوم / هنر جزئیات",ctaLabel:"دیدن کالکشن",ctaHref:firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags",alt:"تصویر کمپین سینمایی مد"}
+  ].filter((slide,index,array)=>array.findIndex(x=>x.image===slide.image)===index);
+
 
   return <EditorialMotion>
     <div className="ed-home">
-      <section className="ed-hero" aria-labelledby="ed-hero-title">
-        <div className="ed-hero-content">
-          <span className="ed-hero-eyebrow" data-hero-kicker><span/> THE NEW EDITION — 2026</span>
-          <p className="ed-hero-intro" data-hero-kicker>کالکشن منتخب فصل</p>
-          <h1 id="ed-hero-title">{titleLines.map((line,index)=><span className="ed-hero-line-mask" key={index}><span data-hero-line>{line}</span></span>)}</h1>
-          <p className="ed-hero-description" data-hero-description>{hero?.description||"انتخاب‌هایی برای کسانی که زیبایی را در جزئیات پیدا می‌کنند؛ ساده، ماندگار و به دور از تکرار."}</p>
-          <div className="ed-hero-links" data-hero-action>
-            <Link href={heroCta} className="ed-dark-button">{hero?.ctaLabel||"کشف کالکشن"} <ArrowUpLeft size={19} strokeWidth={1.5}/></Link>
-            <Link href="#ed-categories" className="ed-text-link">دیدن دسته‌بندی‌ها <ArrowLeft size={17}/></Link>
-          </div>
-          <div className="ed-hero-bottom" data-hero-action><span>EST. 2026</span><span className="ed-hero-bottom-line"/><span>TIMELESS BY DESIGN</span></div>
-        </div>
-        <div className="ed-hero-visual" data-hero-image>
-          <div className="ed-hero-image-mask" data-image-wipe>
-            <Image src={heroImage} alt="تصویر کالکشن ادیتوریال" fill priority unoptimized={heroImage.startsWith("http")} sizes="(max-width: 760px) 100vw, 58vw" className={`ed-hero-photo ${heroMobileImage!==heroImage?"ed-hero-desktop-photo":""}`}/>
-            {heroMobileImage!==heroImage&&<Image src={heroMobileImage} alt="" fill unoptimized={heroMobileImage.startsWith("http")} sizes="100vw" className="ed-hero-photo ed-hero-mobile-photo"/>}
-          </div>
-          
-          <span className="ed-hero-vertical">THE ART OF LIVING WELL</span>
-          <span className="ed-hero-photo-stamp">AN ESSENTIAL<br/>PERSPECTIVE</span>
-          <span className="ed-hero-number">01 / EDITION</span>
-        </div>
-      </section>
+      <HeroCarousel slides={heroSlides}/>
 
       <div className="ed-quiet-strip" aria-label="هویت کالکشن"><span>ESSENTIAL — AN EDITORIAL WARDROBE</span><span className="ed-quiet-strip-line"/><span>ISSUE NO. 02 / 2026</span></div>
 
-      <section className="ed-categories-section premium-container" id="ed-categories">
+      <section className="ed-categories-section premium-container" id="ed-categories" data-scene="categories">
         <div className="ed-section-heading" data-reveal="up">
           <div><span className="premium-eyebrow">EXPLORE THE EDITION / 01</span><h2>کالکشن را <em>کشف کنید</em></h2></div>
           <Link href="/products" className="ed-inline-link">تمام محصولات <ArrowUpLeft size={18}/></Link>
@@ -90,12 +80,12 @@ export default async function Home(){
         </div>
       </section>
 
-      <section className="ed-products-section premium-container" id="ed-selected">
+      <section className="ed-products-section premium-container" id="ed-selected" data-scene="products">
         <div className="ed-section-heading" data-reveal="up"><div><span className="premium-eyebrow">THE SELECTED PIECES / 02</span><h2>منتخب <em>این فصل</em></h2><p>قطعاتی برای امروز؛ انتخاب‌هایی برای سال‌های بعد.</p></div><Link href="/products" className="ed-inline-link">مشاهده مجموعه <ArrowUpLeft size={18}/></Link></div>
         <div className="ed-featured-grid" data-stagger>{collection.map(product=><ProductCard key={product.id} product={product}/>)}</div>
       </section>
 
-      <section className="ed-lookbook ed-full-bleed" aria-labelledby="ed-lookbook-title" data-campaign>
+      <section className="ed-lookbook ed-full-bleed" aria-labelledby="ed-lookbook-title" data-campaign data-scene="campaign">
         <div className="ed-lookbook-media" data-image-wipe><Image src={lookbookImage} alt={firstBanner?.title||"کالکشن کیف و اکسسوری چرمی"} fill sizes="100vw" unoptimized={lookbookImage.startsWith("http")} className="ed-lookbook-photo" data-parallax/></div>
         
         <div className="ed-lookbook-copy">
@@ -107,7 +97,7 @@ export default async function Home(){
         </div>
       </section>
 
-      <section className="ed-editorial-story premium-container">
+      <section className="ed-editorial-story premium-container" data-scene="story">
         <div className="ed-story-collage" data-reveal="right">
           <div className="ed-story-visual" data-image-wipe><Image src={storyImage} alt={editorialHeading?.title||"استایل کلاسیک و مینیمال"} fill sizes="(max-width: 760px) 100vw, 47vw" unoptimized={storyImage.startsWith("http")} className="ed-story-photo"/><span>AN EDITORIAL PERSPECTIVE</span></div>
           <div className="ed-story-inset"><Image src={storyDetail} alt="جزئیات استایل" fill sizes="(max-width: 760px) 35vw, 17vw" unoptimized={storyDetail.startsWith("http")}/></div>
@@ -162,7 +152,7 @@ export default async function Home(){
 
       <section className="ed-affirmation" aria-label="فلسفه برند" data-reveal="up"><span>THE EDITORIAL POINT OF VIEW</span><p>زیبایی، در <i>انتخاب‌های آگاهانه</i> است.</p><span>EST. MMXXVI — A QUIETER KIND OF LUXURY</span></section>
 
-      <section className="ed-journal premium-container" data-journal>
+      <section className="ed-journal premium-container" data-journal data-scene="journal">
         <div className="ed-section-heading"><div><span className="premium-eyebrow">THE JOURNAL / 06</span><h2>از نگاه <em>ژورنال</em></h2></div><Link href="/blog" className="ed-inline-link">ورود به ژورنال <ArrowUpLeft size={18}/></Link></div>
         <div className="ed-journal-grid" data-stagger>
           <Link href={store.articles[0]?`/blog/${store.articles[0].slug}`:"/blog"} className="ed-journal-card"><div className="ed-journal-photo"><Image src={store.articles[0]?.coverUrl||"/images/editorial/journal-style.webp"} alt="نگاهی به هنر پوشیدن" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(store.articles[0]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 01</div><h3>{store.articles[0]?.title||"هنر ساختن یک استایل ماندگار"}</h3><p>{store.articles[0]?.summary||"از پارچه‌ها و فرم‌ها تا ظرافت‌هایی که در نگاه اول دیده نمی‌شوند."}</p><span>ادامه مطلب <ArrowUpLeft size={17}/></span></Link>
