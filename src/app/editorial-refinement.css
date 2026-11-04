@@ -294,3 +294,12 @@ body{background:var(--ed-paper);color:var(--ed-ink)}
  .ed-chapter{display:none}
  .ed-mobile-chapters{display:grid}
 }
+
+@media (min-width:900px) and (prefers-reduced-motion:reduce){
+ .ed-mobile-chapter{display:grid;grid-template-columns:1fr 1fr;min-height:490px}
+ .ed-mobile-chapter-photo{position:relative;min-height:490px}
+ .ed-mobile-chapter-photo img{object-fit:cover}
+ .ed-mobile-chapter-copy{display:flex;flex-direction:column;justify-content:center;padding:70px}
+ .ed-mobile-chapter-copy h2{font-size:42px;font-weight:550;line-height:1.6}
+ .ed-mobile-chapter-copy p{font-size:13px;line-height:2.2}
+}
