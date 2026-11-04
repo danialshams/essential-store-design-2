@@ -8,7 +8,7 @@ const {spawnSync}=require("node:child_process");
 const systemChrome=spawnSync("which",["google-chrome"]).status===0;
 (async()=>{
  fs.mkdirSync("artifacts",{recursive:true});
- const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ const browser=await chromium.launch({headless:true,...(systemChrome?{channel:"chrome"}:{}),args:["--no-sandbox"]});
  try{
   const desktop=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
   const page=await desktop.newPage();
