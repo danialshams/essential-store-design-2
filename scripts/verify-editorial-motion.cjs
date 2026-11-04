@@ -117,6 +117,8 @@ const {chromium}=require("playwright");
   assert.ok(mobileHero.hero&&mobileHero.photograph&&mobileHero.copy&&mobileHero.navigation,
     "Mobile photo/copy/navigation must all be present");
   assert.ok(mobileHero.photograph.height>=240,"Editorial mobile photograph is too small");
+  assert.ok(mobileHero.copy.height<=270,
+    "The mobile hero still reserves a large empty copy panel: "+JSON.stringify(mobileHero));
   assert.ok(Math.abs(mobileHero.photograph.bottom-mobileHero.copy.top)<4,
     "Photo and text must be consecutive panels, not separate scroll chapters");
   assert.ok(mobileHero.cta.bottom<=mobileHero.navigation.top+2 &&
@@ -184,6 +186,8 @@ const {chromium}=require("playwright");
     const cta=document.querySelector(".ed-hero-links .ed-dark-button").getBoundingClientRect();
     return {navTop:nav.top,photoBottom:photo.bottom,copyBottom:copy.bottom,ctaBottom:cta.bottom};
   });
+  assert.ok(smallView.copyBottom-smallView.photoBottom<=242,
+    "Short-phone hero has excess unused space below the photograph: "+JSON.stringify(smallView));
   assert.ok(smallView.ctaBottom<=smallView.navTop+2 &&
     smallView.copyBottom<=smallView.navTop+2,
     "Hero is longer than one viewport on short mobile screens: "+JSON.stringify(smallView));
