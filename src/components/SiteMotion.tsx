@@ -38,11 +38,24 @@ export function SiteMotion({children}:{children:ReactNode}){
    return;
   }
   let alive=true;
+  // Independent viewport observer guarantees that scroll jumps cannot leave
+  // commerce images or text hidden if ScrollTrigger misses a callback.
+  const pending=new WeakMap<Element,gsap.core.Timeline>();
+  const safetyObserver=new IntersectionObserver(entries=>{
+   for(const entry of entries){
+    if(!entry.isIntersecting)continue;
+    pending.get(entry.target)?.play();
+    safetyObserver.unobserve(entry.target);
+   }
+  },{rootMargin:"0px 0px -20% 0px",threshold:0.01});
   const context=gsap.context(()=>{
    const $=gsap.utils.selector(el);
-   const inView=(node:Element,tl:gsap.core.Timeline,start="top 78%")=>
-    ScrollTrigger.create({trigger:node,start,once:true,invalidateOnRefresh:true,
+   const inView=(node:Element,tl:gsap.core.Timeline,start="top 78%")=>{
+    pending.set(node,tl);
+    safetyObserver.observe(node);
+    return ScrollTrigger.create({trigger:node,start,once:true,invalidateOnRefresh:true,
       onEnter:()=>tl.play(),onEnterBack:()=>tl.play()});
+   };
    const show=(target:Element,items:Element[],from:gsap.TweenVars={},delay=0,start="top 78%")=>{
     if(!items.length)return;
     const tl=gsap.timeline({paused:true});
@@ -156,6 +169,7 @@ export function SiteMotion({children}:{children:ReactNode}){
   window.addEventListener("load",refresh,{once:true});
   return()=>{
    alive=false;
+   safetyObserver.disconnect();
    window.removeEventListener("load",refresh);
    context.revert();
   };
