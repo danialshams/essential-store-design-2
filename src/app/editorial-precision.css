@@ -423,3 +423,30 @@ header.premium-header .premium-search-form{
 header.premium-header .premium-search-form:focus-within{
  border-bottom-color:rgba(93,69,51,.58)!important;
 }
+
+/* Photo-stage only: the category image unveils separately from its title
+   and action. The former card-level clip made the whole card snap together. */
+.ed-categories-grid .ed-category-image-stage{
+ position:absolute;
+ inset:0;
+ display:block;
+ overflow:hidden;
+ pointer-events:none;
+}
+.ed-categories-grid .ed-category-image-stage .ed-category-photo{
+ width:100%!important;
+ height:100%!important;
+ object-fit:cover!important;
+ object-position:center!important;
+}
+.ed-categories-grid .ed-cat-1 .ed-category-photo{object-position:center 37%!important}
+.ed-categories-grid .ed-cat-2 .ed-category-photo{object-position:center 55%!important}
+
+/* During a real GSAP entrance, move the clipping stage, not the card.
+   It must be observable as intermediate 10–90% partial reveal frames. */
+.ed-home [data-photo-reveal-state="playing"]:not([data-photo-reveal-complete="true"]) .ed-category-image-stage{
+ backface-visibility:hidden;
+}
+@media (prefers-reduced-motion:reduce){
+ .ed-home .ed-category-image-stage{clip-path:none!important;opacity:1!important}
+}
