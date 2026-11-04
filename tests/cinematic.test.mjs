@@ -43,7 +43,7 @@ test("High-resolution local demo photographs have explicit provenance",()=>{
  const manifest=JSON.parse(load("public/images/editorial/manifest.json"));
  assert.equal(manifest.assets.length,photos.length);
 
- assert.match(importScript,/unsplash\.com\/photos/);
+ assert.match(importScript,/pexels\.com\/photo/);
  assert.ok(existsSync("src/app/editorial-refinement.css"));
 });
 test("Client components using the shop context are client boundaries",()=>{
