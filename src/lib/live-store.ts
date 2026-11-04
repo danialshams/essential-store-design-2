@@ -35,7 +35,7 @@ export const loadStore=cache(async():Promise<StoreData>=>{
   const cats:StoreCategory[]=data.categories.map(c=>({id:c.slug,name:c.name,description:c.description||"",image:cleanUrl(c.imageUrl)||demoCategories.find(x=>x.id===c.slug)?.image||IMAGE_FALLBACK}));
   const products:Product[]=data.products.map(p=>{
    const original=demoProducts.find(x=>x.slug===p.slug);
-   const imgs=Array.isArray(p.gallery)?p.gallery.map(cleanUrl).filter((x):x is string=>Boolean(x)&&!oldDemoProductImage.has(x)):[];
+   const imgs=Array.isArray(p.gallery)?p.gallery.map(cleanUrl).filter((x):x is string=>typeof x==="string"&&!oldDemoProductImage.has(x)):[];
    const providedCover=cleanUrl(p.coverUrl);
    const cover=(providedCover&&!oldDemoProductImage.has(providedCover)?providedCover:null)||original?.image||providedCover||IMAGE_FALLBACK;
    const attrs=p.attributes && typeof p.attributes==="object" && !Array.isArray(p.attributes)?p.attributes as Record<string,unknown>:{};
