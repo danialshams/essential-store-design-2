@@ -10,9 +10,13 @@ test("Maison navigation keeps accessible focus and preserves editorial photo tra
 test("Homepage uses independent editorial art direction and all data-managed sections",()=>{
  const home=load("src/app/page.tsx");
  const data=load("src/lib/live-store.ts");
+ const carousel=load("src/components/HeroCarousel.tsx");
+ assert.match(carousel,/ed-hero-line-mask/);
+ assert.match(carousel,/aria-roledescription="carousel"/);
+ assert.match(carousel,/INTERVAL=9000/);
  const style=load("src/app/editorial-refinement.css");
  for(const key of ["mobileImageUrl","secondaryImageUrl","ctaLabel","ctaHref","layout","animation"])assert.match(data,new RegExp(key));
- for(const key of ["ed-hero-line-mask","ed-story-inset","ed-chapter","ed-mobile-chapters","data-image-wipe","data-editorial-grid","ed-admin-story"])assert.ok(home.includes(key),key);
+ for(const key of ["HeroCarousel","ed-story-inset","ed-chapter","ed-mobile-chapters","data-image-wipe","data-editorial-grid","ed-admin-story"])assert.ok(home.includes(key),key);
  assert.match(home,/hero\?\.mobileImageUrl/);
  assert.match(home,/editorialHeading\?\.secondaryImageUrl/);
  assert.match(home,/sections\.slice\(2\)\.map/);
@@ -25,7 +29,7 @@ test("Homepage uses independent editorial art direction and all data-managed sec
 });
 test("Motion is scoped, progressive, efficient and respects mobile/reduced motion",()=>{
  const motion=load("src/components/EditorialMotion.tsx");
- for(const pattern of [/prefers-reduced-motion/,/gsap\.context/,/context\.revert\(\)/,/ScrollTrigger/,/clipPath/,/once:true/,/gsap\.matchMedia/,/pin:true/,/alive=false/,/data-editorial-grid/,/data-campaign/])assert.match(motion,pattern);
+ for(const pattern of [/prefers-reduced-motion/,/gsap\.context/,/context\.revert\(\)/,/ScrollTrigger/,/clipPath/,/once:true/,/gsap\.matchMedia/,/pin:true/,/data-motion-status/,/data-editorial-grid/,/data-campaign/])assert.match(motion,pattern);
  assert.doesNotMatch(motion,/repeat:\s*-1/);
 });
 test("High-resolution local demo photographs have explicit provenance",()=>{
@@ -45,6 +49,9 @@ test("High-resolution local demo photographs have explicit provenance",()=>{
 
  assert.match(importScript,/pexels\.com\/photo/);
  assert.ok(existsSync("src/app/editorial-refinement.css"));
+ assert.ok(existsSync("src/app/cinematic-finish.css"));
+ assert.ok(existsSync("src/components/SiteMotion.tsx"));
+ assert.match(load("src/app/layout.tsx"),/SiteMotion/);
 });
 test("Client components using the shop context are client boundaries",()=>{
  for(const path of ["src/components/Header.tsx","src/components/Footer.tsx","src/components/ProductCard.tsx"]){
