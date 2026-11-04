@@ -21,25 +21,49 @@ export function EditorialMotion({children}:{children:ReactNode}){
   let alive=true;
   // IntersectionObserver is a safety net for fast wheel swipes, programmatic
   // jumps and mobile browsers that occasionally skip ScrollTrigger callbacks.
-  const pending=new WeakMap<Element,gsap.core.Timeline>();
+  const pending=new WeakMap<Element,()=>void>();
   const visibilityFallback=new IntersectionObserver(entries=>{
     for(const entry of entries){
       if(!entry.isIntersecting)continue;
-      pending.get(entry.target)?.play();
+      pending.get(entry.target)?.();
       visibilityFallback.unobserve(entry.target);
     }
-  },{root:null,rootMargin:"0px 0px -20% 0px",threshold:0.01});
+  },{root:null,rootMargin:"0px 0px -29% 0px",threshold:0.16});
   const context=gsap.context(()=>{
    const $=gsap.utils.selector(element);
    const ease="power3.out";
-   // 78% is visibly INSIDE the viewport, including on 390px mobile screens.
-   const inView=(trigger:Element,tl:gsap.core.Timeline,start="top 78%")=>{
-    pending.set(trigger,tl);
+   // A chapter starts only when its own content is genuinely visible.
+   // The reveal itself waits for image decoding. Previously the image could
+   // finish downloading AFTER its GSAP mask animation, appearing abruptly.
+   const inView=(trigger:Element,tl:gsap.core.Timeline,start="top 69%")=>{
+    let started=false;
+    let requested=false;
+    const image=(trigger instanceof HTMLImageElement?trigger:
+      trigger.querySelector("img")) as HTMLImageElement|null;
+    const play=()=>{
+     if(started||!alive)return;
+     started=true;
+     tl.play();
+    };
+    const enter=()=>{
+     if(requested)return;
+     requested=true;
+     if(!image||image.complete){play();return}
+     image.addEventListener("load",play,{once:true});
+     image.addEventListener("error",play,{once:true});
+     // Decoding the actual photograph, not just fetching its resource,
+     // ensures the user sees the wipe/zoom rather than a late image pop-in.
+     if(typeof image.decode==="function"){
+      void image.decode().then(play,()=>{
+       if(image.complete)play();
+      });
+     }
+    };
+    pending.set(trigger,enter);
     visibilityFallback.observe(trigger);
     ScrollTrigger.create({
      trigger,start,once:true,invalidateOnRefresh:true,
-     onEnter:()=>tl.play(),
-     onEnterBack:()=>tl.play()
+     onEnter:enter,onEnterBack:enter
     });
    };
    const childrenOf=(el:Element|null)=>el?Array.from(el.children):[];
@@ -108,7 +132,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
     if(copy)tl.fromTo(childrenOf(copy),{autoAlpha:0,y:16},{
       autoAlpha:1,y:0,duration:.8,stagger:.1,ease
     },.58);
-    inView(card,tl,"top 80%");
+    inView(card,tl,"top 68%");
    });
 
    // 03 / Product gallery: each tile owns a timeline; offscreen rows are not
@@ -148,7 +172,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
     },{
       autoAlpha:1,x:0,duration:.98,stagger:.16,ease
     },.5);
-    inView(campaign,tl,"top 79%");
+    inView(campaign,tl,"top 70%");
    }
 
    // 05 / Brand story: portrait and inset, then text from opposite direction.
@@ -166,12 +190,23 @@ export function EditorialMotion({children}:{children:ReactNode}){
     if(picture)imageTl.fromTo(picture,{scale:1.12},{
       scale:1,duration:1.94,ease:"power2.out",clearProps:"transform"
     },0);
-    if(detail)imageTl.fromTo(detail,{autoAlpha:0,y:58,scale:.93},{
-      autoAlpha:1,y:0,scale:1,duration:1.18,ease,clearProps:"transform"
-    },.67);
     const photoTrigger=photo||story;
-    inView(photoTrigger,imageTl,"top 79%");
-    if(copy)reveal(copy,childrenOf(copy),{x:-18,y:27},{start:"top 78%",stagger:.17});
+    inView(photoTrigger,imageTl,"top 70%");
+    // The inset sits LOWER than the primary portrait. Running its effect
+    // in the portrait timeline made the second image appear instantly later.
+    if(detail){
+     const detailTl=gsap.timeline({paused:true});
+     const insetImage=detail.querySelector("img");
+     detailTl.fromTo(detail,{autoAlpha:0,y:62,scale:.89,scaleY:.78},{
+       autoAlpha:1,y:0,scale:1,scaleY:1,duration:1.42,
+       ease:"power3.out",clearProps:"transform"
+     },0);
+     if(insetImage)detailTl.fromTo(insetImage,{scale:1.16},{
+       scale:1,duration:1.7,ease:"power2.out",clearProps:"transform"
+     },0);
+     inView(detail,detailTl,"top 69%");
+    }
+    if(copy)reveal(copy,childrenOf(copy),{x:-18,y:27},{start:"top 69%",stagger:.17});
    }
 
    // 06 / Two mobile chapters: images enter on their own; text only when
@@ -189,7 +224,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
       if(image)tl.fromTo(image,{scale:1.13},{
         scale:1,duration:1.9,ease:"power2.out",clearProps:"transform"
       },0);
-      inView(photo,tl,"top 81%");
+      inView(photo,tl,"top 69%");
     }
     if(copy)reveal(copy,childrenOf(copy),{y:28},{start:"top 77%",stagger:.18});
    });
@@ -215,7 +250,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
       if(img)tl.fromTo(img,{scaleX:1.09,scaleY:.96},{
          scaleX:1,scaleY:1,duration:1.57,ease:"power3.out",clearProps:"transform"
       },0);
-      inView(picture,tl,"top 80%");
+      inView(picture,tl,"top 70%");
     }
     if(text)reveal(text,childrenOf(text),{y:26},{start:"top 77%",stagger:.16});
    });
@@ -232,7 +267,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
         clearProps:"clipPath"
       },0);
       if(image)tl.fromTo(image,{scale:1.12},{scale:1,duration:1.8,ease:"power2.out",clearProps:"transform"},0);
-      inView(media,tl,"top 81%");
+      inView(media,tl,"top 70%");
     }
     if(text)reveal(text,childrenOf(text),{x:i%2?-18:18,y:19},{start:"top 79%"});
    });
@@ -255,7 +290,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
     if(copy.length)tl.fromTo(copy,{autoAlpha:0,y:24},{
       autoAlpha:1,y:0,duration:.91,stagger:.12,ease
     },.54);
-    inView(card,tl,"top 79%");
+    inView(card,tl,"top 69%");
    });
 
    // 10 / Trust footer: each message responds to its OWN position.
@@ -286,6 +321,18 @@ export function EditorialMotion({children}:{children:ReactNode}){
     const copy=Array.from(chapter.querySelectorAll<HTMLElement>("[data-chapter-copy]"));
     const progress=chapter.querySelector<HTMLElement>("[data-chapter-progress]");
     if(images.length!==2||copy.length!==2||!progress)return;
+    // First photograph had no entrance timeline at all. Give it an opening
+    // curtain before the user's scroll starts transitioning to Act II.
+    const opening=gsap.timeline({paused:true});
+    opening.fromTo(images[0],{clipPath:"inset(0 100% 0 0)",scaleX:1.055},{
+      clipPath:"inset(0 0 0 0)",scaleX:1,duration:1.62,
+      ease:"power3.inOut",clearProps:"clipPath,transform"
+    });
+    const firstImage=images[0].querySelector("img");
+    if(firstImage)opening.fromTo(firstImage,{scale:1.13},{
+      scale:1,duration:2.0,ease:"power2.out",clearProps:"transform"
+    },0);
+    inView(chapter,opening,"top 69%");
     gsap.set(images[1],{opacity:1,clipPath:"inset(0 0 100% 0)"});
     gsap.set(copy[1],{autoAlpha:0,y:27});
     gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
