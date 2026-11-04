@@ -18,7 +18,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
    if(!alive||!root.current)return;
    const {gsap}=module,ScrollTrigger=plugin.ScrollTrigger;
    gsap.registerPlugin(ScrollTrigger);
-   const ctx=gsap.context(()=>{
+   const context=gsap.context(()=>{
     const $=gsap.utils.selector(element);
     const hero=gsap.timeline({defaults:{ease:"power3.out"}});
     // No image opacity fade: the photograph is revealed as one continuous print.
@@ -111,7 +111,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
       .fromTo(bar,{scaleX:.06},{scaleX:1,duration:1},0);
     });
    },element);
-   teardown=()=>ctx.revert();
+   teardown=()=>context.revert();
    // The srcset and typography can change section heights after initial JS.
    const refresh=()=>{if(alive)ScrollTrigger.refresh()};
    window.addEventListener("load",refresh,{once:true});
