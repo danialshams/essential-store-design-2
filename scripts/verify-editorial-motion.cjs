@@ -51,6 +51,18 @@ const {chromium}=require("playwright");
       await page.waitForTimeout(1250);
     }
   }
+  // An aggressive scroll jump must not leave passed media masked forever.
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await page.waitForTimeout(340);
+  const maskedPassed=await page.evaluate(()=>{
+   const selectors=[".ed-category-tile",".ed-products-section .premium-product-media",
+    ".ed-lookbook-media",".ed-story-visual",".ed-journal-photo"];
+   return selectors.flatMap(selector=>Array.from(document.querySelectorAll(selector)))
+    .filter(el=>el.getBoundingClientRect().bottom<-innerHeight*.22&&
+     /100%/.test(getComputedStyle(el).clipPath))
+    .map(el=>el.className));
+  });
+  assert.deepEqual(maskedPassed,[],"Images remained clipped after fast scroll: "+maskedPassed.join(","));
   await page.screenshot({path:"artifacts/edition02-home-desktop.png",fullPage:true,animations:"disabled"});
   await page.clock.fastForward(9150);
   await page.waitForTimeout(100);
@@ -170,6 +182,13 @@ const {chromium}=require("playwright");
    const opacity=await copy.locator("h2").evaluate(el=>Number(getComputedStyle(el).opacity));
    assert.ok(opacity>.9,"Mobile chapter headline failed to animate when visible");
   }
+  await mp.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await mp.waitForTimeout(300);
+  const missedFrames=await mp.evaluate(()=>Array.from(
+   document.querySelectorAll(".ed-category-tile,.ed-products-section .premium-product-media,.ed-journal-photo")
+  ).filter(el=>el.getBoundingClientRect().bottom<-innerHeight*.22&&
+     /100%/.test(getComputedStyle(el).clipPath)).map(el=>el.className));
+  assert.deepEqual(missedFrames,[],"Some mobile photographs remained hidden after scroll");
   await mp.screenshot({path:"artifacts/edition02-home-mobile.png",fullPage:true,animations:"disabled"});
   await mp.getByRole("button",{name:"باز کردن فهرست"}).click();
   await mp.locator(".premium-drawer-root.is-open").waitFor();
