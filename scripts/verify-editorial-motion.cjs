@@ -194,19 +194,16 @@ const bringIntoRevealZone=async locator=>{
    const motion=await card.evaluate(el=>({
     state:el.getAttribute("data-photo-reveal-state"),
     photoWidth:el.querySelector("img")?.naturalWidth||0,
-    clip:getComputedStyle(el).clipPath
+    mode:el.getAttribute("data-cinematic-mode"),
+    clip:getComputedStyle(el.querySelector(".ed-category-image-stage")||el).clipPath
    }));
    assert.equal(motion.state,"playing","Card "+(index+1)+" photo did not run GSAP");
    assert.ok(motion.photoWidth>0,"Card "+(index+1)+" image was not decoded");
+   assert.ok(["up","fade","right"].includes(motion.mode),"Card missing cinematic mode");
+   // This tour can encounter an image AFTER it has already opened.
+   // The dedicated verify-physical-photo-reveal script starts a fresh page
+   // for each photo to assert real midway mask/opacity and zoom progress.
    console.log("COLLECTION PHOTO REVEAL",index+1,JSON.stringify(motion));
-   if(index===0||index===2||index===3){
-    // Capture an actual animation frame instead of merely testing the
-    // final image. Cards that simply pop in have no measurable in-between.
-    await mp.waitForTimeout(140);
-    const interpolated=await card.evaluate(el=>getComputedStyle(el).clipPath);
-    assert.ok(interpolated.startsWith("inset("),
-     "Collection "+(index+1)+" lacks a cinematic image wipe: "+interpolated);
-   }
   }
   // Verify lower editorial sections also register the photo timelines,
   // independently of their captions and text reveals.
