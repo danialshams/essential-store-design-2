@@ -251,8 +251,21 @@ export function EditorialMotion({children}:{children:ReactNode}){
          scaleX:1,scaleY:1,duration:1.57,ease:"power3.out",clearProps:"transform"
       },0);
       inView(picture,tl,"top 70%");
+      const inset=picture.querySelector(".ed-admin-story-detail");
+      if(inset){
+       const insetTl=gsap.timeline({paused:true});
+       const insetPhoto=inset.querySelector("img");
+       insetTl.fromTo(inset,{autoAlpha:0,y:53,scale:.88,scaleY:.8},{
+        autoAlpha:1,y:0,scale:1,scaleY:1,duration:1.32,
+        ease:"power3.out",clearProps:"transform"
+       },0);
+       if(insetPhoto)insetTl.fromTo(insetPhoto,{scale:1.17},{
+        scale:1,duration:1.7,ease:"power2.out",clearProps:"transform"
+       },0);
+       inView(inset,insetTl,"top 68%");
+      }
     }
-    if(text)reveal(text,childrenOf(text),{y:26},{start:"top 77%",stagger:.16});
+    if(text)reveal(text,childrenOf(text),{y:26},{start:"top 74%",stagger:.16});
    });
 
    // 08 / Extra campaign banners: alternating masked image and readable copy.
