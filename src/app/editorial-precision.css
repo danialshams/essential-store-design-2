@@ -456,3 +456,10 @@ header.premium-header .premium-search-form:focus-within{
 .ed-home [data-photo-reveal-complete="true"] img{
  transform:scale(1)!important;
 }
+
+/* Legacy hover transforms transition through our final GSAP scale and can
+   override even an !important final frame during the CSS transition.
+   GSAP owns photo transforms from entrance through completion. */
+.ed-home [data-photo-reveal-state] img{
+ transition:none!important;
+}
