@@ -46,6 +46,7 @@ export function Header(){
   // hover changes cannot allow an older image to win the race.
   const next=new window.Image();
   next.src=image;
+  if(typeof next.decode!=="function"){setMenuPhoto(image);return}
   void next.decode().then(()=>{
    if(requestedMenuPhoto.current===token)setMenuPhoto(image);
   }).catch(()=>{
