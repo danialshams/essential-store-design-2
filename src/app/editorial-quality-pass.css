@@ -310,3 +310,73 @@ html:not([data-intro-state="ready"]) .ed-hero-media-shell{
  }
  .premium-brand strong:lang(en){font-size:26px}
 }
+
+/* Final mobile fold: portrait-first storytelling without a large vacant
+   caption panel. The photograph and all hero actions remain in one viewport. */
+@media (max-width:760px){
+ .ed-hero-carousel.ed-hero{
+  display:flex!important;
+  flex-direction:column!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  grid-template-rows:none!important;
+  overflow:visible!important;
+ }
+ .ed-hero-carousel .ed-hero-visual{
+  display:block!important;
+  order:-1!important;
+  flex:none!important;
+  height:clamp(196px,min(34svh,70vw),325px)!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+ }
+ .ed-hero-carousel .ed-hero-content{
+  flex:none!important;
+  height:clamp(218px,31svh,259px)!important;
+  min-height:0!important;
+  justify-content:center!important;
+  padding:13px 21px 11px!important;
+  overflow:visible!important;
+  gap:6px!important;
+ }
+ .ed-hero-carousel .ed-hero-copy-frame{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-rows:auto auto auto!important;
+  align-content:center!important;
+  justify-content:stretch!important;
+  row-gap:9px!important;
+ }
+ .ed-hero-carousel .ed-hero-controls-row{
+  flex:0 0 auto!important;
+  min-height:32px!important;
+  padding:1px 0 0!important;
+  margin:2px 0 0!important;
+ }
+ .ed-hero-carousel .ed-hero-intro{margin:0!important}
+ .ed-hero-carousel h1{margin:0!important}
+ .ed-hero-carousel .ed-hero-description{margin:0!important}
+ .ed-categories-section{padding-top:clamp(76px,10vw,103px)!important}
+}
+@media (max-width:760px) and (max-height:740px){
+ .ed-hero-carousel.ed-hero{height:auto!important;grid-template-rows:none!important}
+ .ed-hero-carousel .ed-hero-visual{
+  height:clamp(185px,min(34svh,70vw),275px)!important;
+ }
+ .ed-hero-carousel .ed-hero-content{
+  height:clamp(214px,33svh,239px)!important;
+  padding:9px 18px 7px!important;
+ }
+ .ed-hero-carousel .ed-hero-copy-frame{row-gap:6px!important}
+ .ed-hero-carousel .ed-hero-controls-row{min-height:29px!important}
+}
+@media (max-width:760px) and (max-height:600px){
+ .ed-hero-carousel .ed-hero-visual{height:clamp(150px,29svh,190px)!important}
+ .ed-hero-carousel .ed-hero-content{height:clamp(185px,34svh,211px)!important}
+ .ed-hero-carousel .ed-hero-copy-frame{row-gap:3px!important}
+ .ed-hero-carousel h1{font-size:clamp(20px,5.8vw,25px)!important}
+ .ed-hero-carousel .ed-hero-description{font-size:9px!important;line-height:1.5!important}
+}
