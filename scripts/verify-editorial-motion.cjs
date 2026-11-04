@@ -21,6 +21,17 @@ const {chromium}=require("playwright");
   assert.ok(initialSlides>=3,"Hero must have 3 editorial slides");
   const textAnimation=await page.locator(".ed-hero-copy-frame").evaluate(el=>getComputedStyle(el).animationName);
   assert.notEqual(textAnimation,"none","Hero text has no first-load animation");
+  // Scroll every sequence as a real visitor would: full-page screenshots
+  // taken before ScrollTrigger enters the viewport incorrectly look blank.
+  const scenes=['.ed-categories-grid','#ed-selected','[data-scene="campaign"]',
+    '[data-scene="story"]','.ed-chapter','[data-scene="journal"]','.ed-benefits'];
+  for(const selector of scenes){
+    const item=page.locator(selector).first();
+    if(await item.count()){
+      await item.scrollIntoViewIfNeeded({timeout:20000});
+      await page.waitForTimeout(1250);
+    }
+  }
   await page.screenshot({path:"artifacts/edition02-home-desktop.png",fullPage:true,animations:"disabled"});
   await page.getByRole("button",{name:"اسلاید بعدی"}).click();
   await page.waitForTimeout(1600);
@@ -41,7 +52,21 @@ const {chromium}=require("playwright");
   await page.screenshot({path:"artifacts/edition02-collection-desktop.png",fullPage:true,animations:"disabled"});
   await page.goto("http://127.0.0.1:3000/product/minimal-leather-bag",{waitUntil:"domcontentloaded"});
   await page.locator(".product-main-photo img").waitFor();
-  await page.waitForTimeout(850);
+  await page.waitForFunction(()=>{
+    const image=document.querySelector(".product-main-photo img");
+    return image&&image.complete&&image.naturalWidth>0;
+  },null,{timeout:20000});
+  await page.waitForTimeout(1550);
+  const galleryStyle=await page.locator(".product-main-photo").evaluate(el=>({
+    clip:getComputedStyle(el).clipPath,
+    visible:getComputedStyle(el).visibility,
+    width:Math.round(el.getBoundingClientRect().width),
+    imageWidth:el.querySelector("img")?.naturalWidth||0
+  }));
+  assert.ok(galleryStyle.width>300&&galleryStyle.imageWidth>400,
+   "Product gallery should show an actual high-quality image: "+JSON.stringify(galleryStyle));
+  assert.ok(galleryStyle.clip==="none"||galleryStyle.clip==="inset(0px)",
+   "Product frame must not be clipped: "+JSON.stringify(galleryStyle));
   await page.screenshot({path:"artifacts/edition02-product-desktop.png",fullPage:true,animations:"disabled"});
   const imagePath=await page.locator(".product-main-photo img").getAttribute("src");
   assert.ok(imagePath&&imagePath.includes("bag-main.webp"),"Outdated low-res demo product photo");
@@ -53,6 +78,14 @@ const {chromium}=require("playwright");
   await mp.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
   await mp.locator(".ed-hero-slide.is-active").waitFor();
   await mp.waitForTimeout(1500);
+  for(const selector of ['.ed-categories-grid','#ed-selected','[data-scene="campaign"]',
+   '[data-scene="story"]','.ed-mobile-chapters','[data-scene="journal"]','.ed-benefits']){
+   const section=mp.locator(selector).first();
+   if(await section.count()){
+    await section.scrollIntoViewIfNeeded({timeout:20000});
+    await mp.waitForTimeout(800);
+   }
+  }
   await mp.screenshot({path:"artifacts/edition02-home-mobile.png",fullPage:true,animations:"disabled"});
   await mp.getByRole("button",{name:"باز کردن فهرست"}).click();
   await mp.locator(".premium-drawer-root.is-open").waitFor();
