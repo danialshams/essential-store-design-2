@@ -1,0 +1,45 @@
+name: Edition 02 real-browser cinematic QA
+on:
+  push:
+    branches: [feature/editorial-cinematic-sitewide-20261104]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: edition2-browser-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  browser-visual-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install and build Next.js
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+      - name: Install headless Chromium for real browser validation
+        run: |
+          npm install --no-save --no-package-lock playwright@latest
+          npx playwright install --with-deps chromium
+      - name: Verify GSAP timeline, hero slides, inner pages, mobile menu and capture screenshots
+        run: |
+          npm run start > /tmp/edition2-next.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/ > /dev/null; then break; fi
+            sleep 2
+          done
+          node scripts/verify-editorial-motion.cjs
+      - name: Upload full-page screenshots and runtime logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: edition02-cinematic-visual-qa
+          path: |
+            artifacts/*.png
+            /tmp/edition2-next.log
+          if-no-files-found: warn
+          retention-days: 5
