@@ -15,13 +15,13 @@ from PIL import Image, ImageOps
 # slug, Pexels public photo ID, photographer, semantic subject, target max width
 PHOTOS = [
  ("hero-main",31845548,"rasul lotfi","cream editorial fashion portrait",1600),
- ("hero-mobile",9853293,"Ron Lach","beige fashion study",1100),
- ("category-clothing",8346027,"Ron Lach","minimal clothing rail with intentional negative space",1800),
+ ("hero-mobile",36742651,"Guilherme Simão","elegant beige fashion in minimalist studio",1200),
+ ("category-clothing",8346027,"Ron Lach","minimal clothing rail with intentional negative space",2000),
  ("category-bags",8502477,"Mohamed Hergafi","brown leather handbag",1200),
  ("category-shoes",13560373,"Sandro Tavares","white sneakers",1200),
  ("category-accessories",2433862,"julie aagaard","leather accessory editorial",1200),
  ("campaign",8484082,"Sasha Kim","two-model beige fashion campaign",1700),
- ("story-portrait",3888214,"cottonbro studio","tailored beige blazer fashion",1300),
+ ("story-portrait",36829225,"Dwi Setyo","elegant beige clothing portrait in a clean studio",1400),
  ("story-detail",10340652,"Kristian Bøgh","brown leather detail macro",1000),
  ("chapter-form",10084484,"Iryna Khamulyak","neutral catwalk form",1400),
  ("chapter-detail",9853292,"Ron Lach","atelier fabric and dress details",1400),
@@ -59,7 +59,7 @@ for name,photo_id,photographer,subject,width in PHOTOS:
         if image.width<750 or image.height<600:
             raise RuntimeError(f"Source resolution too small: {image.size}")
         dest=out/f"{name}.webp"
-        image.save(dest,format="WEBP",quality=87,method=6)
+        image.save(dest,format="WEBP",quality=90 if name=="category-clothing" else 87,method=6)
         if dest.stat().st_size<25000:
             raise RuntimeError(f"Unexpectedly small output {dest.stat().st_size} B")
         manifest["assets"].append({"name":name,"file":str(dest),"source":page,
