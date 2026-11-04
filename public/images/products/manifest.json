@@ -1,0 +1,87 @@
+{
+  "license": "https://www.pexels.com/license/",
+  "type": "visual demo only; not representations of real products",
+  "assets": [
+    {
+      "name": "bag-main",
+      "file": "public/images/products/bag-main.webp",
+      "source": "https://www.pexels.com/photo/22434775/",
+      "photographer": "Muneeb Malhotra",
+      "description": "leather handbags studio",
+      "width": 1600,
+      "height": 2263,
+      "bytes": 245774
+    },
+    {
+      "name": "sneakers-main",
+      "file": "public/images/products/sneakers-main.webp",
+      "source": "https://www.pexels.com/photo/14174467/",
+      "photographer": "Luis Quintero",
+      "description": "neutral modern sneaker product",
+      "width": 1600,
+      "height": 2400,
+      "bytes": 94232
+    },
+    {
+      "name": "shirt-blue",
+      "file": "public/images/products/shirt-blue.webp",
+      "source": "https://www.pexels.com/photo/9558723/",
+      "photographer": "MART PRODUCTION",
+      "description": "blue button-up shirt on rack",
+      "width": 1600,
+      "height": 2400,
+      "bytes": 72944
+    },
+    {
+      "name": "watch-main",
+      "file": "public/images/products/watch-main.webp",
+      "source": "https://www.pexels.com/photo/30838490/",
+      "photographer": "Erik Mclean",
+      "description": "minimal white-face leather watch",
+      "width": 1600,
+      "height": 2400,
+      "bytes": 113546
+    },
+    {
+      "name": "bag-everyday",
+      "file": "public/images/products/bag-everyday.webp",
+      "source": "https://www.pexels.com/photo/26316180/",
+      "photographer": "Gül Işık",
+      "description": "leather handbag editorial",
+      "width": 1600,
+      "height": 2400,
+      "bytes": 252454
+    },
+    {
+      "name": "sneakers-urban",
+      "file": "public/images/products/sneakers-urban.webp",
+      "source": "https://www.pexels.com/photo/1456735/",
+      "photographer": "Ray Piedra",
+      "description": "beige lifestyle sneakers",
+      "width": 1600,
+      "height": 1067,
+      "bytes": 117256
+    },
+    {
+      "name": "shirt-beige",
+      "file": "public/images/products/shirt-beige.webp",
+      "source": "https://www.pexels.com/photo/11671275/",
+      "photographer": "Marina Podrez",
+      "description": "beige linen shirt on rack",
+      "width": 1600,
+      "height": 2400,
+      "bytes": 47744
+    },
+    {
+      "name": "sunglasses-main",
+      "file": "public/images/products/sunglasses-main.webp",
+      "source": "https://www.pexels.com/photo/29538715/",
+      "photographer": "Amar Preciado",
+      "description": "tortoiseshell sunglasses on beige",
+      "width": 1600,
+      "height": 1067,
+      "bytes": 33880
+    }
+  ],
+  "failed": []
+}
