@@ -3,21 +3,37 @@
 import Link from "next/link";
 import Image from "next/image";
 import {usePathname,useRouter} from "next/navigation";
-import {useEffect,useRef,useState,type FormEvent,type KeyboardEvent as ReactKeyboardEvent} from "react";
+import {useEffect,useMemo,useRef,useState,type FormEvent,type KeyboardEvent as ReactKeyboardEvent} from "react";
 import {ArrowLeft,ArrowUpLeft,Heart,Search,ShoppingBag,UserRound,X} from "lucide-react";
 import {useShop} from "@/components/ShopProvider";
+import {toman} from "@/lib/catalog";
 
 const fallbackPhoto="/images/editorial/category-bags.webp";
+const normalizeSearch=(value:string)=>value.normalize("NFKC").toLocaleLowerCase("fa")
+ .replace(/[يى]/g,"ی").replace(/ك/g,"ک").replace(/\u200c/g," ")
+ .replace(/[ًٌٍَُِّْ]/g,"").replace(/\s+/g," ").trim();
 const demoCategoryImages:Record<string,string>={clothing:"/images/editorial/category-clothing.webp",bags:"/images/editorial/category-bags.webp",shoes:"/images/editorial/category-shoes.webp",accessories:"/images/editorial/category-accessories.webp"};
 export function Header(){
  const pathname=usePathname(),router=useRouter();
  const {store,count,favorites}=useShop();
  const [menuOpen,setMenuOpen]=useState(false),[searchOpen,setSearchOpen]=useState(false);
  const [query,setQuery]=useState(""),[menuPhoto,setMenuPhoto]=useState(fallbackPhoto);
- const searchRef=useRef<HTMLInputElement>(null),closeRef=useRef<HTMLButtonElement>(null),menuButton=useRef<HTMLButtonElement>(null);
+ const [selectedSearch,setSelectedSearch]=useState(0);
+ const searchRef=useRef<HTMLInputElement>(null),searchPanelRef=useRef<HTMLDivElement>(null),searchTriggerRef=useRef<HTMLButtonElement>(null),closeRef=useRef<HTMLButtonElement>(null),menuButton=useRef<HTMLButtonElement>(null);
  const requestedMenuPhoto=useRef(0);
  const name=store.settings.storeName||"مزون";
  const firstCategory=store.categories[0];
+ const normalizedQuery=normalizeSearch(query);
+ const results=useMemo(()=>{
+  if(!normalizedQuery)return [];
+  const terms=normalizedQuery.split(" ");
+  return store.products.filter(product=>{
+   const haystack=normalizeSearch([
+    product.name,product.subtitle,product.categoryLabel,product.sku
+   ].join(" "));
+   return terms.every(term=>haystack.includes(term));
+  }).slice(0,7);
+ },[normalizedQuery,store.products]);
  const menuItems=[
   {label:"صفحه اصلی",href:"/",image:"/images/editorial/hero-main.webp"},
   {label:"کالکشن‌ها",href:"/products",image:"/images/editorial/category-clothing.webp"},
@@ -40,6 +56,16 @@ export function Header(){
   return()=>{document.body.style.overflow=old;menuButton.current?.focus()};
  },[menuOpen]);
  useEffect(()=>{if(searchOpen)searchRef.current?.focus()},[searchOpen]);
+ useEffect(()=>{
+  if(!searchOpen)return;
+  const onPointerDown=(event:PointerEvent)=>{
+   const target=event.target as Node;
+   if(searchPanelRef.current?.contains(target)||searchTriggerRef.current?.contains(target))return;
+   setSearchOpen(false);
+  };
+  document.addEventListener("pointerdown",onPointerDown);
+  return()=>document.removeEventListener("pointerdown",onPointerDown);
+ },[searchOpen]);
  function showMenuPhoto(image:string){
   const token=++requestedMenuPhoto.current;
   // Decode the incoming photograph before swapping the visible one. Quick
@@ -53,7 +79,23 @@ export function Header(){
    if(requestedMenuPhoto.current===token)setMenuPhoto(image);
   });
  }
- function submit(event:FormEvent){event.preventDefault();router.push(`/products${query.trim()?`?q=${encodeURIComponent(query.trim())}`:""}`);setSearchOpen(false)}
+ function submit(event:FormEvent){
+  event.preventDefault();
+  if(results.length){
+   const chosen=results[Math.min(selectedSearch,results.length-1)];
+   router.push("/product/"+encodeURIComponent(chosen.slug));
+  }else if(normalizedQuery){
+   router.push("/products?q="+encodeURIComponent(query.trim()));
+  }
+  setSearchOpen(false);
+ }
+ function searchKeyDown(event:ReactKeyboardEvent<HTMLInputElement>){
+  if(event.key==="ArrowDown"&&results.length){
+   event.preventDefault();setSelectedSearch(v=>(v+1)%results.length);
+  }else if(event.key==="ArrowUp"&&results.length){
+   event.preventDefault();setSelectedSearch(v=>(v-1+results.length)%results.length);
+  }
+ }
  function trapMenuFocus(event:ReactKeyboardEvent<HTMLElement>){
   if(event.key!=="Tab")return;
   const focusable=Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href],button:not([disabled])'));
@@ -72,13 +114,40 @@ export function Header(){
     </div>
     <Link href="/" className="premium-brand" aria-label={`${name}، صفحه اصلی`}>{store.settings.logoUrl&&<Image src={store.settings.logoUrl} width={37} height={37} alt="" unoptimized className="premium-logo-img"/>}<strong lang={/[\u0600-\u06FF]/.test(name)?"fa":"en"}>{name}</strong><span>THE EDITORIAL STORE</span></Link>
     <div className="premium-header-left">
-     <button type="button" className="premium-icon" onClick={()=>setSearchOpen(v=>!v)} aria-expanded={searchOpen} aria-label="جستجو"><Search size={20} strokeWidth={1.5}/></button>
+     <button ref={searchTriggerRef} type="button" className="premium-icon" onClick={()=>setSearchOpen(v=>!v)} aria-expanded={searchOpen} aria-controls="premium-search-panel" aria-label="جستجو"><Search size={20} strokeWidth={1.5}/></button>
      <Link href="/account" className="premium-icon premium-user-action" aria-label="حساب کاربری"><UserRound size={20} strokeWidth={1.5}/></Link>
      <Link href="/account" className="premium-icon premium-heart-action" aria-label={`علاقه‌مندی‌ها (${favorites.length})`}><Heart size={20} strokeWidth={1.5}/></Link>
      <Link href="/cart" className="premium-icon premium-cart-action" aria-label={`سبد خرید، ${count} کالا`}><ShoppingBag size={21} strokeWidth={1.5}/>{count>0&&<span className="premium-cart-count">{count.toLocaleString("fa-IR")}</span>}</Link>
     </div>
    </div>
-   <div className={`premium-search-panel ${searchOpen?"is-open":""}`} aria-hidden={!searchOpen}><form className="premium-search-form premium-container" onSubmit={submit} role="search"><Search size={20} strokeWidth={1.5}/><input ref={searchRef} aria-label="جستجوی محصول" value={query} onChange={event=>setQuery(event.target.value)} placeholder="دنبال چه چیزی می‌گردید؟" tabIndex={searchOpen?0:-1}/><button type="submit" tabIndex={searchOpen?0:-1}>جستجو <ArrowLeft size={17}/></button><button type="button" aria-label="بستن جستجو" onClick={()=>setSearchOpen(false)} tabIndex={searchOpen?0:-1}><X size={19}/></button></form></div>
+   <div id="premium-search-panel" ref={searchPanelRef} className={`premium-search-panel ${searchOpen?"is-open":""}`} aria-hidden={!searchOpen} inert={!searchOpen}>
+    <form className="premium-search-form premium-container" onSubmit={submit} role="search" autoComplete="off">
+     <Search size={19} strokeWidth={1.4} aria-hidden="true"/>
+     <input ref={searchRef} aria-label="جستجوی محصول" role="combobox" aria-autocomplete="list"
+      aria-expanded={searchOpen&&Boolean(normalizedQuery)} aria-controls="premium-search-results"
+      aria-activedescendant={normalizedQuery&&results.length?`premium-search-item-${selectedSearch}`:undefined}
+      value={query} onChange={event=>{setQuery(event.target.value);setSelectedSearch(0)}}
+      onKeyDown={searchKeyDown} placeholder="دنبال چه چیزی می‌گردید؟" tabIndex={searchOpen?0:-1}/>
+     <button type="button" aria-label="بستن جستجو" onClick={()=>setSearchOpen(false)}
+      tabIndex={searchOpen?0:-1}><X size={20} strokeWidth={1.4}/></button>
+    </form>
+    {normalizedQuery&&<div id="premium-search-results" className="premium-search-results premium-container"
+      role="listbox" aria-label="نتایج لحظه‌ای محصولات" aria-live="polite">
+     {results.length?results.map((product,index)=>
+      <Link href={`/product/${product.slug}`} key={product.id} id={`premium-search-item-${index}`}
+       role="option" aria-selected={selectedSearch===index}
+       className={`premium-search-result ${selectedSearch===index?"is-selected":""}`}
+       tabIndex={searchOpen?0:-1}
+       onMouseEnter={()=>setSelectedSearch(index)} onClick={()=>setSearchOpen(false)}>
+       <Image src={product.image} width={52} height={60} alt="" loading="lazy"
+        unoptimized={product.image.startsWith("http")}/>
+       <span className="premium-search-result-copy"><strong>{product.name}</strong>
+        <small>{product.categoryLabel} · {toman(product.price)}</small></span>
+       <ArrowUpLeft size={17} strokeWidth={1.3}/>
+      </Link>
+     ):<p className="premium-search-empty" role="status">محصولی با این عبارت پیدا نشد.</p>}
+    </div>}
+   </div>
   </header>
   <div id="maison-menu" className={`premium-drawer-root ${menuOpen?"is-open":""}`} aria-hidden={!menuOpen} inert={!menuOpen}>
    <button type="button" className="premium-drawer-backdrop" onClick={()=>setMenuOpen(false)} aria-label="بستن منو" tabIndex={menuOpen?0:-1}/>
