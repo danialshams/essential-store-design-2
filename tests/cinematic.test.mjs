@@ -76,3 +76,27 @@ test("Client components using the shop context are client boundaries",()=>{
   if(src.includes("useShop"))assert.match(src,/^"use client";/);
  }
 });
+
+test("Editorial QA keeps full-image framing and reveals behind the first-load curtain",()=>{
+ const header=load("src/components/Header.tsx");
+ const hero=load("src/components/HeroCarousel.tsx");
+ const home=load("src/app/page.tsx");
+ const site=load("src/components/SiteMotion.tsx");
+ const motion=load("src/components/EditorialMotion.tsx");
+ const css=load("src/app/editorial-quality-pass.css");
+ const layout=load("src/app/layout.tsx");
+ assert.doesNotMatch(header,/<span>CLOSE<\/span>/);
+ assert.match(hero,/ed-hero-backdrop/);
+ assert.match(home,/heroWide\(/);
+ assert.match(layout,/editorial-quality-pass\.css/);
+ assert.match(site,/maison-intro/);
+ assert.match(site,/document\.fonts/);
+ assert.match(motion,/image\.decode\(\)/);
+ assert.match(motion,/Promise\.race\(\[decoded,fallback\]\)/);
+ assert.match(css,/\.ed-category-photo[^{}]*\{/);
+ assert.match(css,/object-fit:contain!important/);
+ assert.match(css,/ed-lookbook\.ed-full-bleed/);
+ assert.match(css,/grid-template-columns:minmax\(0,1\.12fr\) minmax\(0,\.88fr\)/);
+ assert.match(css,/font-family:var\(--ed-farsi\)/);
+ assert.match(css,/maison-write/);
+});
