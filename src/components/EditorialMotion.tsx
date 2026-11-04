@@ -29,13 +29,14 @@ export function EditorialMotion({children}:{children:ReactNode}){
       visibilityFallback.unobserve(entry.target);
     }
   },{root:null,rootMargin:"0px 0px -29% 0px",threshold:0.16});
+  const registered:Array<{node:Element;enter:()=>void}>=[];
   const context=gsap.context(()=>{
    const $=gsap.utils.selector(element);
    const ease="power3.out";
    // A chapter starts only when its own content is genuinely visible.
    // The reveal itself waits for image decoding. Previously the image could
    // finish downloading AFTER its GSAP mask animation, appearing abruptly.
-   const registered:Array<{node:Element;enter:()=>void}>=[];
+
    const inView=(trigger:Element,tl:gsap.core.Timeline,start="top 85%")=>{
     let started=false;
     let requested=false;
