@@ -12,6 +12,7 @@ import "./editorial-refinement.css";
 import "./cinematic-finish.css";
 import "./editorial-motion-polish.css";
 import "./editorial-mobile-hero.css";
+import "./editorial-quality-pass.css";
 export async function generateMetadata():Promise<Metadata>{const store=await loadStore();return {title:{default:store.settings.seoTitle||store.settings.storeName,template:`%s | ${store.settings.storeName}`},description:store.settings.seoDescription||store.settings.description,robots:{index:store.live,follow:store.live}};}
 export const viewport:Viewport={width:"device-width",initialScale:1,themeColor:"#ffffff"};
 export const dynamic="force-dynamic";

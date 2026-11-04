@@ -29,13 +29,15 @@ export function EditorialMotion({children}:{children:ReactNode}){
       visibilityFallback.unobserve(entry.target);
     }
   },{root:null,rootMargin:"0px 0px -29% 0px",threshold:0.16});
+  const registered:Array<{node:Element;enter:()=>void}>=[];
   const context=gsap.context(()=>{
    const $=gsap.utils.selector(element);
    const ease="power3.out";
    // A chapter starts only when its own content is genuinely visible.
    // The reveal itself waits for image decoding. Previously the image could
    // finish downloading AFTER its GSAP mask animation, appearing abruptly.
-   const inView=(trigger:Element,tl:gsap.core.Timeline,start="top 69%")=>{
+
+   const inView=(trigger:Element,tl:gsap.core.Timeline,start="top 85%")=>{
     let started=false;
     let requested=false;
     const image=(trigger instanceof HTMLImageElement?trigger:
@@ -46,20 +48,25 @@ export function EditorialMotion({children}:{children:ReactNode}){
      tl.play();
     };
     const enter=()=>{
-     if(requested)return;
+     if(requested||!alive)return;
      requested=true;
-     if(!image||image.complete){play();return}
-     image.addEventListener("load",play,{once:true});
-     image.addEventListener("error",play,{once:true});
-     // Decoding the actual photograph, not just fetching its resource,
-     // ensures the user sees the wipe/zoom rather than a late image pop-in.
-     if(typeof image.decode==="function"){
-      void image.decode().then(play,()=>{
-       if(image.complete)play();
+     if(!image){play();return}
+     // .complete and the 'load' event do not guarantee a decoded frame.
+     // Previously both paths started the wipe before the image was paintable.
+     const decoded=typeof image.decode==="function"?
+      image.decode().then(()=>undefined,()=>undefined):
+      new Promise<void>(resolve=>{
+       if(image.complete){resolve();return}
+       image.addEventListener("load",()=>resolve(),{once:true});
+       image.addEventListener("error",()=>resolve(),{once:true});
       });
-     }
+     const fallback=new Promise<void>(resolve=>setTimeout(resolve,3200));
+     void Promise.race([decoded,fallback]).then(()=>{
+      if(alive)requestAnimationFrame(play);
+     });
     };
     pending.set(trigger,enter);
+    registered.push({node:trigger,enter});
     visibilityFallback.observe(trigger);
     ScrollTrigger.create({
      trigger,start,once:true,invalidateOnRefresh:true,
@@ -359,6 +366,24 @@ export function EditorialMotion({children}:{children:ReactNode}){
    });
   },element);
   element.dataset.motionStatus="ready";
+  // On abrupt scroll jumps, elements can pass the observer between frames.
+  // Bring already-passed scenes to their finished visible state, and start
+  // every scene currently in the viewport without relying on one callback.
+  const scan=()=>{
+   if(!alive)return;
+   for(const {node,enter} of registered){
+    const rect=node.getBoundingClientRect();
+    if(rect.top<window.innerHeight*.93 && rect.bottom>0)enter();
+    else if(rect.bottom<=0){enter();}
+   }
+  };
+  let scanFrame=0;
+  const onScroll=()=>{
+   if(scanFrame||!alive)return;
+   scanFrame=requestAnimationFrame(()=>{scanFrame=0;scan()});
+  };
+  const firstFrame=requestAnimationFrame(scan);
+  window.addEventListener("scroll",onScroll,{passive:true});
 
   // Existing image dimensions are reserved by Next.js. Refresh only on
   // typography settling, orientation changes and actual browser load.
@@ -369,6 +394,9 @@ export function EditorialMotion({children}:{children:ReactNode}){
   return()=>{
    alive=false;
    visibilityFallback.disconnect();
+   cancelAnimationFrame(firstFrame);
+   if(scanFrame)cancelAnimationFrame(scanFrame);
+   window.removeEventListener("scroll",onScroll);
    window.removeEventListener("load",refresh);
    window.removeEventListener("orientationchange",refresh);
    context.revert();

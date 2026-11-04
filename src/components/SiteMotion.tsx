@@ -1,6 +1,7 @@
 "use client";
-import {useLayoutEffect,useRef,type ReactNode} from "react";
+import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from "react";
 import {usePathname} from "next/navigation";
+import {useShop} from "@/components/ShopProvider";
 import gsap from "gsap";
 import {ScrollTrigger} from "gsap/ScrollTrigger";
 
@@ -9,6 +10,36 @@ export function SiteMotion({children}:{children:ReactNode}){
  const root=useRef<HTMLDivElement>(null);
  const previousPath=useRef<string|null>(null);
  const pathname=usePathname();
+ const {store}=useShop();
+ const [introPhase,setIntroPhase]=useState<"loading"|"leaving"|"done">("loading");
+
+ // A single, restrained first-visit curtain. Start hero choreography only
+ // when its lead photograph and fonts are ready, or after a bounded fallback.
+ useEffect(()=>{
+  let disposed=false;
+  let exitTimer:ReturnType<typeof setTimeout>|undefined;
+  const delay=(ms:number)=>new Promise<void>(resolve=>setTimeout(resolve,ms));
+  const firstPhoto=document.querySelector<HTMLImageElement>(".ed-hero-slide.is-active .ed-hero-photo:not(.ed-hero-backdrop)");
+  const leadImage=firstPhoto?(typeof firstPhoto.decode==="function"
+   ?firstPhoto.decode().then(()=>undefined,()=>undefined)
+   :new Promise<void>(resolve=>{
+      if(firstPhoto.complete){resolve();return}
+      firstPhoto.addEventListener("load",()=>resolve(),{once:true});
+      firstPhoto.addEventListener("error",()=>resolve(),{once:true});
+     })):Promise.resolve();
+  const fonts=document.fonts?.ready?.then(()=>undefined,()=>undefined)??Promise.resolve();
+  const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  void Promise.all([
+   delay(reduced?90:1000),
+   Promise.race([Promise.all([leadImage,fonts]),delay(2800)])
+  ]).then(()=>{
+   if(disposed)return;
+   document.documentElement.dataset.introState="ready";
+   setIntroPhase("leaving");
+   exitTimer=setTimeout(()=>{if(!disposed)setIntroPhase("done")},780);
+  });
+  return()=>{disposed=true;if(exitTimer)clearTimeout(exitTimer)};
+ },[]);
 
  useLayoutEffect(()=>{
   const previous=previousPath.current;
@@ -175,5 +206,10 @@ export function SiteMotion({children}:{children:ReactNode}){
   };
  },[pathname]);
 
- return <div ref={root} className="editorial-page-shell" data-page-motion="initial">{children}</div>;
+ return <>
+  {introPhase!=="done"&&<div className={`maison-intro ${introPhase==="leaving"?"is-leaving":""}`} role="status" aria-label="در حال آماده‌سازی مجموعه" aria-live="polite">
+   <div className="maison-intro-center"><span className="maison-intro-kicker">THE EDITION / 02</span><span className="maison-intro-word">{store.settings.storeName||"THE EDITION"}</span><span className="maison-intro-rule"/><span className="maison-intro-caption">یک روایت از سادگی</span></div>
+  </div>}
+  <div ref={root} className="editorial-page-shell" data-page-motion="initial">{children}</div>
+ </>;
 }

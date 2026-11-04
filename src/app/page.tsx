@@ -13,7 +13,7 @@ const editorialImages:Record<string,string>={
   accessories:"/images/editorial/category-accessories.webp",
 };
 const fallbackEditorial={
-  hero:"/images/editorial/hero-main.webp",
+  hero:"/images/editorial/category-clothing.webp",
   portrait:"/images/editorial/story-portrait.webp",
   bag:"/images/editorial/story-detail.webp",
 };
@@ -40,7 +40,13 @@ export default async function Home(){
   const sections=[...(store.settings.homeSections||[])].filter(section=>section.enabled).sort((a,b)=>a.position-b.position);
   const hero=sections[0];
   const heroImage=editorialPhoto(hero?.imageUrl,fallbackEditorial.hero);
-  const heroMobileImage=editorialPhoto(hero?.mobileImageUrl,(hero?.imageUrl&&!legacyDemoArt.has(hero.imageUrl))?heroImage:"/images/editorial/hero-mobile.webp");
+  const heroMobileImage=editorialPhoto(hero?.mobileImageUrl,(hero?.imageUrl&&!legacyDemoArt.has(hero.imageUrl))?heroImage:fallbackEditorial.hero);
+  // The old 2:3 campaign portraits were heavily cropped in the new wide hero.
+  // Use locally hosted landscape art for demo imagery while retaining merchant uploads.
+  const heroWide=(image:string,landscape:string)=>[
+   "/images/editorial/hero-main.webp","/images/editorial/hero-mobile.webp",
+   "/images/editorial/story-portrait.webp","/images/editorial/campaign.webp"
+  ].includes(image)?landscape:image;
   const featured=store.products.filter(p=>p.featured).slice(0,4);
   const collection=featured.length>=4?featured:store.products.slice(0,4);
   const firstBanner=store.banners[0];
@@ -53,13 +59,13 @@ export default async function Home(){
   const heading=hero?.title||"زیبایی در سادگی\nاتفاق می‌افتد.";
   const heroCta=hero?.ctaHref?.startsWith("/")?hero.ctaHref:"/products";
   const heroSlides:EditorialSlide[]=[
-   {id:"edition-primary",image:heroImage,mobileImage:heroMobileImage,title:heading,
+   {id:"edition-primary",image:heroWide(heroImage,fallbackEditorial.hero),mobileImage:heroWide(heroMobileImage,fallbackEditorial.hero),title:heading,
     description:hero?.description||"انتخاب‌هایی برای کسانی که زیبایی را در جزئیات پیدا می‌کنند؛ ساده، ماندگار و به دور از تکرار.",
     eyebrow:"کالکشن منتخب فصل",ctaLabel:hero?.ctaLabel||"کشف کالکشن",ctaHref:heroCta,alt:"کمپین اصلی کالکشن ادیتوریال"},
-   {id:"edition-form",image:storyImage,mobileImage:storyImage,title:editorialHeading?.title||"فرم‌های ساده.\nاثر ماندگار.",
+   {id:"edition-form",image:heroWide(storyImage,"/images/editorial/story-detail.webp"),mobileImage:heroWide(storyImage,"/images/editorial/story-detail.webp"),title:editorialHeading?.title||"فرم‌های ساده.\nاثر ماندگار.",
     description:editorialHeading?.description||"آرامش در فرم و کیفیت در انتخاب؛ نگاهی تازه به استایل هر روز.",
     eyebrow:"روایت دوم / فرم و سبک",ctaLabel:editorialHeading?.ctaLabel||"کشف داستان",ctaHref:storyCta,alt:"عکاسی مد با پالت خنثی"},
-   {id:"edition-details",image:lookbookImage,mobileImage:lookbookImage,title:firstBanner?.title||"زیبایی در\nجزئیات است.",
+   {id:"edition-details",image:heroWide(lookbookImage,"/images/editorial/chapter-detail.webp"),mobileImage:heroWide(lookbookImage,"/images/editorial/chapter-detail.webp"),title:firstBanner?.title||"زیبایی در\nجزئیات است.",
     description:firstBanner?.subtitle||"بافت، متریال و جزئیاتی که انتخاب‌های ماندگار را از دیگران متمایز می‌کنند.",
     eyebrow:"روایت سوم / هنر جزئیات",ctaLabel:"دیدن کالکشن",ctaHref:firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags",alt:"تصویر کمپین سینمایی مد"}
   ]; // Always retain all three stories; even matching merchant photos have distinct copy.

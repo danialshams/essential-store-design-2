@@ -83,7 +83,7 @@ export function Header(){
   <div id="maison-menu" className={`premium-drawer-root ${menuOpen?"is-open":""}`} aria-hidden={!menuOpen} inert={!menuOpen}>
    <button type="button" className="premium-drawer-backdrop" onClick={()=>setMenuOpen(false)} aria-label="بستن منو" tabIndex={menuOpen?0:-1}/>
    <aside className="premium-drawer" aria-label="فهرست فروشگاه" onKeyDown={trapMenuFocus}>
-    <div className="premium-drawer-head"><span>THE MAISON / EDITION 02</span><button ref={closeRef} type="button" onClick={()=>setMenuOpen(false)} aria-label="بستن منو"><X size={23} strokeWidth={1.4}/><span>CLOSE</span></button></div>
+    <div className="premium-drawer-head"><span>THE MAISON / EDITION 02</span><button ref={closeRef} type="button" onClick={()=>setMenuOpen(false)} aria-label="بستن منو"><X size={23} strokeWidth={1.4}/></button></div>
     <div className="premium-drawer-layout">
      <div className="premium-drawer-text">
       <span className="premium-drawer-eyebrow">فهرست کالکشن‌ها / DISCOVER</span>
