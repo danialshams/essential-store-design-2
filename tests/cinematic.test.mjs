@@ -42,7 +42,7 @@ test("Mobile hero is one editorial viewport with its own controls and normalized
  assert.match(component,/titleLines\(slide.title\)/);
  assert.match(component,/title\.replace\(/);
  assert.match(css,/grid-template-rows:minmax\(0,54%\) minmax\(0,46%\)/);
- assert.match(css,/height:calc\(100svh - 90px - 59px\)/);
+ assert.match(css,/height:calc\(100svh - 90px - 66px - env\(safe-area-inset-bottom\)\)/);
  assert.match(css,/max-height:740px/);
  assert.match(motion,/image\.decode\(\)/);
  assert.match(motion,/inView\(detail,detailTl/);
