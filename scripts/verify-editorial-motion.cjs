@@ -99,15 +99,34 @@ const {chromium}=require("playwright");
   await mp.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
   await mp.locator(".ed-hero-slide.is-active").waitFor();
   await mp.waitForTimeout(1500);
-  const quiet=mp.locator(".ed-quiet-strip");
-  const quietInitial=await quiet.locator("span").first().evaluate(el=>
-    Number(getComputedStyle(el).opacity));
-  assert.ok(quietInitial<.9,"Under-hero interlude animated before it entered the mobile viewport");
-  await quiet.scrollIntoViewIfNeeded();
-  await mp.waitForTimeout(1450);
-  const quietVisible=await quiet.locator("span").first().evaluate(el=>
-    Number(getComputedStyle(el).opacity));
-  assert.ok(quietVisible>.92,"Under-hero interlude never appeared on entering viewport");
+  assert.equal(await mp.locator(".ed-quiet-strip").count(),0,
+    "Redundant strip under the hero must be removed");
+  const mobileHero=await mp.evaluate(()=>{
+    const rect=selector=>{
+      const node=document.querySelector(selector);
+      if(!node)return null;
+      const box=node.getBoundingClientRect();
+      return {top:box.top,bottom:box.bottom,height:box.height};
+    };
+    return {viewport:window.innerHeight,hero:rect(".ed-hero-carousel"),
+      photograph:rect(".ed-hero-visual"),copy:rect(".ed-hero-content"),
+      title:rect(".ed-hero-copy-frame h1"),cta:rect(".ed-hero-links .ed-dark-button"),
+      controls:rect(".ed-hero-controls-row"),navigation:rect(".premium-bottom-nav"),
+      heroText:document.querySelector(".ed-hero-copy-frame h1")?.textContent||""};
+  });
+  assert.ok(mobileHero.hero&&mobileHero.photograph&&mobileHero.copy&&mobileHero.navigation,
+    "Mobile photo/copy/navigation must all be present");
+  assert.ok(mobileHero.photograph.height>=240,"Editorial mobile photograph is too small");
+  assert.ok(Math.abs(mobileHero.photograph.bottom-mobileHero.copy.top)<4,
+    "Photo and text must be consecutive panels, not separate scroll chapters");
+  assert.ok(mobileHero.cta.bottom<=mobileHero.navigation.top+10 &&
+    mobileHero.controls.bottom<=mobileHero.navigation.top+10,
+    "Mobile customer cannot see photo, copy and slide controls together: "+JSON.stringify(mobileHero));
+  assert.ok(!mobileHero.heroText.includes("\\n"),
+    "Hero title leaked a literal backslash-n escape");
+  await mp.screenshot({path:"artifacts/edition02-mobile-hero-first-fold.png",
+    fullPage:false,animations:"disabled"});
+  console.log("MOBILE HERO IN ONE VIEW",JSON.stringify(mobileHero));
   for(const selector of ['.ed-categories-grid','#ed-selected','[data-scene="campaign"]',
    '[data-scene="story"]','.ed-mobile-chapters','[data-scene="journal"]','.ed-benefits']){
    const section=mp.locator(selector).first();
@@ -116,6 +135,18 @@ const {chromium}=require("playwright");
     await mp.waitForTimeout(800);
    }
   }
+  // The smaller inset previously finished its animation before reaching
+  // the viewport. It must be visible and independently resolved afterward.
+  const inset=mp.locator(".ed-story-inset");
+  await inset.scrollIntoViewIfNeeded();
+  await mp.waitForTimeout(1800);
+  const insetState=await inset.evaluate(el=>({
+    opacity:Number(getComputedStyle(el).opacity),
+    width:el.getBoundingClientRect().width,
+    imageWidth:el.querySelector("img")?.naturalWidth||0
+  }));
+  assert.ok(insetState.opacity>.92&&insetState.imageWidth>250,
+    "Brand-story inset failed its own on-view photo reveal: "+JSON.stringify(insetState));
   for(const copy of await mp.locator(".ed-mobile-chapter-copy").all()){
    await copy.scrollIntoViewIfNeeded();
    await mp.waitForTimeout(1450);
@@ -138,8 +169,27 @@ const {chromium}=require("playwright");
   const visible=await mp.locator(".premium-drawer-editorial").isVisible();
   assert.ok(visible,"Mobile Maison editorial is hidden");
   await mp.screenshot({path:"artifacts/edition02-maison-mobile.png",fullPage:false,animations:"disabled"});
+  const short=await browser.newContext({viewport:{width:375,height:667},
+    deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  const small=await short.newPage();
+  await small.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
+  await small.locator(".ed-hero-carousel").waitFor();
+  await small.waitForTimeout(1250);
+  const smallView=await small.evaluate(()=>{
+    const nav=document.querySelector(".premium-bottom-nav").getBoundingClientRect();
+    const photo=document.querySelector(".ed-hero-visual").getBoundingClientRect();
+    const copy=document.querySelector(".ed-hero-content").getBoundingClientRect();
+    const cta=document.querySelector(".ed-hero-links .ed-dark-button").getBoundingClientRect();
+    return {navTop:nav.top,photoBottom:photo.bottom,copyBottom:copy.bottom,ctaBottom:cta.bottom};
+  });
+  assert.ok(smallView.ctaBottom<=smallView.navTop+10 &&
+    smallView.copyBottom<=smallView.navTop+10,
+    "Hero is longer than one viewport on short mobile screens: "+JSON.stringify(smallView));
+  await small.screenshot({path:"artifacts/edition02-mobile-hero-short-phone.png",
+    fullPage:false,animations:"disabled"});
+  await short.close();
   assert.equal(mobileErrors.length,0,"Mobile browser errors: "+mobileErrors.join(" / "));
-  console.log("PASS: real browser rendered GSAP, carousel, local high-resolution product photo, inner page and uncropped mobile menu.");
+  console.log("PASS: cinematic section motion, independent story inset, three slides, unified mobile hero and 667px short mobile fold.");
   await mobile.close();
   await desktop.close();
  }finally{await browser.close();}
