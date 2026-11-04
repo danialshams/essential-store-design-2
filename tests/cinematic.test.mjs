@@ -46,7 +46,7 @@ test("Mobile hero is one editorial viewport with its own controls and normalized
  assert.match(load("src/app/editorial-precision.css"),/ed-hero-minimal/);
  assert.match(css,/height:calc\(100svh - 90px - 66px - env\(safe-area-inset-bottom\)\)/);
  assert.match(css,/max-height:740px/);
- assert.match(motion,/\.decode\?\.\(\)/);
+ assert.match(motion,/image\.decode\(\)/);
  assert.match(motion,/image\(detail,"up"\)/);
  assert.match(motion,/data-chapter/);
  assert.match(motion,/observer\.observe\(trigger\)/);
@@ -93,7 +93,7 @@ test("Editorial QA keeps full-image framing and reveals behind the first-load cu
  assert.match(layout,/editorial-quality-pass\.css/);
  assert.match(site,/maison-intro/);
  assert.match(site,/document\.fonts/);
- assert.match(motion,/\.decode\?\.\(\)/);
+ assert.match(motion,/image\.decode\(\)/);
  assert.match(motion,/Promise\.race\(\[decoded,deadline\]\)/);
  assert.match(css,/\.ed-category-photo[^{}]*\{/);
  assert.match(css,/object-fit:contain!important/);
