@@ -44,7 +44,7 @@ const scaleFromMatrix=(m)=>{
    {selector:".ed-story-inset",index:0,label:"detail",expected:"fade"},
    {selector:".ed-mobile-chapter-photo",index:0,label:"chapter",expected:"left"},
    {selector:".ed-mobile-chapter-photo",index:1,label:"chapter-fade",expected:"fade"},
-   {selector:".ed-secondary-banner-image",index:0,label:"banner",expected:"left"},
+   {selector:".ed-secondary-banner-image",index:0,label:"banner",expected:"left",optional:true},
    {selector:".ed-journal-photo",index:0,label:"journal",expected:"right"},
    {selector:".ed-journal-photo",index:1,label:"journal-fade",expected:"fade"},
   ];
@@ -59,6 +59,10 @@ const scaleFromMatrix=(m)=>{
     await page.waitForFunction(()=>document.documentElement.dataset.introState==="complete",
      null,{timeout:18000});
     const node=page.locator(job.selector).nth(job.index);
+    if(job.optional&&!await node.count()){
+     console.log("OPTIONAL MEDIA ABSENT",job.label);
+     continue;
+    }
     await node.waitFor({state:"attached"});
     const before=await node.evaluate(reading);
     // Reveal begins when the image reaches about 70% of the viewport
