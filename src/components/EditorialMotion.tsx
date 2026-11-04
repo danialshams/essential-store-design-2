@@ -43,13 +43,14 @@ export function EditorialMotion({children}:{children:ReactNode}){
    for(const entry of entries){
     if(entry.isIntersecting)callbacks.get(entry.target)?.forEach(enter=>enter());
    }
-  },{root:null,rootMargin:"0px 0px -6% 0px",threshold:0});
+  },{root:null,rootMargin:window.innerWidth<=760?
+   "0px 0px -28% 0px":"0px 0px -20% 0px",threshold:0});
   const seen=new Set<Element>();
   const animations:gsap.core.Timeline[]=[];
   const registered:Array<{node:Element;enter:()=>void;settle:()=>void}>=[];
   const visible=(node:Element)=>{
    const r=node.getBoundingClientRect();
-   return r.height>0&&r.width>0&&r.bottom>0&&r.top<innerHeight*.94;
+   return r.height>0&&r.width>0&&r.bottom>0&&r.top<innerHeight*(innerWidth<=760?.72:.8);
   };
   const near=(node:Element)=>{
    const r=node.getBoundingClientRect();
@@ -138,21 +139,53 @@ export function EditorialMotion({children}:{children:ReactNode}){
      ease:"power2.out",clearProps:"transform"});
     register(trigger,tl);
    };
-   const image=(frame:Element,side:"left"|"right"|"up"="up")=>{
+   type WipeSide="left"|"right"|"up";
+   type ImageMotion=WipeSide|"fade";
+   // GSAP CSSPlugin was not interpolating clip-path at all on Chrome:
+   // computed clip stayed inset(100%) for ~1s and then disappeared at
+   // clearProps, causing the exact abrupt image pop seen in production.
+   // Drive the inset numerically via a GSAP proxy instead.
+   const clipAt=(side:WipeSide,progress:number)=>{
+    const cut=(Math.max(0,1-progress)*100).toFixed(3)+"%";
+    if(side==="left")return `inset(0% ${cut} 0% 0%)`;
+    if(side==="right")return `inset(0% 0% 0% ${cut})`;
+    return `inset(0% 0% ${cut} 0%)`;
+   };
+   const image=(frame:Element,mode:ImageMotion="up")=>{
     if(seen.has(frame))return;
     seen.add(frame);
-    const img=frame.querySelector("img") as HTMLImageElement|null;
-    const start=side==="left"?"inset(0 100% 0 0)":
-     side==="right"?"inset(0 0 0 100%)":"inset(0 0 100% 0)";
-    gsap.set(frame,{clipPath:start});
-    if(img)gsap.set(img,{scale:1.035});
+    const surface=(frame.querySelector(":scope > .ed-category-image-stage")||frame) as HTMLElement;
+    const img=surface.querySelector("img") as HTMLImageElement|null;
+    frame.setAttribute("data-cinematic-mode",mode);
     const tl=gsap.timeline({paused:true});
-    tl.to(frame,{clipPath:"inset(0 0 0 0)",duration:.98,
-     ease:"power3.inOut",clearProps:"clipPath"},0);
-    if(img)tl.to(img,{scale:1,duration:1.27,ease:"power2.out",
-     clearProps:"transform"},0);
+    const initialScale=1.075;
+    if(img)gsap.set(img,{scale:initialScale,transformOrigin:"center center"});
+    if(mode==="fade"){
+     gsap.set(surface,{autoAlpha:0});
+     tl.to(surface,{autoAlpha:1,duration:.82,ease:"power2.out"},0);
+    }else{
+     const state={value:0};
+     const render=()=>{
+      surface.style.clipPath=clipAt(mode,state.value);
+      frame.setAttribute("data-photo-reveal-progress",state.value.toFixed(3));
+     };
+     render();
+     tl.to(state,{value:1,duration:1.04,ease:"power2.inOut",
+      onUpdate:render,onComplete:()=>{
+       surface.style.clipPath="";
+       frame.setAttribute("data-photo-reveal-progress","1.000");
+      }},0);
+    }
+    // Zoom starts only AFTER the image has unveiled; this is a separate,
+    // intentionally restrained 2.1s camera pull-back, not a hover effect.
+    if(img)tl.to(img,{scale:1,duration:2.1,ease:"sine.out",
+     clearProps:"transform,transformOrigin"},mode==="fade"?.79:1.0);
+    tl.eventCallback("onComplete",()=>{
+     frame.setAttribute("data-photo-reveal-complete","true");
+    });
     register(frame,tl,img);
    };
+
    const revealChildren=(parent:Element,skip=".ed-inline-link,.ed-dark-button,.ed-light-button")=>{
     Array.from(parent.children).forEach((node,i)=>{
      const isButton=node.matches("a,button")||node.matches(skip);
@@ -175,7 +208,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
 
    // Explore Edition: each actual picture unveils while it is on-screen.
    $("[data-editorial-grid] .ed-category-tile").forEach((card:Element,i:number)=>{
-    image(card,i%2?"right":"up");
+    image(card,["up","fade","right","fade"][i] as ImageMotion);
     const caption=card.querySelector(".ed-category-caption");
     if(caption)Array.from(caption.children).forEach((child,j)=>
      text(card,child,5+j));
@@ -188,7 +221,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
    $(".ed-products-section .premium-product-card").forEach((card:Element,i:number)=>{
     const media=card.querySelector(".premium-product-media");
     const info=card.querySelector(".premium-product-info");
-    if(media)image(media,i%2?"left":"up");
+    if(media)image(media,i%2?"fade":"up");
     if(info)Array.from(info.children).forEach((child,j)=>
      (child.matches("a,button")?action:text)(child,child,j));
    });
@@ -207,14 +240,14 @@ export function EditorialMotion({children}:{children:ReactNode}){
     const detail=story.querySelector(".ed-story-inset");
     const copy=story.querySelector(".ed-story-copy");
     if(photo)image(photo,"right");
-    if(detail)image(detail,"up");
+    if(detail)image(detail,"fade");
     if(copy)revealChildren(copy);
    }
 
    $(".ed-mobile-chapter").forEach((chapter:Element,i:number)=>{
     const photo=chapter.querySelector(".ed-mobile-chapter-photo");
     const copy=chapter.querySelector(".ed-mobile-chapter-copy");
-    if(photo)image(photo,i%2?"right":"left");
+    if(photo)image(photo,i%2?"fade":"left");
     if(copy)revealChildren(copy);
    });
 
@@ -222,15 +255,15 @@ export function EditorialMotion({children}:{children:ReactNode}){
     const photo=section.querySelector(".ed-admin-story-picture");
     const detail=section.querySelector(".ed-admin-story-detail");
     const copy=section.querySelector(".ed-admin-story-copy");
-    if(photo)image(photo,i%2?"left":"right");
-    if(detail)image(detail,"up");
+    if(photo)image(photo,i%2?"fade":"right");
+    if(detail)image(detail,"fade");
     if(copy)revealChildren(copy);
    });
 
    $(".ed-secondary-banner").forEach((banner:Element,i:number)=>{
     const photo=banner.querySelector(".ed-secondary-banner-image");
     const copy=banner.firstElementChild;
-    if(photo)image(photo,i%2?"left":"right");
+    if(photo)image(photo,i%2?"fade":"left");
     if(copy)revealChildren(copy);
    });
 
@@ -267,16 +300,25 @@ export function EditorialMotion({children}:{children:ReactNode}){
     const progress=chapter.querySelector<HTMLElement>("[data-chapter-progress]");
     if(photos.length!==2||words.length!==2||!progress)return;
     image(photos[0],"right");
-    gsap.set(photos[1],{autoAlpha:1,clipPath:"inset(0 0 100% 0)"});
+    const chapterMask={value:0};
+    const updateChapter=()=>{
+     photos[1].style.clipPath=clipAt("up",chapterMask.value);
+     photos[1].setAttribute("data-photo-reveal-progress",chapterMask.value.toFixed(3));
+    };
+    updateChapter();
+    const secondPhoto=photos[1].querySelector("img");
+    if(secondPhoto)gsap.set(secondPhoto,{scale:1.075});
     gsap.set(words[1],{autoAlpha:0,y:16});
-    gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
+    const scrollTimeline=gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
      trigger:chapter,start:"top top",end:"+=110%",
      pin:true,scrub:.8,anticipatePin:1,invalidateOnRefresh:true
-    }})
-     .to(photos[1],{clipPath:"inset(0 0 0 0)",duration:1},0)
+    }});
+    scrollTimeline
+     .to(chapterMask,{value:1,duration:1,onUpdate:updateChapter},0)
      .to(words[0],{autoAlpha:0,y:-16,duration:.4},.08)
      .to(words[1],{autoAlpha:1,y:0,duration:.57},.42)
      .fromTo(progress,{scaleX:.04},{scaleX:1,duration:1},0);
+    if(secondPhoto)scrollTimeline.to(secondPhoto,{scale:1,duration:.45},.55);
    });
   },el);
 
