@@ -34,6 +34,15 @@ test("High-resolution local demo photographs have explicit provenance",()=>{
   "chapter-detail","journal-style","journal-details"];
  const importScript=load("scripts/fetch-editorial-images.py");
  for(const name of photos)assert.ok(importScript.includes(`"${name}"`),name);
+ for(const name of photos){
+  const file=`public/images/editorial/${name}.webp`;
+  assert.ok(existsSync(file),`High-resolution editorial photo missing: ${file}`);
+  const size=readFileSync(file).length;
+  assert.ok(size>25000,`Editorial photo unexpectedly tiny: ${file} (${size} bytes)`);
+ }
+ const manifest=JSON.parse(load("public/images/editorial/manifest.json"));
+ assert.equal(manifest.assets.length,photos.length);
+
  assert.match(importScript,/unsplash\.com\/photos/);
  assert.ok(existsSync("src/app/editorial-refinement.css"));
 });
