@@ -109,6 +109,31 @@ const scaleFromMatrix=(m)=>{
     throw e;
    }finally{await context.close()}
   }
+  // Desktop two-chapter pinned story uses the same numeric progress
+  // renderer. A CSS string tween previously kept the second panel hidden.
+  const desktop=await browser.newContext({viewport:{width:1440,height:900},
+   deviceScaleFactor:1,reducedMotion:"no-preference"});
+  try{
+   const page=await desktop.newPage();
+   await page.goto(base,{waitUntil:"domcontentloaded",timeout:60000});
+   await page.waitForFunction(()=>document.documentElement.dataset.introState==="complete",
+    null,{timeout:16000});
+   const chapter=page.locator(".ed-chapter");
+   const second=chapter.locator("[data-chapter-frame]").nth(1);
+   await chapter.waitFor({state:"attached"});
+   const docY=await chapter.evaluate(el=>window.scrollY+el.getBoundingClientRect().top);
+   await page.evaluate(y=>window.scrollTo({top:y+innerHeight*.54,behavior:"instant"}),docY);
+   await page.waitForTimeout(1300);
+   const during=await second.evaluate(el=>({
+    progress:Number(el.getAttribute("data-photo-reveal-progress")),
+    clip:getComputedStyle(el).clipPath,
+    zoom:getComputedStyle(el.querySelector("img")).transform
+   }));
+   assert.ok(during.progress>.06&&during.progress<.96,
+    "Desktop chapter second image did not physically interpolate: "+JSON.stringify(during));
+   await page.screenshot({path:out+"/desktop-pinned-chapter-mid.png",fullPage:false,animations:"allow"});
+   reports.push({label:"desktop-pinned-chapter",during});
+  }finally{await desktop.close()}
   fs.writeFileSync(out+"/results.json",JSON.stringify(reports,null,2));
   console.log("PASS PHYSICAL GSAP REVEALS",reports.map(r=>({
    photo:r.label,mode:r.during.mode,clip:r.during.clip,opacity:r.during.opacity,
