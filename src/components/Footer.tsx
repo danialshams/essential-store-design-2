@@ -18,15 +18,22 @@ export function Footer(){
       const text=el.querySelector(".premium-footer-story");
       const cols=Array.from(el.querySelectorAll(".premium-footer-links>div"));
       const wordmark=el.querySelector(".premium-footer-wordmark");
-      if(text)gsap.fromTo(Array.from(text.children),{autoAlpha:0,y:24},
-        {autoAlpha:1,y:0,duration:1.05,stagger:.2,ease:"power3.out",
-          scrollTrigger:{trigger:el,start:"top 89%",once:true}});
-      if(cols.length)gsap.fromTo(cols,{autoAlpha:0,y:30},
-        {autoAlpha:1,y:0,duration:1.1,stagger:.16,ease:"power3.out",
-          scrollTrigger:{trigger:el,start:"top 85%",once:true}});
-      if(wordmark)gsap.fromTo(wordmark,{autoAlpha:0,x:40},
-        {autoAlpha:1,x:0,duration:1.3,ease:"power3.out",
-          scrollTrigger:{trigger:wordmark,start:"top 94%",once:true}});
+      const bottom=el.querySelector(".premium-footer-bottom");
+      if(text)gsap.fromTo(Array.from(text.children),{autoAlpha:0,y:28},
+        {autoAlpha:1,y:0,duration:1.14,stagger:.2,ease:"power3.out",
+          scrollTrigger:{trigger:text,start:"top 77%",once:true}});
+      // Each column waits for its own viewport entry, including on mobile.
+      cols.forEach((col,i)=>gsap.fromTo(Array.from(col.children),
+        {autoAlpha:0,y:17,x:i%2?-9:9},
+        {autoAlpha:1,y:0,x:0,duration:.92,stagger:.105,ease:"power3.out",
+          scrollTrigger:{trigger:col,start:"top 78%",once:true}}));
+      if(wordmark)gsap.fromTo(wordmark,{autoAlpha:0,x:34},
+        {autoAlpha:1,x:0,duration:1.36,ease:"power3.out",
+          scrollTrigger:{trigger:wordmark,start:"top 80%",once:true}});
+      if(bottom)gsap.fromTo(Array.from(bottom.children),
+        {autoAlpha:0,y:16},{autoAlpha:1,y:0,duration:.85,
+          stagger:.12,ease:"power3.out",
+          scrollTrigger:{trigger:bottom,start:"top 81%",once:true}});
     },el);
     return()=>context.revert();
   },[]);
