@@ -20,24 +20,27 @@ const {chromium}=require("playwright");
   assert.equal(status,"ready","GSAP motion engine failed to initialize on homepage");
   const initialSlides=await page.locator(".ed-hero-slide").count();
   assert.ok(initialSlides>=3,"Hero must have 3 editorial slides");
-  // A resting pointer previously froze the interval forever. Real simulated
-  // clock advancement verifies auto-change, explicit pause, and resume.
-  await page.locator(".ed-hero-carousel").hover();
+  // Autoplay is image-only chrome: no arrows, dots or stop button.
   const heroIndex=()=>page.locator(".ed-hero-slide").evaluateAll(els=>
     els.findIndex(el=>el.classList.contains("is-active")));
+  const action=page.locator(".ed-hero-stable-action");
+  await action.evaluate(node=>node.dataset.qaStable="same-node");
+  assert.equal(await page.locator(".ed-carousel-control,.ed-carousel-play,.ed-carousel-dots").count(),0,
+    "Old carousel controls are still rendered");
   const firstSlide=await heroIndex();
   await page.clock.fastForward(9150);
-  await page.waitForTimeout(90);
+  await page.waitForTimeout(130);
   const secondSlide=await heroIndex();
-  assert.notEqual(secondSlide,firstSlide,"Autoplay must advance while hovering the hero");
-  await page.locator(".ed-carousel-play").click();
-  await page.clock.fastForward(9150);
-  await page.waitForTimeout(70);
-  assert.equal(await heroIndex(),secondSlide,"Explicit pause must stop autoplay");
-  await page.locator(".ed-carousel-play").click();
-  const textAnimation=await page.locator(".ed-hero-copy-frame").evaluate(el=>getComputedStyle(el).animationName);
-  assert.notEqual(textAnimation,"none","Hero text has no first-load animation");
-  // Scroll every sequence as a real visitor would: full-page screenshots
+  assert.notEqual(secondSlide,firstSlide,"Hero did not auto-advance");
+  assert.equal(await action.evaluate(node=>node.dataset.qaStable),"same-node",
+    "Discovery action remounted when the slide changed");
+  assert.equal(await action.textContent()?.then(x=>x?.trim().includes("کشف داستان")),true,
+    "Hero action should be a single fixed discovery label");
+  const heroVisual=await page.locator(".ed-hero-media-shell").evaluate(node=>({
+    animation:getComputedStyle(node).animationName
+  }));
+  assert.ok(heroVisual.animation!=="none","Hero image has no cinematic entrance");
+    // Scroll every sequence as a real visitor would: full-page screenshots
   // taken before ScrollTrigger enters the viewport incorrectly look blank.
   const scenes=['.ed-categories-grid','#ed-selected','[data-scene="campaign"]',
     '[data-scene="story"]','.ed-chapter','[data-scene="journal"]','.ed-benefits'];
@@ -49,17 +52,27 @@ const {chromium}=require("playwright");
     }
   }
   await page.screenshot({path:"artifacts/edition02-home-desktop.png",fullPage:true,animations:"disabled"});
-  await page.getByRole("button",{name:"اسلاید بعدی"}).click();
-  await page.waitForTimeout(1600);
+  await page.clock.fastForward(9150);
+  await page.waitForTimeout(100);
   const active=await page.locator(".ed-hero-slide.is-active").count();
   assert.equal(active,1,"Hero carousel has an invalid active scene");
+  const firstProduct=page.locator(".ed-products-section .premium-product-card").first();
+  await firstProduct.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(1250);
+  const productFraming=await firstProduct.evaluate(card=>{
+   const media=card.querySelector(".premium-product-media").getBoundingClientRect();
+   const img=card.querySelector(".premium-product-photo");
+   return {rendered:media.width/media.height,natural:img.naturalWidth/img.naturalHeight};
+  });
+  assert.ok(Math.abs(productFraming.rendered-productFraming.natural)<.09,
+    "Product image has visible letterboxing from a wrong aspect ratio: "+JSON.stringify(productFraming));
   await page.locator(".ed-categories-grid").scrollIntoViewIfNeeded();
   await page.waitForTimeout(650);
   const category=await page.locator(".ed-category-tile").first().evaluate(el=>({
    clip:getComputedStyle(el).clipPath,
    transform:getComputedStyle(el).transform
   }));
-  console.log("HOME GSAP",status,"hero animation",textAnimation,"category",category);
+  console.log("HOME GSAP",status,"hero media animation",heroVisual.animation,"category",category);
   assert.equal(errors.length,0,"Uncaught browser errors: "+errors.join(" / "));
   // Real Next Link client navigation from the page bottom must scroll to top.
   await page.locator('.premium-footer-links a[href="/products"]').first().click();
@@ -110,9 +123,9 @@ const {chromium}=require("playwright");
     };
     return {viewport:window.innerHeight,hero:rect(".ed-hero-carousel"),
       photograph:rect(".ed-hero-visual"),copy:rect(".ed-hero-content"),
-      title:rect(".ed-hero-copy-frame h1"),cta:rect(".ed-hero-links .ed-dark-button"),
-      controls:rect(".ed-hero-controls-row"),navigation:rect(".premium-bottom-nav"),
-      heroText:document.querySelector(".ed-hero-copy-frame h1")?.textContent||""};
+      title:rect(".ed-hero-image-caption h1"),cta:rect(".ed-hero-stable-action"),
+      controls:rect(".ed-hero-progress-count"),navigation:rect(".premium-bottom-nav"),
+      heroText:document.querySelector(".ed-hero-image-caption h1")?.textContent||""};
   });
   assert.ok(mobileHero.hero&&mobileHero.photograph&&mobileHero.copy&&mobileHero.navigation,
     "Mobile photo/copy/navigation must all be present");
@@ -172,6 +185,9 @@ const {chromium}=require("playwright");
   );
   const visible=await mp.locator(".premium-drawer-editorial").isVisible();
   assert.ok(visible,"Mobile Maison editorial is hidden");
+  const closeBorder=await mp.locator(".premium-drawer-head button").evaluate(el=>getComputedStyle(el).borderTopWidth);
+  assert.equal(closeBorder,"0px","Menu close control still has a border");
+
   await mp.screenshot({path:"artifacts/edition02-maison-mobile.png",fullPage:false,animations:"disabled"});
   const short=await browser.newContext({viewport:{width:375,height:667},
     deviceScaleFactor:1,isMobile:true,hasTouch:true});
@@ -183,7 +199,7 @@ const {chromium}=require("playwright");
     const nav=document.querySelector(".premium-bottom-nav").getBoundingClientRect();
     const photo=document.querySelector(".ed-hero-visual").getBoundingClientRect();
     const copy=document.querySelector(".ed-hero-content").getBoundingClientRect();
-    const cta=document.querySelector(".ed-hero-links .ed-dark-button").getBoundingClientRect();
+    const cta=document.querySelector(".ed-hero-stable-action").getBoundingClientRect();
     return {navTop:nav.top,photoBottom:photo.bottom,copyBottom:copy.bottom,ctaBottom:cta.bottom};
   });
   assert.ok(smallView.copyBottom-smallView.photoBottom<=242,
