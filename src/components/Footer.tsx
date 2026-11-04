@@ -14,28 +14,36 @@ export function Footer(){
     const el=footerRef.current;
     if(!el||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
     gsap.registerPlugin(ScrollTrigger);
+    const pending=new WeakMap<Element,gsap.core.Timeline>();
+    const observer=new IntersectionObserver(entries=>{
+      for(const entry of entries){
+        if(!entry.isIntersecting)continue;
+        pending.get(entry.target)?.play();
+        observer.unobserve(entry.target);
+      }
+    },{rootMargin:"0px 0px -20% 0px",threshold:0.01});
     const context=gsap.context(()=>{
-      const text=el.querySelector(".premium-footer-story");
+      const stage=(target:Element,items:Element[],from:gsap.TweenVars,start="top 77%",stagger=.14)=>{
+        if(!items.length)return;
+        const timeline=gsap.timeline({paused:true});
+        timeline.fromTo(items,{opacity:.24,y:21,...from},{opacity:1,x:0,y:0,duration:1,
+          stagger,ease:"power3.out",clearProps:"transform"});
+        pending.set(target,timeline);
+        observer.observe(target);
+        ScrollTrigger.create({trigger:target,start,once:true,
+          onEnter:()=>timeline.play(),onEnterBack:()=>timeline.play()});
+      };
+      const story=el.querySelector(".premium-footer-story");
+      if(story)stage(story,Array.from(story.children),{y:28},"top 76%",.2);
       const cols=Array.from(el.querySelectorAll(".premium-footer-links>div"));
+      cols.forEach((col,i)=>stage(col,Array.from(col.children),
+        {x:i%2?-11:11,y:17},"top 78%",.12));
       const wordmark=el.querySelector(".premium-footer-wordmark");
+      if(wordmark)stage(wordmark,[wordmark],{x:38},"top 80%");
       const bottom=el.querySelector(".premium-footer-bottom");
-      if(text)gsap.fromTo(Array.from(text.children),{autoAlpha:0,y:28},
-        {autoAlpha:1,y:0,duration:1.14,stagger:.2,ease:"power3.out",
-          scrollTrigger:{trigger:text,start:"top 77%",once:true}});
-      // Each column waits for its own viewport entry, including on mobile.
-      cols.forEach((col,i)=>gsap.fromTo(Array.from(col.children),
-        {autoAlpha:0,y:17,x:i%2?-9:9},
-        {autoAlpha:1,y:0,x:0,duration:.92,stagger:.105,ease:"power3.out",
-          scrollTrigger:{trigger:col,start:"top 78%",once:true}}));
-      if(wordmark)gsap.fromTo(wordmark,{autoAlpha:0,x:34},
-        {autoAlpha:1,x:0,duration:1.36,ease:"power3.out",
-          scrollTrigger:{trigger:wordmark,start:"top 80%",once:true}});
-      if(bottom)gsap.fromTo(Array.from(bottom.children),
-        {autoAlpha:0,y:16},{autoAlpha:1,y:0,duration:.85,
-          stagger:.12,ease:"power3.out",
-          scrollTrigger:{trigger:bottom,start:"top 81%",once:true}});
+      if(bottom)stage(bottom,Array.from(bottom.children),{y:14},"top 81%",.12);
     },el);
-    return()=>context.revert();
+    return()=>{observer.disconnect();context.revert()};
   },[]);
   return <footer ref={footerRef} className="premium-footer">
     <div className="premium-footer-top premium-container">
