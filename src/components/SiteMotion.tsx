@@ -14,22 +14,52 @@ export function SiteMotion({children}:{children:ReactNode}){
  useEffect(()=>{
   let active=true;
   let exitTimer:ReturnType<typeof setTimeout>|undefined;
-  document.documentElement.dataset.introState="loading";
+  const html=document.documentElement;
+  const priorOverflow=document.body.style.overflow;
+  html.dataset.introState="loading";
+  document.body.style.overflow="hidden";
   const delay=(ms:number)=>new Promise<void>(resolve=>setTimeout(resolve,ms));
-  const first=document.querySelector<HTMLImageElement>(".ed-hero-slide.is-active .ed-hero-photo");
-  const image=first?.decode?.().then(()=>undefined,()=>undefined)??Promise.resolve();
-  const font=document.fonts?.ready?.then(()=>undefined,()=>undefined)??Promise.resolve();
-  const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const lead=document.querySelector<HTMLImageElement>(
+   ".ed-hero-slide.is-active .ed-hero-photo:not(.ed-hero-mobile-photo)"
+  );
+  const photoReady=new Promise<void>(resolve=>{
+   if(!lead){resolve();return}
+   const settle=()=>{
+    if(lead.naturalWidth&&lead.decode)
+     void lead.decode().then(()=>resolve(),()=>resolve());
+    else resolve();
+   };
+   if(lead.complete)settle();
+   else{
+    lead.addEventListener("load",settle,{once:true});
+    lead.addEventListener("error",()=>resolve(),{once:true});
+   }
+  });
+  const fonts=document.fonts?.ready?.then(()=>undefined,()=>undefined)??Promise.resolve();
+  const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // The curtain stays visible slightly longer, while media/fonts prepare.
+  // Hero CSS and editorial GSAP timelines remain paused until it is GONE.
   void Promise.all([
-   delay(reduced?90:440),
-   Promise.race([Promise.all([image,font]),delay(1900)])
+   delay(reduced?100:1180),
+   Promise.race([Promise.all([photoReady,fonts]),delay(2700)])
   ]).then(()=>{
    if(!active)return;
-   document.documentElement.dataset.introState="ready";
    setIntro("leaving");
-   exitTimer=setTimeout(()=>{if(active)setIntro("done")},reduced?100:480);
+   exitTimer=setTimeout(()=>{
+    if(!active)return;
+    setIntro("done");
+    html.dataset.introState="complete";
+    document.body.style.overflow=priorOverflow;
+    window.dispatchEvent(new Event("editorial:intro-complete"));
+   },reduced?90:630);
   });
-  return()=>{active=false;if(exitTimer)clearTimeout(exitTimer)};
+  return()=>{
+   active=false;
+   if(exitTimer)clearTimeout(exitTimer);
+   document.body.style.overflow=priorOverflow;
+   if(html.dataset.introState==="loading")
+    html.dataset.introState="complete";
+  };
  },[]);
 
  useLayoutEffect(()=>{
@@ -180,6 +210,7 @@ export function SiteMotion({children}:{children:ReactNode}){
      lang={/[\u0600-\u06ff]/.test(store.settings.storeName)?"fa":"en"}>
      {store.settings.storeName||"ESSENTIAL"}
     </span>
+    <span className="maison-intro-rule" aria-hidden="true"/>
    </div>}
   <div ref={root} className="editorial-page-shell" data-page-motion="initial">{children}</div>
  </>;

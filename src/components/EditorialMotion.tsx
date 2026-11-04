@@ -19,62 +19,91 @@ export function EditorialMotion({children}:{children:ReactNode}){
   }
   gsap.registerPlugin(ScrollTrigger);
   let active=true;
+  let curtainFinished=document.documentElement.dataset.introState==="complete";
   const callbacks=new WeakMap<Element,()=>void>();
+  const warmCallbacks=new WeakMap<Element,()=>void>();
+  // Preload near-future images far enough ahead of the visible viewport,
+  // but never START their GSAP entrance until the element is actually seen.
+  const warmObserver=new IntersectionObserver(entries=>{
+   for(const entry of entries){
+    if(!entry.isIntersecting)continue;
+    warmCallbacks.get(entry.target)?.();
+    warmObserver.unobserve(entry.target);
+   }
+  },{rootMargin:window.innerWidth<=760?"0px 0px 900px 0px":"0px 0px 640px 0px",threshold:0});
   const observer=new IntersectionObserver(entries=>{
-   entries.forEach(entry=>{
+   for(const entry of entries){
     if(entry.isIntersecting)callbacks.get(entry.target)?.();
-   });
-  },{root:null,rootMargin:"0px 0px -7% 0px",threshold:.06});
+   }
+  },{root:null,rootMargin:"0px 0px -6% 0px",threshold:0});
   const seen=new Set<Element>();
   const animations:gsap.core.Timeline[]=[];
-  const registered:Array<{node:Element;settle:()=>void}>=[];
+  const registered:Array<{node:Element;enter:()=>void;settle:()=>void}>=[];
   const visible=(node:Element)=>{
    const r=node.getBoundingClientRect();
    return r.height>0&&r.width>0&&r.bottom>0&&r.top<innerHeight*.94;
   };
+  const near=(node:Element)=>{
+   const r=node.getBoundingClientRect();
+   return r.bottom>-(innerHeight*.1)&&r.top<innerHeight+(innerWidth<=760?900:640);
+  };
   const register=(trigger:Element,tl:gsap.core.Timeline,image?:HTMLImageElement|null)=>{
    animations.push(tl);
    let loaded=!image;
-   let decoding=false;
+   let preparing=false;
    let started=false;
+   const prepare=()=>{
+    if(loaded||preparing||!active)return;
+    preparing=true;
+    const photo=image;
+    if(!photo){loaded=true;return}
+    if(photo.loading==="lazy")photo.loading="eager";
+    const decoded=new Promise<void>(resolve=>{
+     const finish=()=>{
+      if(photo.naturalWidth&&typeof photo.decode==="function")
+       void photo.decode().then(()=>resolve(),()=>resolve());
+      else resolve();
+     };
+     if(photo.complete)finish();
+     else{
+      photo.addEventListener("load",finish,{once:true});
+      photo.addEventListener("error",()=>resolve(),{once:true});
+     }
+    });
+    const timeout=new Promise<void>(resolve=>setTimeout(resolve,6500));
+    void Promise.race([decoded,timeout]).then(()=>{
+     if(!active)return;
+     loaded=true;
+     requestAnimationFrame(start);
+    });
+   };
    const settle=()=>{
     if(started||!active)return;
     started=true;
+    trigger.setAttribute("data-reveal-state","passed");
     observer.unobserve(trigger);
-    // If a jump skips an entrance, complete it only AFTER passing view.
+    warmObserver.unobserve(trigger);
     tl.progress(1).pause();
    };
-   registered.push({node:trigger,settle});
    const start=()=>{
-    if(!active||started||!loaded||!visible(trigger))return;
-    started=true;observer.unobserve(trigger);
+    if(!active||started||!loaded||!curtainFinished||!visible(trigger))return;
+    started=true;
+    trigger.setAttribute("data-reveal-state","playing");
+    observer.unobserve(trigger);
     tl.play();
    };
    const enter=()=>{
-    if(started||!active)return;
-    if(loaded){start();return}
-    if(decoding)return;
-    decoding=true;
-    const decoded=new Promise<void>(resolve=>{
-     if(!image){resolve();return}
-     const finish=()=>{
-      if(!image.naturalWidth){resolve();return}
-      if(typeof image.decode==="function")
-       void image.decode().then(()=>resolve(),()=>resolve());
-      else resolve();
-     };
-     if(image.complete){finish();return}
-     image.addEventListener("load",finish,{once:true});
-     image.addEventListener("error",()=>resolve(),{once:true});
-    });
-    const deadline=new Promise<void>(resolve=>setTimeout(resolve,4800));
-    void Promise.race([decoded,deadline]).then(()=>{
-     loaded=true;
-     if(active)requestAnimationFrame(start);
-    });
+    if(!active||started)return;
+    prepare();
+    start();
    };
+   trigger.setAttribute("data-reveal-state","waiting");
+   warmCallbacks.set(trigger,prepare);
    callbacks.set(trigger,enter);
+   registered.push({node:trigger,enter,settle});
+   warmObserver.observe(trigger);
    observer.observe(trigger);
+   if(near(trigger))prepare();
    if(visible(trigger))enter();
   };
 
@@ -85,7 +114,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
     seen.add(node);
     gsap.set(node,{autoAlpha:0,y:16});
     const tl=gsap.timeline({paused:true});
-    tl.to(node,{autoAlpha:1,y:0,duration:.76,delay:order*.075,
+    tl.to(node,{autoAlpha:1,y:0,duration:.69,delay:order*.055,
      ease:"power2.out",clearProps:"transform"});
     register(trigger,tl);
    };
@@ -95,7 +124,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
     // A button should have a short, restrained reveal, not the text's slide.
     gsap.set(node,{autoAlpha:0,scale:.975,y:0});
     const tl=gsap.timeline({paused:true});
-    tl.to(node,{autoAlpha:1,scale:1,duration:.5,delay:order*.09,
+    tl.to(node,{autoAlpha:1,scale:1,duration:.45,delay:order*.07,
      ease:"power2.out",clearProps:"transform"});
     register(trigger,tl);
    };
@@ -106,11 +135,11 @@ export function EditorialMotion({children}:{children:ReactNode}){
     const start=side==="left"?"inset(0 100% 0 0)":
      side==="right"?"inset(0 0 0 100%)":"inset(0 0 100% 0)";
     gsap.set(frame,{clipPath:start});
-    if(img)gsap.set(img,{scale:1.045});
+    if(img)gsap.set(img,{scale:1.035});
     const tl=gsap.timeline({paused:true});
-    tl.to(frame,{clipPath:"inset(0 0 0 0)",duration:1.08,
+    tl.to(frame,{clipPath:"inset(0 0 0 0)",duration:.98,
      ease:"power3.inOut",clearProps:"clipPath"},0);
-    if(img)tl.to(img,{scale:1,duration:1.42,ease:"power2.out",
+    if(img)tl.to(img,{scale:1,duration:1.27,ease:"power2.out",
      clearProps:"transform"},0);
     register(frame,tl,img);
    };
@@ -242,6 +271,16 @@ export function EditorialMotion({children}:{children:ReactNode}){
   },el);
 
   el.dataset.motionStatus="ready";
+  const revealAfterIntro=()=>{
+   curtainFinished=true;
+   requestAnimationFrame(()=>{
+    if(!active)return;
+    for(const {node,enter} of registered)if(visible(node))enter();
+    ScrollTrigger.refresh();
+   });
+  };
+  window.addEventListener("editorial:intro-complete",revealAfterIntro);
+  if(curtainFinished)revealAfterIntro();
   let frameId=0;
   const completePassed=()=>{
    frameId=0;
@@ -265,6 +304,8 @@ export function EditorialMotion({children}:{children:ReactNode}){
   return()=>{
    active=false;
    observer.disconnect();
+   warmObserver.disconnect();
+   window.removeEventListener("editorial:intro-complete",revealAfterIntro);
    window.removeEventListener("load",refresh);
    window.removeEventListener("orientationchange",refresh);
    if(frameId)cancelAnimationFrame(frameId);

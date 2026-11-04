@@ -46,7 +46,7 @@ test("Mobile hero is one editorial viewport with its own controls and normalized
  assert.match(load("src/app/editorial-precision.css"),/ed-hero-minimal/);
  assert.match(css,/height:calc\(100svh - 90px - 66px - env\(safe-area-inset-bottom\)\)/);
  assert.match(css,/max-height:740px/);
- assert.match(motion,/image\.decode\(\)/);
+ assert.match(motion,/photo\.decode\(\)/);
  assert.match(motion,/image\(detail,"up"\)/);
  assert.match(motion,/data-chapter/);
  assert.match(motion,/observer\.observe\(trigger\)/);
@@ -93,8 +93,8 @@ test("Editorial QA keeps full-image framing and reveals behind the first-load cu
  assert.match(layout,/editorial-quality-pass\.css/);
  assert.match(site,/maison-intro/);
  assert.match(site,/document\.fonts/);
- assert.match(motion,/image\.decode\(\)/);
- assert.match(motion,/Promise\.race\(\[decoded,deadline\]\)/);
+ assert.match(motion,/photo\.decode\(\)/);
+ assert.match(motion,/Promise\.race\(\[decoded,timeout\]\)/);
  assert.match(css,/\.ed-category-photo[^{}]*\{/);
  assert.match(css,/object-fit:contain!important/);
  assert.match(css,/ed-lookbook\.ed-full-bleed/);
@@ -125,14 +125,46 @@ test("Editorial media use exact intrinsic framing and tailored visible-only moti
  assert.match(media,/--frame-ratio/);
  assert.match(product,/--actual-media-ratio/);
  assert.match(motion,/IntersectionObserver/);
- assert.match(motion,/rootMargin:"0px 0px -7% 0px"/);
+ assert.match(motion,/rootMargin:"0px 0px -6% 0px"/);
  assert.match(motion,/image\(media/);
  assert.match(motion,/text\(title,title/);
  assert.match(motion,/action\(link,link/);
  assert.match(footer,/\.premium-footer-links>div/);
  assert.match(route,/const functional=/);
- assert.doesNotMatch(route,/maison-intro-kicker|maison-intro-rule|maison-intro-caption/);
+ assert.doesNotMatch(route,/maison-intro-kicker|maison-intro-caption/);
+ assert.match(route,/maison-intro-rule/);
  assert.match(style,/ed-brand-arrive/);
  assert.match(style,/premium-drawer-head button:hover/);
  assert.match(load("src/app/layout.tsx"),/editorial-precision\.css/);
+});
+
+test("Loading curtain gates every first-view timeline and prewarms photo scenes",()=>{
+ const site=load("src/components/SiteMotion.tsx");
+ const motion=load("src/components/EditorialMotion.tsx");
+ const css=load("src/app/editorial-precision.css");
+ assert.match(site,/editorial:intro-complete/);
+ assert.match(site,/dataset\.introState="complete"/);
+ assert.match(site,/delay\(reduced\?100:1180\)/);
+ assert.match(motion,/warmObserver/);
+ assert.match(motion,/warmCallbacks/);
+ assert.match(motion,/curtainFinished/);
+ assert.match(motion,/photo\.loading="eager"/);
+ assert.match(motion,/editorial:intro-complete/);
+ assert.match(css,/ed-intro-line-draw/);
+ assert.match(css,/animation-play-state:paused!important/);
+ assert.match(css,/animation-play-state:running!important/);
+});
+test("Header live search offers immediate results and dismisses on outside pointer",()=>{
+ const head=load("src/components/Header.tsx");
+ const css=load("src/app/editorial-precision.css");
+ assert.match(head,/normalizeSearch/);
+ assert.match(head,/store\.products\.filter/);
+ assert.match(head,/setQuery\(event\.target\.value\)/);
+ assert.match(head,/premium-search-results/);
+ assert.match(head,/onPointerDown/);
+ assert.match(head,/document\.addEventListener\("pointerdown"/);
+ assert.doesNotMatch(head,/>جستجو <ArrowLeft/);
+ assert.match(css,/premium-search-result/);
+ assert.match(css,/premium-bottom-nav/);
+ assert.match(css,/rgba\(250,248,245,\.89\)/);
 });

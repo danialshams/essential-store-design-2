@@ -17,7 +17,24 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   page.on("pageerror",err=>errors.push(String(err)));
   await page.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded",timeout:65000});
   await page.locator(".ed-hero-slide.is-active").waitFor({timeout:20000});
-  await page.waitForTimeout(1500);
+  const initialCurtain=await page.evaluate(()=>({
+   line:!!document.querySelector(".maison-intro-rule"),
+   loader:!!document.querySelector(".maison-intro"),
+   heroPlayState:getComputedStyle(document.querySelector(".ed-hero-media-shell")).animationPlayState
+  }));
+  assert.equal(initialCurtain.loader,true,"Loading curtain did not render");
+  assert.equal(initialCurtain.line,true,"Fine loader line is missing");
+  assert.equal(initialCurtain.heroPlayState,"paused",
+   "Hero animation is running behind the loading curtain");
+  // Clock advancement also exercises the intro's minimum duration and exit.
+  await page.clock.fastForward(3500);
+  await page.waitForTimeout(70);
+  await page.clock.fastForward(900);
+  await page.locator('html[data-intro-state="complete"]').waitFor({timeout:12000});
+  await page.waitForTimeout(1120);
+  const afterCurtain=await page.locator(".ed-hero-media-shell")
+   .evaluate(el=>getComputedStyle(el).animationPlayState);
+  assert.equal(afterCurtain,"running","Hero entrance did not resume AFTER loader exit");
   const status=await page.locator(".editorial-site").getAttribute("data-motion-status");
   assert.equal(status,"ready","GSAP motion engine failed to initialize on homepage");
   const initialSlides=await page.locator(".ed-hero-slide").count();
@@ -38,6 +55,30 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
     "Discovery action remounted when the slide changed");
   assert.equal(await action.textContent()?.then(x=>x?.trim().includes("کشف داستان")),true,
     "Hero action should be a single fixed discovery label");
+  // Instant search is local and shows options below the input, no submit word.
+  await page.getByRole("button",{name:"جستجو",exact:true}).click();
+  const searchInput=page.getByRole("combobox",{name:"جستجوی محصول"});
+  await searchInput.fill("کفش");
+  await page.locator(".premium-search-results .premium-search-result").first().waitFor();
+  const focusOutline=await searchInput.evaluate(el=>getComputedStyle(el).outlineStyle);
+  assert.equal(focusOutline,"none",
+    "Search still has the generic thick focus rectangle instead of a refined underline");
+  const suggestions=await page.locator(".premium-search-result").allTextContents();
+  assert.ok(suggestions.some(label=>label.includes("کفش")),
+    "Live search failed to list matching products immediately: "+suggestions.join(" | "));
+  assert.equal(await page.locator(".premium-search-form button").count(),1,
+    "Search should have only an icon close button and no submit label");
+  const searchTransition=await page.locator(".premium-search-panel")
+    .evaluate(el=>getComputedStyle(el).transitionDuration);
+  assert.notEqual(searchTransition,"0s","Search close is abrupt, not eased");
+  await page.mouse.click(22,875); // physically outside the open search dropdown
+  await page.waitForTimeout(420);
+  assert.equal(await page.locator(".premium-search-panel").getAttribute("aria-hidden"),"true",
+    "Clicking outside did not dismiss search");
+  const glass=await page.locator(".premium-header")
+    .evaluate(el=>getComputedStyle(el).backgroundColor);
+  assert.match(glass,/rgba/,"Header should be gently translucent");
+
   const heroVisual=await page.locator(".ed-hero-media-shell").evaluate(node=>({
     animation:getComputedStyle(node).animationName
   }));
@@ -125,7 +166,22 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   mp.on("pageerror",err=>mobileErrors.push(String(err)));
   await mp.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
   await mp.locator(".ed-hero-slide.is-active").waitFor();
-  await mp.waitForTimeout(1500);
+  await mp.locator(".maison-intro").waitFor();
+  await mp.waitForTimeout(660);
+  await mp.screenshot({path:"artifacts/edition02-loader-mobile.png",
+    fullPage:false,animations:"allow"});
+  await mp.locator('html[data-intro-state="complete"]').waitFor({timeout:16000});
+  await mp.waitForTimeout(540);
+  // The second category row is below the fold. It must start its own wipe
+  // as soon as it becomes visible, not several seconds after arriving.
+  const categoryLast=mp.locator(".ed-category-tile").last();
+  await categoryLast.scrollIntoViewIfNeeded();
+  await mp.waitForFunction(()=>{
+   const node=document.querySelector(".ed-category-tile:last-child");
+   return node?.getAttribute("data-reveal-state")==="playing";
+  },null,{timeout:4000});
+  await mp.evaluate(()=>window.scrollTo(0,0));
+  await mp.waitForTimeout(130);
   assert.equal(await mp.locator(".ed-quiet-strip").count(),0,
     "Redundant strip under the hero must be removed");
   const mobileHero=await mp.evaluate(()=>{
@@ -198,6 +254,21 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   assert.deepEqual(skippedFooter,[],"Passed footer links stayed invisible after fast scroll: "+skippedFooter.join(","));
 
   await mp.screenshot({path:"artifacts/edition02-home-mobile.png",fullPage:true,animations:"disabled"});
+  // The mobile search must render live result cards directly beneath the
+  // input; tapping outside should close it without submitting navigation.
+  await mp.evaluate(()=>window.scrollTo(0,0));
+  await mp.getByRole("button",{name:"جستجو",exact:true}).click();
+  await mp.getByRole("combobox",{name:"جستجوی محصول"}).fill("کفش");
+  const mobileResults=mp.locator(".premium-search-result");
+  await mobileResults.first().waitFor();
+  assert.ok(await mobileResults.count()>=1,
+    "Mobile live search did not show any product suggestions");
+  await mp.screenshot({path:"artifacts/edition02-mobile-live-search.png",
+    fullPage:false,animations:"disabled"});
+  await mp.mouse.click(12,720);
+  await mp.waitForTimeout(400);
+  assert.equal(await mp.locator(".premium-search-panel").getAttribute("aria-hidden"),"true",
+    "Mobile search did not close after an outside touch");
   await mp.getByRole("button",{name:"باز کردن فهرست"}).click();
   await mp.locator(".premium-drawer-root.is-open").waitFor();
   await mp.waitForTimeout(1000);
@@ -221,7 +292,8 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   const small=await short.newPage();
   await small.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
   await small.locator(".ed-hero-carousel").waitFor();
-  await small.waitForTimeout(1250);
+  await small.locator('html[data-intro-state="complete"]').waitFor({timeout:16000});
+  await small.waitForTimeout(320);
   const smallView=await small.evaluate(()=>{
     const nav=document.querySelector(".premium-bottom-nav").getBoundingClientRect();
     const photo=document.querySelector(".ed-hero-visual").getBoundingClientRect();
