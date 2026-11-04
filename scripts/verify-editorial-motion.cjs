@@ -60,7 +60,7 @@ const {chromium}=require("playwright");
    return selectors.flatMap(selector=>Array.from(document.querySelectorAll(selector)))
     .filter(el=>el.getBoundingClientRect().bottom<-innerHeight*.22&&
      /100%/.test(getComputedStyle(el).clipPath))
-    .map(el=>el.className));
+    .map(el=>el.className);
   });
   assert.deepEqual(maskedPassed,[],"Images remained clipped after fast scroll: "+maskedPassed.join(","));
   await page.screenshot({path:"artifacts/edition02-home-desktop.png",fullPage:true,animations:"disabled"});
