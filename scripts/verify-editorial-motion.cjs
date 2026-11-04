@@ -60,8 +60,8 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   const searchInput=page.getByRole("combobox",{name:"جستجوی محصول"});
   await searchInput.fill("کفش");
   await page.locator(".premium-search-results .premium-search-result").first().waitFor();
-  const focusOutline=await searchInput.evaluate(el=>getComputedStyle(el).outlineWidth);
-  assert.equal(focusOutline,"0px",
+  const focusOutline=await searchInput.evaluate(el=>getComputedStyle(el).outlineStyle);
+  assert.equal(focusOutline,"none",
     "Search still has the generic thick focus rectangle instead of a refined underline");
   const suggestions=await page.locator(".premium-search-result").allTextContents();
   assert.ok(suggestions.some(label=>label.includes("کفش")),
