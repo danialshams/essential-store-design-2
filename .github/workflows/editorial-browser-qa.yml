@@ -39,9 +39,9 @@ jobs:
             if curl -fsS http://127.0.0.1:3000/ > /dev/null; then break; fi
             sleep 2
           done
-          node scripts/verify-editorial-motion.cjs
           node --check scripts/verify-physical-photo-reveal.cjs
           node scripts/verify-physical-photo-reveal.cjs
+          node scripts/verify-editorial-motion.cjs
           EDITORIAL_BASE_URL=http://127.0.0.1:3000 EDITORIAL_DIAG_LABEL=repaired node scripts/diagnose-live-media.cjs
       - name: Store screenshots and diagnostic logs
         if: always()
