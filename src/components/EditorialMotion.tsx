@@ -53,7 +53,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
   };
   const near=(node:Element)=>{
    const r=node.getBoundingClientRect();
-   return r.bottom>-(innerHeight*.1)&&r.top<innerHeight+(innerWidth<=760?900:640);
+   return r.bottom>-(innerHeight*.1)&&r.top<innerHeight+(innerWidth<=760?1700:1100);
   };
   const register=(trigger:Element,tl:gsap.core.Timeline,image?:HTMLImageElement|null)=>{
    animations.push(tl);
