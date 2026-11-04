@@ -56,10 +56,10 @@ export default async function Home(){
    {id:"edition-primary",image:heroImage,mobileImage:heroMobileImage,title:heading,
     description:hero?.description||"انتخاب‌هایی برای کسانی که زیبایی را در جزئیات پیدا می‌کنند؛ ساده، ماندگار و به دور از تکرار.",
     eyebrow:"کالکشن منتخب فصل",ctaLabel:hero?.ctaLabel||"کشف کالکشن",ctaHref:heroCta,alt:"کمپین اصلی کالکشن ادیتوریال"},
-   {id:"edition-form",image:storyImage,mobileImage:storyImage,title:editorialHeading?.title||"فرم‌های ساده.\\nاثر ماندگار.",
+   {id:"edition-form",image:storyImage,mobileImage:storyImage,title:editorialHeading?.title||"فرم‌های ساده.\nاثر ماندگار.",
     description:editorialHeading?.description||"آرامش در فرم و کیفیت در انتخاب؛ نگاهی تازه به استایل هر روز.",
     eyebrow:"روایت دوم / فرم و سبک",ctaLabel:editorialHeading?.ctaLabel||"کشف داستان",ctaHref:storyCta,alt:"عکاسی مد با پالت خنثی"},
-   {id:"edition-details",image:lookbookImage,mobileImage:lookbookImage,title:firstBanner?.title||"زیبایی در\\nجزئیات است.",
+   {id:"edition-details",image:lookbookImage,mobileImage:lookbookImage,title:firstBanner?.title||"زیبایی در\nجزئیات است.",
     description:firstBanner?.subtitle||"بافت، متریال و جزئیاتی که انتخاب‌های ماندگار را از دیگران متمایز می‌کنند.",
     eyebrow:"روایت سوم / هنر جزئیات",ctaLabel:"دیدن کالکشن",ctaHref:firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags",alt:"تصویر کمپین سینمایی مد"}
   ]; // Always retain all three stories; even matching merchant photos have distinct copy.
@@ -68,8 +68,6 @@ export default async function Home(){
   return <EditorialMotion>
     <div className="ed-home">
       <HeroCarousel slides={heroSlides}/>
-
-      <div className="ed-quiet-strip" aria-label="هویت کالکشن"><span>ESSENTIAL / QUIETLY CURATED</span><span className="ed-quiet-strip-line"/><span>EDITION 02</span></div>
 
       <section className="ed-categories-section premium-container" id="ed-categories" data-scene="categories">
         <div className="ed-section-heading" data-reveal="up">
@@ -102,25 +100,25 @@ export default async function Home(){
           <h2 id="ed-lookbook-title">{firstBanner?.title||"جزئیاتی که\nتفاوت می‌سازند."}</h2>
           <p>{firstBanner?.subtitle||"یک اکسسوری خوب، فقط یک انتخاب نیست؛ امضای سبک شخصی شماست. طراحی‌هایی که هر روز همراهتان می‌مانند."}</p>
           <Link href={firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags"} className="ed-light-button">دیدن کالکشن <ArrowUpLeft size={18}/></Link>
-          <span className="ed-lookbook-ordinal">ESSENTIAL / CHAPTER NO. 02</span>
+          
         </div>
       </section>
 
       <section className="ed-editorial-story premium-container" data-scene="story">
         <div className="ed-story-collage" data-reveal="right">
           <div className="ed-story-visual" data-image-wipe><Image src={storyImage} alt={editorialHeading?.title||"استایل کلاسیک و مینیمال"} fill sizes="(max-width: 760px) 100vw, 47vw" unoptimized={storyImage.startsWith("http")} className="ed-story-photo"/><span>AN EDITORIAL PERSPECTIVE</span></div>
-          <div className="ed-story-inset"><Image src={storyDetail} alt="جزئیات استایل" fill sizes="(max-width: 760px) 35vw, 17vw" unoptimized={storyDetail.startsWith("http")}/></div>
-          <span className="ed-story-edge">THE ART OF GETTING DRESSED</span>
+          <div className="ed-story-inset" data-story-inset><Image src={storyDetail} alt="جزئیات استایل" fill sizes="(max-width: 760px) 35vw, 17vw" unoptimized={storyDetail.startsWith("http")}/></div>
+          
         </div>
-        <div className="ed-story-copy" data-reveal="left"><span className="premium-eyebrow">A NOTE ON STYLE / 04</span><div className="ed-story-number">02.</div><h2>{editorialHeading?.title||"کمتر انتخاب کن.\nبهتر انتخاب کن."}</h2><div className="ed-story-rule"/><p>{editorialHeading?.description||"برای ما، استایل یعنی ترکیب سادگی و شخصیت. انتخاب‌هایی باکیفیت که برای مد زودگذر ساخته نشده‌اند و در هر فصل همراهتان هستند."}</p><Link href={storyCta} className="ed-inline-link">{editorialHeading?.ctaLabel||"داستان این نگاه"} <ArrowUpLeft size={18}/></Link></div>
+        <div className="ed-story-copy" data-reveal="left"><span className="premium-eyebrow">A NOTE ON STYLE / 04</span><h2>{editorialHeading?.title||"کمتر انتخاب کن.\nبهتر انتخاب کن."}</h2><div className="ed-story-rule"/><p>{editorialHeading?.description||"برای ما، استایل یعنی ترکیب سادگی و شخصیت. انتخاب‌هایی باکیفیت که برای مد زودگذر ساخته نشده‌اند و در هر فصل همراهتان هستند."}</p><Link href={storyCta} className="ed-inline-link">{editorialHeading?.ctaLabel||"داستان این نگاه"} <ArrowUpLeft size={18}/></Link></div>
       </section>
 
       <section className="ed-chapter" data-chapter aria-label="روایت تصویری کالکشن">
         <div className="ed-chapter-scene" data-chapter-scene>
           <div className="ed-chapter-photographs">
-            <div className="ed-chapter-frame" data-chapter-frame><Image src="/images/editorial/chapter-form.webp" alt="فصل اول: فرم و استایل ماندگار" fill sizes="60vw"/></div>
+            <div className="ed-chapter-frame" data-chapter-frame data-chapter-intro><Image src="/images/editorial/chapter-form.webp" alt="فصل اول: فرم و استایل ماندگار" fill sizes="60vw"/></div>
             <div className="ed-chapter-frame" data-chapter-frame><Image src="/images/editorial/chapter-detail.webp" alt="فصل دوم: جزئیات و نور" fill sizes="60vw"/></div>
-            <span className="ed-chapter-photo-label">THE COLLECTION / IN TWO ACTS</span>
+            
           </div>
           <div className="ed-chapter-narrative">
             <span className="premium-eyebrow">AN EDITORIAL STUDY / 02</span>
@@ -155,7 +153,7 @@ export default async function Home(){
       {otherBanners.map((banner,index)=><section key={banner.id} className="ed-secondary-banner premium-container" data-reveal="up"><div><span className="premium-eyebrow">DISCOVER THE COLLECTION / {String(index+6).padStart(2,"0")}</span><h2>{banner.title}</h2><p>{banner.subtitle}</p><Link href={banner.linkUrl?.startsWith("/")?banner.linkUrl:"/products"} className="ed-dark-button">مشاهده بیشتر <ArrowUpLeft size={18}/></Link></div>{banner.imageUrl&&<div className="ed-secondary-banner-image"><Image src={editorialPhoto(banner.imageUrl,"/images/editorial/campaign.webp")} alt={banner.title} fill unoptimized sizes="(max-width: 760px) 100vw, 50vw"/></div>}</section>)}
 
       <section className="ed-journal premium-container" data-journal data-scene="journal">
-        <div className="ed-section-heading"><div><span className="premium-eyebrow">THE JOURNAL / 06</span><h2>از نگاه <em>ژورنال</em></h2></div><Link href="/blog" className="ed-inline-link">ورود به ژورنال <ArrowUpLeft size={18}/></Link></div>
+        <div className="ed-section-heading"><div><span className="premium-eyebrow">THE JOURNAL / 05</span><h2>از نگاه <em>ژورنال</em></h2></div><Link href="/blog" className="ed-inline-link">ورود به ژورنال <ArrowUpLeft size={18}/></Link></div>
         <div className="ed-journal-grid" data-stagger>
           <Link href={store.articles[0]?`/blog/${store.articles[0].slug}`:"/blog"} className="ed-journal-card"><div className="ed-journal-photo"><Image src={editorialPhoto(store.articles[0]?.coverUrl,"/images/editorial/journal-style.webp")} alt="نگاهی به هنر پوشیدن" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(store.articles[0]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 01</div><h3>{store.articles[0]?.title||"هنر ساختن یک استایل ماندگار"}</h3><p>{store.articles[0]?.summary||"از پارچه‌ها و فرم‌ها تا ظرافت‌هایی که در نگاه اول دیده نمی‌شوند."}</p><span>ادامه مطلب <ArrowUpLeft size={17}/></span></Link>
           <Link href={store.articles[1]?`/blog/${store.articles[1].slug}`:"/info/about"} className="ed-journal-card"><div className="ed-journal-photo"><Image src={editorialPhoto(store.articles[1]?.coverUrl,"/images/editorial/journal-details.webp")} alt="جزئیات و اکسسوری‌ها" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(store.articles[1]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 02</div><h3>{store.articles[1]?.title||"چرا جزئیات، مهم‌ترین بخش استایل‌اند؟"}</h3><p>{store.articles[1]?.summary||"روایتی کوتاه از نقش انتخاب‌های کوچک در شخصیت یک استایل."}</p><span>بیشتر بخوانید <ArrowUpLeft size={17}/></span></Link>
