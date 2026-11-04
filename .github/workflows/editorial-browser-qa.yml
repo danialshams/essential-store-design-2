@@ -28,7 +28,9 @@ jobs:
       - name: Install browser runtime
         run: |
           npm install --no-save playwright
-          npx playwright install --with-deps --only-shell chromium
+          if ! command -v google-chrome >/dev/null 2>&1; then
+            npx playwright install --with-deps --only-shell chromium
+          fi
       - name: Test rendered desktop and mobile experience
         shell: bash
         run: |
