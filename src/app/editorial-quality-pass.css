@@ -267,3 +267,46 @@ html:not([data-intro-state="ready"]) .ed-hero-media-shell{
  .maison-intro-word,.maison-intro-rule,.maison-intro-caption{animation:none!important}
  .maison-intro{transition-duration:.1s}
 }
+
+/* Screenshot-audited refinement: landscape source scenes must fill the wide
+   hero, not sit in a blurred letterbox. Portrait merchant uploads stay intact. */
+.ed-hero-carousel .ed-hero-slide[data-wide-photo="true"] .ed-hero-photo{
+ object-fit:cover!important;
+ object-position:center 48%!important;
+}
+.ed-hero-carousel .ed-hero-slide[data-wide-photo="true"] .ed-hero-backdrop{
+ opacity:0!important;filter:none!important;
+}
+.premium-brand strong:lang(en){
+ font-family:var(--ed-roman)!important;
+ font-size:clamp(25px,2.2vw,31px);
+ font-weight:500!important;
+ letter-spacing:.012em;
+}
+.maison-intro-word:lang(fa){
+ font-family:var(--ed-farsi);
+ font-size:clamp(29px,6vw,56px);
+ letter-spacing:0;
+}
+@media(max-width:760px){
+ /* Avoid the stretched empty row separating the eyebrow and headline. */
+ .ed-hero-carousel .ed-hero-copy-frame{
+  grid-template-rows:auto auto auto!important;
+  align-content:center!important;row-gap:clamp(8px,1.35vh,13px)!important;
+ }
+ .ed-hero-carousel .ed-hero-intro{align-self:end;margin-bottom:2px!important}
+ .ed-hero-carousel h1{align-self:center}
+ .ed-hero-carousel .ed-hero-description{align-self:end}
+ /* The portrait campaign now occupies its own picture-size image slot. */
+ .ed-full-bleed .ed-lookbook-media{
+  width:100%!important;height:min(147vw,585px)!important;
+  max-height:none!important;min-height:0!important;
+  aspect-ratio:2/3!important;
+  grid-column:1/-1;justify-self:stretch;
+ }
+ .ed-full-bleed .ed-lookbook-photo{
+  width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+ }
+ .premium-brand strong:lang(en){font-size:26px}
+}
