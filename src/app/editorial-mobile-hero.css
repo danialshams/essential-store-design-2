@@ -111,7 +111,7 @@
   grid-template-columns:minmax(0,1fr)!important;
   grid-template-rows:minmax(0,54%) minmax(0,46%)!important;
   width:100%;
-  height:calc(100svh - 90px - 59px)!important;
+  height:calc(100svh - 90px - 66px - env(safe-area-inset-bottom))!important;
   max-height:none!important;
   min-height:0!important;
   background:#f1ebe3;
@@ -244,7 +244,7 @@
 @media(max-width:760px) and (max-height:740px){
  .ed-hero-carousel.ed-hero{
   grid-template-rows:minmax(0,46%) minmax(0,54%)!important;
-  height:calc(100svh - 89px - 55px)!important;
+  height:calc(100svh - 89px - 66px - env(safe-area-inset-bottom))!important;
  }
  .ed-hero-carousel .ed-hero-content{
   padding:10px 19px 7px!important;
