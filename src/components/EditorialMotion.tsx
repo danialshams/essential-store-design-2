@@ -55,8 +55,19 @@ export function EditorialMotion({children}:{children:ReactNode}){
     if(loaded){start();return}
     if(decoding)return;
     decoding=true;
-    const deadline=new Promise<void>(resolve=>setTimeout(resolve,3600));
-    const decoded=image?.decode?.().then(()=>undefined,()=>undefined)??Promise.resolve();
+    const decoded=new Promise<void>(resolve=>{
+     if(!image){resolve();return}
+     const finish=()=>{
+      if(!image.naturalWidth){resolve();return}
+      if(typeof image.decode==="function")
+       void image.decode().then(()=>resolve(),()=>resolve());
+      else resolve();
+     };
+     if(image.complete){finish();return}
+     image.addEventListener("load",finish,{once:true});
+     image.addEventListener("error",()=>resolve(),{once:true});
+    });
+    const deadline=new Promise<void>(resolve=>setTimeout(resolve,4800));
     void Promise.race([decoded,deadline]).then(()=>{
      loaded=true;
      if(active)requestAnimationFrame(start);
