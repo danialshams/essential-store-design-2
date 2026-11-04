@@ -1,7 +1,7 @@
 name: Edition 02 real-browser cinematic QA
 on:
   push:
-    branches: [feature/editorial-motion-reliability-20261104, main]
+    branches: [feature/edition02-mobile-hero-scene-reveal-20261104, main]
   workflow_dispatch:
 permissions:
   contents: read
