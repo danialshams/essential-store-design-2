@@ -42,7 +42,6 @@ export function HeroCarousel({slides}:Props){
  if(!slide)return null;
  return <section className="ed-hero ed-hero-carousel" data-paused={paused} aria-roledescription="carousel" aria-label="کالکشن‌های منتخب" 
    aria-labelledby="ed-hero-title"
-}
    onTouchStart={event=>{touchX.current=event.touches[0]?.clientX??null}}
    onTouchEnd={event=>{if(touchX.current==null)return;const diff=event.changedTouches[0].clientX-touchX.current;if(Math.abs(diff)>65)go(active+(diff>0?1:-1));touchX.current=null}}>
   <div className="ed-hero-content">
