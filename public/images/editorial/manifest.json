@@ -1,0 +1,176 @@
+{
+  "license": "https://www.pexels.com/license/",
+  "source": "Pexels free editorial demo photographs",
+  "assets": [
+    {
+      "name": "hero-main",
+      "file": "public/images/editorial/hero-main.webp",
+      "source": "https://www.pexels.com/photo/31845548/",
+      "cdnUrl": "https://images.pexels.com/photos/31845548/pexels-photo-31845548.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "rasul lotfi",
+      "subject": "cream editorial fashion portrait",
+      "pixels": [
+        1600,
+        2400
+      ],
+      "bytes": 43326
+    },
+    {
+      "name": "hero-mobile",
+      "file": "public/images/editorial/hero-mobile.webp",
+      "source": "https://www.pexels.com/photo/36742651/",
+      "cdnUrl": "https://images.pexels.com/photos/36742651/pexels-photo-36742651.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "photographer": "Guilherme Simão",
+      "subject": "elegant beige fashion in minimalist studio",
+      "pixels": [
+        1200,
+        1800
+      ],
+      "bytes": 62878
+    },
+    {
+      "name": "category-clothing",
+      "file": "public/images/editorial/category-clothing.webp",
+      "source": "https://www.pexels.com/photo/8346027/",
+      "cdnUrl": "https://images.pexels.com/photos/8346027/pexels-photo-8346027.jpeg?auto=compress&cs=tinysrgb&w=2000",
+      "photographer": "Ron Lach",
+      "subject": "minimal clothing rail with intentional negative space",
+      "pixels": [
+        2000,
+        1333
+      ],
+      "bytes": 29370
+    },
+    {
+      "name": "category-bags",
+      "file": "public/images/editorial/category-bags.webp",
+      "source": "https://www.pexels.com/photo/8502477/",
+      "cdnUrl": "https://images.pexels.com/photos/8502477/pexels-photo-8502477.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "photographer": "Mohamed Hergafi",
+      "subject": "brown leather handbag",
+      "pixels": [
+        1200,
+        800
+      ],
+      "bytes": 46196
+    },
+    {
+      "name": "category-shoes",
+      "file": "public/images/editorial/category-shoes.webp",
+      "source": "https://www.pexels.com/photo/13560373/",
+      "cdnUrl": "https://images.pexels.com/photos/13560373/pexels-photo-13560373.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "photographer": "Sandro Tavares",
+      "subject": "white sneakers",
+      "pixels": [
+        1200,
+        1800
+      ],
+      "bytes": 89314
+    },
+    {
+      "name": "category-accessories",
+      "file": "public/images/editorial/category-accessories.webp",
+      "source": "https://www.pexels.com/photo/2433862/",
+      "cdnUrl": "https://images.pexels.com/photos/2433862/pexels-photo-2433862.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "photographer": "julie aagaard",
+      "subject": "leather accessory editorial",
+      "pixels": [
+        1200,
+        1600
+      ],
+      "bytes": 254188
+    },
+    {
+      "name": "campaign",
+      "file": "public/images/editorial/campaign.webp",
+      "source": "https://www.pexels.com/photo/8484082/",
+      "cdnUrl": "https://images.pexels.com/photos/8484082/pexels-photo-8484082.jpeg?auto=compress&cs=tinysrgb&w=1700",
+      "photographer": "Sasha Kim",
+      "subject": "two-model beige fashion campaign",
+      "pixels": [
+        1700,
+        2550
+      ],
+      "bytes": 408128
+    },
+    {
+      "name": "story-portrait",
+      "file": "public/images/editorial/story-portrait.webp",
+      "source": "https://www.pexels.com/photo/36829225/",
+      "cdnUrl": "https://images.pexels.com/photos/36829225/pexels-photo-36829225.jpeg?auto=compress&cs=tinysrgb&w=1400",
+      "photographer": "Dwi Setyo",
+      "subject": "elegant beige clothing portrait in a clean studio",
+      "pixels": [
+        1400,
+        1750
+      ],
+      "bytes": 60228
+    },
+    {
+      "name": "story-detail",
+      "file": "public/images/editorial/story-detail.webp",
+      "source": "https://www.pexels.com/photo/10340652/",
+      "cdnUrl": "https://images.pexels.com/photos/10340652/pexels-photo-10340652.jpeg?auto=compress&cs=tinysrgb&w=1000",
+      "photographer": "Kristian Bøgh",
+      "subject": "brown leather detail macro",
+      "pixels": [
+        1000,
+        669
+      ],
+      "bytes": 134558
+    },
+    {
+      "name": "chapter-form",
+      "file": "public/images/editorial/chapter-form.webp",
+      "source": "https://www.pexels.com/photo/10084484/",
+      "cdnUrl": "https://images.pexels.com/photos/10084484/pexels-photo-10084484.jpeg?auto=compress&cs=tinysrgb&w=1400",
+      "photographer": "Iryna Khamulyak",
+      "subject": "neutral catwalk form",
+      "pixels": [
+        1400,
+        2100
+      ],
+      "bytes": 188150
+    },
+    {
+      "name": "chapter-detail",
+      "file": "public/images/editorial/chapter-detail.webp",
+      "source": "https://www.pexels.com/photo/9853292/",
+      "cdnUrl": "https://images.pexels.com/photos/9853292/pexels-photo-9853292.jpeg?auto=compress&cs=tinysrgb&w=1400",
+      "photographer": "Ron Lach",
+      "subject": "atelier fabric and dress details",
+      "pixels": [
+        1400,
+        933
+      ],
+      "bytes": 77798
+    },
+    {
+      "name": "journal-style",
+      "file": "public/images/editorial/journal-style.webp",
+      "source": "https://www.pexels.com/photo/19354531/",
+      "cdnUrl": "https://images.pexels.com/photos/19354531/pexels-photo-19354531.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "photographer": "Berna",
+      "subject": "woman holding leather bag and book",
+      "pixels": [
+        1200,
+        1800
+      ],
+      "bytes": 57924
+    },
+    {
+      "name": "journal-details",
+      "file": "public/images/editorial/journal-details.webp",
+      "source": "https://www.pexels.com/photo/30330369/",
+      "cdnUrl": "https://images.pexels.com/photos/30330369/pexels-photo-30330369.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "photographer": "Jimmy Elizarraras",
+      "subject": "minimalist fashion portrait",
+      "pixels": [
+        1200,
+        1500
+      ],
+      "bytes": 35396
+    }
+  ],
+  "failed": []
+}
