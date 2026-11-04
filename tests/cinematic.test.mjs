@@ -47,7 +47,7 @@ test("Mobile hero is one editorial viewport with its own controls and normalized
  assert.match(css,/height:calc\(100svh - 90px - 66px - env\(safe-area-inset-bottom\)\)/);
  assert.match(css,/max-height:740px/);
  assert.match(motion,/photo\.decode\(\)/);
- assert.match(motion,/image\(detail,"up"\)/);
+ assert.match(motion,/image\(detail,"fade"\)/);
  assert.match(motion,/data-chapter/);
  assert.match(motion,/observer\.observe\(trigger\)/);
 });
@@ -125,7 +125,7 @@ test("Editorial media use exact intrinsic framing and tailored visible-only moti
  assert.match(media,/--frame-ratio/);
  assert.match(product,/--actual-media-ratio/);
  assert.match(motion,/IntersectionObserver/);
- assert.match(motion,/rootMargin:"0px 0px -6% 0px"/);
+ assert.match(motion,/rootMargin:window.innerWidth<=760\?/);
  assert.match(motion,/image\(media/);
  assert.match(motion,/text\(title,title/);
  assert.match(motion,/action\(link,link/);
@@ -181,4 +181,21 @@ test("Every editorial image has an independent observer callback even on shared 
  assert.match(homepage,/loading="eager" decoding="async"/);
  assert.match(motion,/1700px/);
  assert.match(motion,/1100px/);
+});
+
+test("Cinematic image openings use numeric, frame-by-frame GSAP masks and post-reveal camera pull-back",()=>{
+ const motion=load("src/components/EditorialMotion.tsx");
+ const page=load("src/app/page.tsx");
+ const style=load("src/app/editorial-precision.css");
+ assert.match(motion,/const clipAt=/);
+ assert.match(motion,/surface\.style\.clipPath=clipAt\(mode,state\.value\)/);
+ assert.match(motion,/data-photo-reveal-progress/);
+ assert.match(motion,/onUpdate:render/);
+ assert.match(motion,/scale:1,duration:2\.1/);
+ assert.match(motion,/\["up","fade","right","fade"\]/);
+ assert.match(motion,/mode==="fade"/);
+ assert.match(motion,/chapterMask/);
+ assert.doesNotMatch(motion,/\.to\(frame,\{clipPath:/);
+ assert.match(page,/ed-category-image-stage/);
+ assert.match(style,/ed-category-image-stage/);
 });

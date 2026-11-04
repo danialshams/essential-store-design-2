@@ -6,6 +6,13 @@ const fs=require("node:fs");
 const {chromium}=require("playwright");
 const {spawnSync}=require("node:child_process");
 const systemChrome=spawnSync("which",["google-chrome"]).status===0;
+const bringIntoRevealZone=async locator=>{
+ await locator.evaluate(el=>{
+  const top=window.scrollY+el.getBoundingClientRect().top-innerHeight*.67;
+  window.scrollTo({top:Math.max(0,top),behavior:"instant"});
+ });
+};
+
 (async()=>{
  fs.mkdirSync("artifacts",{recursive:true});
  const browser=await chromium.launch({headless:true,...(systemChrome?{channel:"chrome"}:{}),args:["--no-sandbox"]});
@@ -90,7 +97,7 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   for(const selector of scenes){
     const item=page.locator(selector).first();
     if(await item.count()){
-      await item.scrollIntoViewIfNeeded({timeout:20000});
+      await bringIntoRevealZone(item);
       await page.waitForTimeout(1250);
     }
   }
@@ -112,7 +119,7 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   const active=await page.locator(".ed-hero-slide.is-active").count();
   assert.equal(active,1,"Hero carousel has an invalid active scene");
   const firstProduct=page.locator(".ed-products-section .premium-product-card").first();
-  await firstProduct.scrollIntoViewIfNeeded();
+  await bringIntoRevealZone(firstProduct);
   await page.waitForTimeout(1250);
   const productFraming=await firstProduct.evaluate(card=>{
    const media=card.querySelector(".premium-product-media").getBoundingClientRect();
@@ -121,7 +128,7 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   });
   assert.ok(Math.abs(productFraming.rendered-productFraming.natural)<.09,
     "Product image has visible letterboxing from a wrong aspect ratio: "+JSON.stringify(productFraming));
-  await page.locator(".ed-categories-grid").scrollIntoViewIfNeeded();
+  await bringIntoRevealZone(page.locator(".ed-categories-grid"));
   await page.waitForTimeout(650);
   const category=await page.locator(".ed-category-tile").first().evaluate(el=>({
    clip:getComputedStyle(el).clipPath,
@@ -179,7 +186,7 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   assert.equal(await categoryCards.count(),4,"Expected all four collection cards");
   for(let index=0;index<4;index++){
    const card=categoryCards.nth(index);
-   await card.scrollIntoViewIfNeeded();
+   await bringIntoRevealZone(card);
    await mp.waitForFunction(i=>{
     const node=document.querySelectorAll(".ed-category-tile")[i];
     return node?.getAttribute("data-photo-reveal-state")==="playing";
@@ -187,19 +194,16 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
    const motion=await card.evaluate(el=>({
     state:el.getAttribute("data-photo-reveal-state"),
     photoWidth:el.querySelector("img")?.naturalWidth||0,
-    clip:getComputedStyle(el).clipPath
+    mode:el.getAttribute("data-cinematic-mode"),
+    clip:getComputedStyle(el.querySelector(".ed-category-image-stage")||el).clipPath
    }));
    assert.equal(motion.state,"playing","Card "+(index+1)+" photo did not run GSAP");
    assert.ok(motion.photoWidth>0,"Card "+(index+1)+" image was not decoded");
+   assert.ok(["up","fade","right"].includes(motion.mode),"Card missing cinematic mode");
+   // This tour can encounter an image AFTER it has already opened.
+   // The dedicated verify-physical-photo-reveal script starts a fresh page
+   // for each photo to assert real midway mask/opacity and zoom progress.
    console.log("COLLECTION PHOTO REVEAL",index+1,JSON.stringify(motion));
-   if(index===0||index===2||index===3){
-    // Capture an actual animation frame instead of merely testing the
-    // final image. Cards that simply pop in have no measurable in-between.
-    await mp.waitForTimeout(140);
-    const interpolated=await card.evaluate(el=>getComputedStyle(el).clipPath);
-    assert.ok(interpolated.startsWith("inset("),
-     "Collection "+(index+1)+" lacks a cinematic image wipe: "+interpolated);
-   }
   }
   // Verify lower editorial sections also register the photo timelines,
   // independently of their captions and text reveals.
@@ -215,7 +219,7 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
    const limit=Math.min(2,await photos.count());
    for(let index=0;index<limit;index++){
     const node=photos.nth(index);
-    await node.scrollIntoViewIfNeeded({timeout:12000});
+    await bringIntoRevealZone(node);
     await mp.waitForFunction(({selector,index})=>{
      const element=document.querySelectorAll(selector)[index];
      return element?.getAttribute("data-photo-reveal-state")==="playing";
@@ -264,14 +268,14 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
    '[data-scene="story"]','.ed-mobile-chapters','[data-scene="journal"]','.ed-benefits']){
    const section=mp.locator(selector).first();
    if(await section.count()){
-    await section.scrollIntoViewIfNeeded({timeout:20000});
+    await bringIntoRevealZone(section);
     await mp.waitForTimeout(800);
    }
   }
   // The smaller inset previously finished its animation before reaching
   // the viewport. It must be visible and independently resolved afterward.
   const inset=mp.locator(".ed-story-inset");
-  await inset.scrollIntoViewIfNeeded();
+  await bringIntoRevealZone(inset);
   await mp.waitForTimeout(1800);
   const insetState=await inset.evaluate(el=>({
     opacity:Number(getComputedStyle(el).opacity),
@@ -283,7 +287,7 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
   assert.ok(insetState.opacity>.92&&insetState.imageWidth>=insetState.width*.9,
     "Brand-story inset failed its own on-view photo reveal: "+JSON.stringify(insetState));
   for(const copy of await mp.locator(".ed-mobile-chapter-copy").all()){
-   await copy.scrollIntoViewIfNeeded();
+   await bringIntoRevealZone(copy);
    await mp.waitForTimeout(1450);
    const opacity=await copy.locator("h2").evaluate(el=>Number(getComputedStyle(el).opacity));
    assert.ok(opacity>.9,"Mobile chapter headline failed to animate when visible");
