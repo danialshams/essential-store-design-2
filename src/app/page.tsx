@@ -13,7 +13,7 @@ const editorialImages:Record<string,string>={
   accessories:"/images/editorial/category-accessories.webp",
 };
 const fallbackEditorial={
-  hero:"/images/editorial/category-clothing.webp",
+  hero:"/images/editorial/chapter-detail.webp",
   portrait:"/images/editorial/story-portrait.webp",
   bag:"/images/editorial/story-detail.webp",
 };
@@ -65,7 +65,7 @@ export default async function Home(){
    {id:"edition-form",image:heroWide(storyImage,"/images/editorial/story-detail.webp"),mobileImage:heroWide(storyImage,"/images/editorial/story-detail.webp"),title:editorialHeading?.title||"فرم‌های ساده.\nاثر ماندگار.",
     description:editorialHeading?.description||"آرامش در فرم و کیفیت در انتخاب؛ نگاهی تازه به استایل هر روز.",
     eyebrow:"روایت دوم / فرم و سبک",ctaLabel:editorialHeading?.ctaLabel||"کشف داستان",ctaHref:storyCta,alt:"عکاسی مد با پالت خنثی"},
-   {id:"edition-details",image:heroWide(lookbookImage,"/images/editorial/chapter-detail.webp"),mobileImage:heroWide(lookbookImage,"/images/editorial/chapter-detail.webp"),title:firstBanner?.title||"زیبایی در\nجزئیات است.",
+   {id:"edition-details",image:heroWide(lookbookImage,"/images/editorial/category-bags.webp"),mobileImage:heroWide(lookbookImage,"/images/editorial/chapter-detail.webp"),title:firstBanner?.title||"زیبایی در\nجزئیات است.",
     description:firstBanner?.subtitle||"بافت، متریال و جزئیاتی که انتخاب‌های ماندگار را از دیگران متمایز می‌کنند.",
     eyebrow:"روایت سوم / هنر جزئیات",ctaLabel:"دیدن کالکشن",ctaHref:firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags",alt:"تصویر کمپین سینمایی مد"}
   ]; // Always retain all three stories; even matching merchant photos have distinct copy.
