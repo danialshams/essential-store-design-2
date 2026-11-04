@@ -19,6 +19,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Source tests
         run: npm test
+      - name: Browser QA script syntax
+        run: node --check scripts/verify-editorial-motion.cjs
       - name: TypeScript
         run: npm run typecheck
       - name: Production build
