@@ -450,3 +450,9 @@ header.premium-header .premium-search-form:focus-within{
 @media (prefers-reduced-motion:reduce){
  .ed-home .ed-category-image-stage{clip-path:none!important;opacity:1!important}
 }
+
+/* End exactly at native photo scale after the camera pull-back.
+   Older hover/transform styles must not re-introduce a slight zoom. */
+.ed-home [data-photo-reveal-complete="true"] img{
+ transform:scale(1)!important;
+}
