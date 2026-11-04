@@ -2,7 +2,7 @@
 import {useEffect,useRef,useState} from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {ArrowRight,ArrowUpRight,ChevronLeft,ChevronRight,Pause,Play} from "lucide-react";
+import {ArrowUpRight,ChevronLeft,ChevronRight,Pause,Play} from "lucide-react";
 
 export type EditorialSlide={
  id:string;
@@ -17,6 +17,10 @@ export type EditorialSlide={
 };
 type Props={slides:EditorialSlide[]};
 const INTERVAL=9000;
+// Accept real line breaks and serialized backslash-n from saved CMS content.
+export function titleLines(title:string){
+ return title.replace(/\\n/g,"\n").split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
+}
 export function HeroCarousel({slides}:Props){
  const [active,setActive]=useState(0);
  const [paused,setPaused]=useState(false);
@@ -48,16 +52,26 @@ export function HeroCarousel({slides}:Props){
    <div key={slide.id} className="ed-hero-copy-frame" data-active-hero-copy aria-live={paused?"polite":"off"}>
     <span className="ed-hero-eyebrow" data-hero-kicker><span/> THE EDITORIAL / {String(active+1).padStart(2,"0")}</span>
     <p className="ed-hero-intro" data-hero-kicker>{slide.eyebrow}</p>
-    <h1 id="ed-hero-title">{slide.title.split("\n").filter(Boolean).map((line,i)=>
+    <h1 id="ed-hero-title">{titleLines(slide.title).map((line,i)=>
      <span key={i} className="ed-hero-line-mask"><span data-hero-line>{line}</span></span>)}</h1>
     <p className="ed-hero-description" data-hero-description>{slide.description}</p>
     <div className="ed-hero-links" data-hero-action>
      <Link className="ed-dark-button" href={slide.ctaHref}>{slide.ctaLabel}<ArrowUpRight size={18} strokeWidth={1.5}/></Link>
-     <Link className="ed-text-link" href="#ed-categories">دیدن دسته‌بندی‌ها <ArrowRight size={17}/></Link>
+     
     </div>
    </div>
-   <div className="ed-hero-bottom" data-hero-action>
-    <span>ESSENTIAL / EDITION 02</span><span className="ed-hero-bottom-line"/><span>{String(active+1).padStart(2,"0")} — {String(slides.length).padStart(2,"0")}</span>
+   <div className="ed-hero-controls-row" aria-label="جابه‌جایی کالکشن">
+    <span className="ed-hero-progress-count">{String(active+1).padStart(2,"0")} / {String(slides.length).padStart(2,"0")}</span>
+   <div className="ed-carousel-control" aria-label="کنترل اسلایدهای کالکشن">
+    <button type="button" onClick={()=>go(active-1)} aria-label="اسلاید قبلی" disabled={slides.length<2}><ChevronLeft size={18} strokeWidth={1.5}/></button>
+    <div className="ed-carousel-dots" role="group" aria-label="انتخاب اسلاید">
+     {slides.map((frame,i)=><button type="button" key={frame.id} onClick={()=>go(i)}
+       className={i===active?"active":""} aria-current={i===active?"true":undefined}
+       aria-label={`اسلاید ${i+1} از ${slides.length}`}/>)}
+    </div>
+    <button type="button" onClick={()=>go(active+1)} aria-label="اسلاید بعدی" disabled={slides.length<2}><ChevronRight size={18} strokeWidth={1.5}/></button>
+    <button type="button" className="ed-carousel-play" aria-label={paused?"ادامه پخش خودکار":"توقف پخش خودکار"} aria-pressed={paused} onClick={()=>setPaused(p=>!p)}>{paused?<Play size={15} strokeWidth={1.5}/>:<Pause size={15} strokeWidth={1.5}/>}</button>
+   </div>
    </div>
   </div>
   <div className="ed-hero-visual" data-hero-image>
@@ -71,17 +85,7 @@ export function HeroCarousel({slides}:Props){
      </div>
     ))}
    </div>
-   <span className="ed-hero-photo-stamp">THE ESSENTIAL<br/>COLLECTION</span>
-   <div className="ed-carousel-control" aria-label="کنترل اسلایدهای کالکشن">
-    <button type="button" onClick={()=>go(active-1)} aria-label="اسلاید قبلی" disabled={slides.length<2}><ChevronLeft size={18} strokeWidth={1.5}/></button>
-    <div className="ed-carousel-dots" role="group" aria-label="انتخاب اسلاید">
-     {slides.map((frame,i)=><button type="button" key={frame.id} onClick={()=>go(i)}
-       className={i===active?"active":""} aria-current={i===active?"true":undefined}
-       aria-label={`اسلاید ${i+1} از ${slides.length}`}/>)}
-    </div>
-    <button type="button" onClick={()=>go(active+1)} aria-label="اسلاید بعدی" disabled={slides.length<2}><ChevronRight size={18} strokeWidth={1.5}/></button>
-    <button type="button" className="ed-carousel-play" aria-label={paused?"ادامه پخش خودکار":"توقف پخش خودکار"} aria-pressed={paused} onClick={()=>setPaused(p=>!p)}>{paused?<Play size={15} strokeWidth={1.5}/>:<Pause size={15} strokeWidth={1.5}/>}</button>
-   </div>
+   <span className="ed-hero-photo-stamp">THE ESSENTIAL / COLLECTION</span>
    <span className="ed-hero-number">0{active+1} / 0{slides.length}</span>
   </div>
  </section>;
