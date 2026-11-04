@@ -408,3 +408,18 @@ header.premium-header .premium-search-panel.is-open{
  .ed-hero-minimal .ed-hero-stable-action{animation:none!important}
  header.premium-header .premium-search-panel{transition:none!important}
 }
+
+/* Replace the generic two-pixel focus rectangle with one editorial hairline.
+   The form remains visibly focused for keyboard users. */
+header.premium-header .premium-search-form input,
+header.premium-header .premium-search-form input:focus,
+header.premium-header .premium-search-form input:focus-visible{
+ outline:none!important;outline-offset:0!important;
+ border:0!important;box-shadow:none!important;
+}
+header.premium-header .premium-search-form{
+ transition:border-color .22s ease!important;
+}
+header.premium-header .premium-search-form:focus-within{
+ border-bottom-color:rgba(93,69,51,.58)!important;
+}
