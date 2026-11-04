@@ -233,3 +233,12 @@ html{scroll-behavior:auto}
  }
  .ed-hero-minimal .ed-hero-slide{transition:none!important}
 }
+
+/* Footer legibility: retain subtle stagger without making navigational
+   links and contact details too faint against the dark editorial panel. */
+.premium-footer-links a,.premium-footer-contact>span,.premium-footer-contact>a{
+ color:#d0c4b7!important;
+}
+.premium-footer-links a:hover,.premium-footer-contact>a:hover{color:#fff!important}
+.premium-footer-links h3{color:#f0e8df!important}
+.premium-footer-bottom{color:#bcae9e!important}
