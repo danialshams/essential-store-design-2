@@ -30,8 +30,15 @@ export function titleLines(title:string){
  */
 export function HeroCarousel({slides}:Props){
  const [active,setActive]=useState(0);
+ const [introComplete,setIntroComplete]=useState(false);
  const [reduce,setReduce]=useState(false);
  const touchX=useRef<number|null>(null);
+ useEffect(()=>{
+  const ready=()=>setIntroComplete(true);
+  if(document.documentElement.dataset.introState==="complete")ready();
+  else window.addEventListener("editorial:intro-complete",ready);
+  return()=>window.removeEventListener("editorial:intro-complete",ready);
+ },[]);
  useEffect(()=>{
   const mq=window.matchMedia("(prefers-reduced-motion: reduce)");
   const update=()=>setReduce(mq.matches);
@@ -40,13 +47,13 @@ export function HeroCarousel({slides}:Props){
   return()=>mq.removeEventListener?.("change",update);
  },[]);
  useEffect(()=>{
-  if(reduce||slides.length<2)return;
+  if(!introComplete||reduce||slides.length<2)return;
   const timer=window.setInterval(()=>{
    if(document.visibilityState==="visible")
     setActive(v=>(v+1)%slides.length);
   },INTERVAL);
   return()=>window.clearInterval(timer);
- },[reduce,slides.length]);
+ },[introComplete,reduce,slides.length]);
  const go=(number:number)=>setActive((number+slides.length)%slides.length);
  const slide=slides[active]??slides[0];
  if(!slide)return null;
