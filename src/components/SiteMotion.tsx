@@ -59,8 +59,13 @@ export function SiteMotion({children}:{children:ReactNode}){
    const productInfo=first(".product-information");
    if(productGallery){
     const image=productGallery.querySelector(".product-main-photo");
-    if(image)gsap.fromTo(image,{clipPath:"inset(0 100% 0 0)",scale:1.025},
-     {clipPath:"inset(0 0 0 0)",scale:1,duration:1.4,ease:"power3.inOut",clearProps:"clipPath,transform"});
+    if(image){
+     // Never hide or clip the whole product photo frame: the main product
+     // photograph must remain visible even during slow loads or reduced FPS.
+     const photo=image.querySelector("img");
+     if(photo)gsap.fromTo(photo,{scale:1.055,filter:"brightness(1.08)"},
+       {scale:1,filter:"brightness(1)",duration:1.5,ease:"power2.out",clearProps:"transform,filter"});
+    }
     const thumb=productGallery.querySelector(".gallery-thumbnails");
     if(thumb)gsap.fromTo(thumb,{y:16,autoAlpha:0},{y:0,autoAlpha:1,duration:.85,delay:.6,ease:"power3.out"});
    }
