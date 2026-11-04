@@ -77,7 +77,7 @@ export function HeroCarousel({slides}:Props){
   <div className="ed-hero-visual" data-hero-image>
    <div className="ed-hero-media-shell" data-hero-media>
     {slides.map((frame,i)=>(
-     <div className={`ed-hero-slide ${i===active?"is-active":""}`} key={frame.id} aria-hidden={i!==active}>
+     <div className={`ed-hero-slide ${i===active?"is-active":""}`} key={frame.id} aria-hidden={i!==active} data-wide-photo={["/images/editorial/chapter-detail.webp","/images/editorial/story-detail.webp","/images/editorial/category-bags.webp"].includes(frame.image)?"true":"false"}>
       <Image src={frame.image} alt="" aria-hidden="true" fill priority={i===0}
         sizes="(max-width:760px) 100vw, 57vw" unoptimized={frame.image.startsWith("http")} className="ed-hero-backdrop" quality={70}/>
       <Image src={frame.image} alt={i===active?frame.alt:""} fill priority={i===0} loading={i===0?"eager":undefined} quality={86}
