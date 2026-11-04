@@ -38,7 +38,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
     warmCallbacks.get(entry.target)?.forEach(prepare=>prepare());
     warmObserver.unobserve(entry.target);
    }
-  },{rootMargin:window.innerWidth<=760?"0px 0px 900px 0px":"0px 0px 640px 0px",threshold:0});
+  },{rootMargin:window.innerWidth<=760?"0px 0px 1700px 0px":"0px 0px 1100px 0px",threshold:0});
   const observer=new IntersectionObserver(entries=>{
    for(const entry of entries){
     if(entry.isIntersecting)callbacks.get(entry.target)?.forEach(enter=>enter());
