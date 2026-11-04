@@ -52,7 +52,7 @@ export function HeroCarousel({slides}:Props){
    <div key={slide.id} className="ed-hero-copy-frame" data-active-hero-copy aria-live={paused?"polite":"off"}>
     <span className="ed-hero-eyebrow" data-hero-kicker><span/> THE EDITORIAL / {String(active+1).padStart(2,"0")}</span>
     <p className="ed-hero-intro" data-hero-kicker>{slide.eyebrow}</p>
-    <h1 id="ed-hero-title">{titleLines(slide.title).map((line,i)=>
+    <h1 id="ed-hero-title" aria-label={titleLines(slide.title).join(" ")}>{titleLines(slide.title).map((line,i)=>
      <span key={i} className="ed-hero-line-mask"><span data-hero-line>{line}</span></span>)}</h1>
     <p className="ed-hero-description" data-hero-description>{slide.description}</p>
     <div className="ed-hero-links" data-hero-action>
