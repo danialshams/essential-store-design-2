@@ -70,7 +70,7 @@ export function Header(){
      <button ref={menuButton} type="button" className={`premium-icon premium-menu-trigger ${menuOpen?"is-open":""}`} aria-label="باز کردن فهرست" aria-expanded={menuOpen} aria-controls="maison-menu" onClick={()=>{setSearchOpen(false);setMenuPhoto(fallbackPhoto);setMenuOpen(true)}}><span className="premium-menu-lines" aria-hidden="true"><i/><i/></span><span className="premium-menu-word">MENU</span></button>
      <nav className="premium-navigation" aria-label="منوی اصلی"><Link className={pathname==="/"?"current":""} href="/">خانه</Link><Link href="/products">فروشگاه</Link>{firstCategory&&<Link href={`/category/${firstCategory.id}`}>{firstCategory.name}</Link>}<Link href="/blog">ژورنال</Link></nav>
     </div>
-    <Link href="/" className="premium-brand" aria-label={`${name}، صفحه اصلی`}>{store.settings.logoUrl&&<Image src={store.settings.logoUrl} width={37} height={37} alt="" unoptimized className="premium-logo-img"/>}<strong>{name}</strong><span>THE EDITORIAL STORE</span></Link>
+    <Link href="/" className="premium-brand" aria-label={`${name}، صفحه اصلی`}>{store.settings.logoUrl&&<Image src={store.settings.logoUrl} width={37} height={37} alt="" unoptimized className="premium-logo-img"/>}<strong lang={/[\u0600-\u06FF]/.test(name)?"fa":"en"}>{name}</strong><span>THE EDITORIAL STORE</span></Link>
     <div className="premium-header-left">
      <button type="button" className="premium-icon" onClick={()=>setSearchOpen(v=>!v)} aria-expanded={searchOpen} aria-label="جستجو"><Search size={20} strokeWidth={1.5}/></button>
      <Link href="/account" className="premium-icon premium-user-action" aria-label="حساب کاربری"><UserRound size={20} strokeWidth={1.5}/></Link>
