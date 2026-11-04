@@ -7,20 +7,22 @@ import {useEffect,useRef,useState,type FormEvent,type KeyboardEvent as ReactKeyb
 import {ArrowLeft,ArrowUpLeft,Heart,Search,ShoppingBag,UserRound,X} from "lucide-react";
 import {useShop} from "@/components/ShopProvider";
 
-const fallbackPhoto="/images/editorial-portrait.webp";
+const fallbackPhoto="/images/editorial/story-portrait.webp";
+const demoCategoryImages:Record<string,string>={clothing:"/images/editorial/category-clothing.webp",bags:"/images/editorial/category-bags.webp",shoes:"/images/editorial/category-shoes.webp",accessories:"/images/editorial/category-accessories.webp"};
 export function Header(){
  const pathname=usePathname(),router=useRouter();
  const {store,count,favorites}=useShop();
  const [menuOpen,setMenuOpen]=useState(false),[searchOpen,setSearchOpen]=useState(false);
  const [query,setQuery]=useState(""),[menuPhoto,setMenuPhoto]=useState(fallbackPhoto);
  const searchRef=useRef<HTMLInputElement>(null),closeRef=useRef<HTMLButtonElement>(null),menuButton=useRef<HTMLButtonElement>(null);
+ const requestedMenuPhoto=useRef(0);
  const name=store.settings.storeName||"مزون";
  const firstCategory=store.categories[0];
  const menuItems=[
-  {label:"صفحه اصلی",href:"/",image:"/images/editorial-hero.webp"},
-  {label:"کالکشن‌ها",href:"/products",image:"/images/editorial-portrait.webp"},
-  ...store.categories.slice(0,5).map(category=>({label:category.name,href:`/category/${category.id}`,image:category.image||fallbackPhoto})),
-  {label:"ژورنال",href:"/blog",image:"/images/editorial-bag.webp"},
+  {label:"صفحه اصلی",href:"/",image:"/images/editorial/hero-main.webp"},
+  {label:"کالکشن‌ها",href:"/products",image:"/images/editorial/category-clothing.webp"},
+  ...store.categories.slice(0,5).map(category=>({label:category.name,href:`/category/${category.id}`,image:category.image?.startsWith("/images/")?(demoCategoryImages[category.id]||category.image):category.image||fallbackPhoto})),
+  {label:"ژورنال",href:"/blog",image:"/images/editorial/journal-style.webp"},
   {label:"درباره ما",href:"/info/about",image:fallbackPhoto},
   {label:"ارتباط با ما",href:"/info/contact",image:fallbackPhoto}
  ];
@@ -38,6 +40,18 @@ export function Header(){
   return()=>{document.body.style.overflow=old;menuButton.current?.focus()};
  },[menuOpen]);
  useEffect(()=>{if(searchOpen)searchRef.current?.focus()},[searchOpen]);
+ function showMenuPhoto(image:string){
+  const token=++requestedMenuPhoto.current;
+  // Decode the incoming photograph before swapping the visible one. Quick
+  // hover changes cannot allow an older image to win the race.
+  const next=new window.Image();
+  next.src=image;
+  void next.decode().then(()=>{
+   if(requestedMenuPhoto.current===token)setMenuPhoto(image);
+  }).catch(()=>{
+   if(requestedMenuPhoto.current===token)setMenuPhoto(image);
+  });
+ }
  function submit(event:FormEvent){event.preventDefault();router.push(`/products${query.trim()?`?q=${encodeURIComponent(query.trim())}`:""}`);setSearchOpen(false)}
  function trapMenuFocus(event:ReactKeyboardEvent<HTMLElement>){
   if(event.key!=="Tab")return;
@@ -72,7 +86,7 @@ export function Header(){
     <div className="premium-drawer-layout">
      <div className="premium-drawer-text">
       <span className="premium-drawer-eyebrow">فهرست کالکشن‌ها / DISCOVER</span>
-      <nav aria-label="ناوبری منوی بازشده">{menuItems.map((item,index)=><Link key={`${item.href}-${index}`} href={item.href} className={pathname===item.href?"current":""} onMouseEnter={()=>setMenuPhoto(item.image)} onFocus={()=>setMenuPhoto(item.image)} style={{animationDelay:`${Math.min(index,8)*58}ms`}}><small>{String(index+1).padStart(2,"0")}</small><span>{item.label}</span><ArrowUpLeft size={20} strokeWidth={1.3}/></Link>)}</nav>
+      <nav aria-label="ناوبری منوی بازشده">{menuItems.map((item,index)=><Link key={`${item.href}-${index}`} href={item.href} className={pathname===item.href?"current":""} onMouseEnter={()=>showMenuPhoto(item.image)} onFocus={()=>showMenuPhoto(item.image)} style={{animationDelay:`${Math.min(index,8)*58}ms`}}><small>{String(index+1).padStart(2,"0")}</small><span>{item.label}</span><ArrowUpLeft size={20} strokeWidth={1.3}/></Link>)}</nav>
       <div className="premium-drawer-bottom"><span>ESSENTIAL / A QUIETER KIND OF LUXURY</span><p>جزئیات، تفاوت می‌سازند.</p></div>
      </div>
      <div className="premium-drawer-editorial"><div className="premium-drawer-image"><Image key={menuPhoto} src={menuPhoto} alt="تصویر منتخب کالکشن" fill sizes="(max-width: 760px) 100vw, 43vw" unoptimized={menuPhoto.startsWith("http")}/></div><div className="premium-drawer-image-caption"><span>AN EDITORIAL PERSPECTIVE</span><span>EST. MMXXVI</span></div></div>
