@@ -111,8 +111,21 @@ export function SiteMotion({children}:{children:ReactNode}){
      if(started)return;
      if(!loading&&opts.photo){
       loading=true;
-      const deadline=new Promise<void>(resolve=>setTimeout(resolve,2500));
-      const finished=opts.photo.decode?.().then(()=>undefined,()=>undefined)??Promise.resolve();
+      const deadline=new Promise<void>(resolve=>setTimeout(resolve,4200));
+      const finished=new Promise<void>(resolve=>{
+       const image=opts.photo;
+       if(!image){resolve();return}
+       const done=()=>{
+        if(image.naturalWidth&&image.decode)
+         void image.decode().then(()=>resolve(),()=>resolve());
+        else resolve();
+       };
+       if(image.complete)done();
+       else{
+        image.addEventListener("load",done,{once:true});
+        image.addEventListener("error",()=>resolve(),{once:true});
+       }
+      });
       void Promise.race([finished,deadline]).then(()=>{
        decoded=true;requestAnimationFrame(start);
       });
