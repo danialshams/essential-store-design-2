@@ -3,7 +3,8 @@
 const fs=require("node:fs");
 const {chromium}=require("playwright");
 (async()=>{
- fs.mkdirSync("artifacts/live-media", {recursive:true});
+ const output="artifacts/"+(process.env.EDITORIAL_DIAG_LABEL||"live")+"-media";
+ fs.mkdirSync(output,{recursive:true});
  const browser=await chromium.launch({headless:true,channel:"chrome",args:["--no-sandbox"]});
  const base=process.env.EDITORIAL_BASE_URL||"https://essential-store-design-2.vercel.app";
  const results={base,started:new Date().toISOString(),viewports:[]};
@@ -57,13 +58,17 @@ const {chromium}=require("playwright");
         reveal:el.getAttribute("data-reveal-state"),
         top:Math.round(r.top),bottom:Math.round(r.bottom),
         clip:cs.clipPath,opacity:cs.opacity,transform:cs.transform,
+        maskClip:getComputedStyle(el.querySelector(".ed-category-image-stage")||el).clipPath,
+        maskOpacity:getComputedStyle(el.querySelector(".ed-category-image-stage")||el).opacity,
+        progress:el.getAttribute("data-photo-reveal-progress"),
+        mode:el.getAttribute("data-cinematic-mode"),
         imgReady:img?.complete,imgWidth:img?.naturalWidth,
         imgTransform:ic?.transform,imgOpacity:ic?.opacity};
       });
       series.push({ms,...sample});
       if((name==="categories"||name==="campaign"||name==="storyMain") &&
           (ms===0||ms===260||ms===960)){
-       await page.screenshot({path:`artifacts/live-media/${tag}-${name}-${i+1}-${ms}.png`,
+       await page.screenshot({path:`${output}/${tag}-${name}-${i+1}-${ms}.png`,
          fullPage:false,animations:"allow"});
       }
      }
@@ -74,7 +79,7 @@ const {chromium}=require("playwright");
   }catch(e){log.fatal=String(e);results.viewports.push(log)}
   await context.close();
  }
- fs.writeFileSync("artifacts/live-media/trace.json",JSON.stringify(results,null,2));
+ fs.writeFileSync(output+"/trace.json",JSON.stringify(results,null,2));
  console.log("LIVE MEDIA DIAGNOSTICS",JSON.stringify(results.viewports.map(v=>({
   tag:v.tag,fatal:v.fatal,sections:v.sections.map(s=>({
    media:s.selector,index:s.index,
