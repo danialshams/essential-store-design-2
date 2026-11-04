@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from "react";
 import {usePathname} from "next/navigation";
+import {useShop} from "@/components/ShopProvider";
 import gsap from "gsap";
 import {ScrollTrigger} from "gsap/ScrollTrigger";
 
@@ -9,6 +10,7 @@ export function SiteMotion({children}:{children:ReactNode}){
  const root=useRef<HTMLDivElement>(null);
  const previousPath=useRef<string|null>(null);
  const pathname=usePathname();
+ const {store}=useShop();
  const [introPhase,setIntroPhase]=useState<"loading"|"leaving"|"done">("loading");
 
  // A single, restrained first-visit curtain. Start hero choreography only
@@ -206,7 +208,7 @@ export function SiteMotion({children}:{children:ReactNode}){
 
  return <>
   {introPhase!=="done"&&<div className={`maison-intro ${introPhase==="leaving"?"is-leaving":""}`} role="status" aria-label="در حال آماده‌سازی مجموعه" aria-live="polite">
-   <div className="maison-intro-center"><span className="maison-intro-kicker">THE EDITION / 02</span><span className="maison-intro-word">ESSENTIAL</span><span className="maison-intro-rule"/><span className="maison-intro-caption">یک روایت از سادگی</span></div>
+   <div className="maison-intro-center"><span className="maison-intro-kicker">THE EDITION / 02</span><span className="maison-intro-word">{store.settings.storeName||"THE EDITION"}</span><span className="maison-intro-rule"/><span className="maison-intro-caption">یک روایت از سادگی</span></div>
   </div>}
   <div ref={root} className="editorial-page-shell" data-page-motion="initial">{children}</div>
  </>;
