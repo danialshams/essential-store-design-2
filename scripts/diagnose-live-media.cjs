@@ -45,7 +45,7 @@ const {chromium}=require("playwright");
      // Move to a point where the image has just entered the visible viewport.
      await node.evaluate(el=>{
       const rect=el.getBoundingClientRect();
-      const target=window.scrollY+rect.top-innerHeight*.87;
+      const target=window.scrollY+rect.top-innerHeight*.78;
       window.scrollTo({top:Math.max(0,target),behavior:"instant"});
      });
      const series=[];
