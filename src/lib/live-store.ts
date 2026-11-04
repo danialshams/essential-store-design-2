@@ -11,6 +11,7 @@ export type StoreSettings={storeName:string;description:string;logoUrl?:string|n
 export type StoreData={products:Product[];categories:StoreCategory[];settings:StoreSettings;banners:StoreBanner[];pages:StorePage[];articles:StoreArticle[];shipping:StoreShipping[];reviews:StoreReview[];live:boolean};
 const demo:StoreData={products:demoProducts,categories:demoCategories,settings:{storeName:"ESSENTIAL",description:"انتخاب‌هایی باکیفیت برای سلیقه‌های ماندگار؛ از لباس‌های خوش‌دوخت تا اکسسوری‌های ظریف."},banners:[],pages:[],articles:[],shipping:[],reviews:[],live:false};
 const cleanUrl=(url:unknown)=>typeof url==="string"&&(url.startsWith("https://")||url.startsWith("/images/"))?url:null;
+const oldDemoProductImage=new Set(["/images/bag.webp","/images/editorial-bag.webp","/images/linen-shirt.webp","/images/sneakers.webp","/images/sunglasses.webp","/images/classic-watch.webp"]);
 const money=(value:unknown)=>typeof value==="number"&&Number.isFinite(value)?Math.max(0,Math.round(value)):0;
 const text=(value:unknown,fallback="")=>typeof value==="string"?value:fallback;
 
@@ -34,8 +35,9 @@ export const loadStore=cache(async():Promise<StoreData>=>{
   const cats:StoreCategory[]=data.categories.map(c=>({id:c.slug,name:c.name,description:c.description||"",image:cleanUrl(c.imageUrl)||demoCategories.find(x=>x.id===c.slug)?.image||IMAGE_FALLBACK}));
   const products:Product[]=data.products.map(p=>{
    const original=demoProducts.find(x=>x.slug===p.slug);
-   const imgs=Array.isArray(p.gallery)?p.gallery.map(cleanUrl).filter((x):x is string=>Boolean(x)):[];
-   const cover=cleanUrl(p.coverUrl)||original?.image||IMAGE_FALLBACK;
+   const imgs=Array.isArray(p.gallery)?p.gallery.map(cleanUrl).filter((x):x is string=>Boolean(x)&&!oldDemoProductImage.has(x)):[];
+   const providedCover=cleanUrl(p.coverUrl);
+   const cover=(providedCover&&!oldDemoProductImage.has(providedCover)?providedCover:null)||original?.image||providedCover||IMAGE_FALLBACK;
    const attrs=p.attributes && typeof p.attributes==="object" && !Array.isArray(p.attributes)?p.attributes as Record<string,unknown>:{};
    return {id:String(p.id),slug:text(p.slug),name:text(p.name),description:text(p.description),
     subtitle:original?.subtitle||"",price:money(p.price),comparePrice:p.comparePrice==null?undefined:money(p.comparePrice),
