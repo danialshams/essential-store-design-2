@@ -1,4 +1,5 @@
 import {cache} from "react";
+import {unstable_cache} from "next/cache";
 import {categories as demoCategories,demoProducts,IMAGE_FALLBACK,type Product} from "@/lib/catalog";
 
 export type StoreCategory={id:string;name:string;description:string;image:string};
@@ -23,14 +24,24 @@ type RemoteProduct={id:string;slug:string;name:string;description:string;sku:str
 type ResponseData={mode:string;settings:StoreSettings|null;categories:RemoteCategory[];products:RemoteProduct[];banners:StoreBanner[];
  pages:StorePage[];articles:StoreArticle[];shipping:StoreShipping[];reviews:StoreReview[]};
 
+/** Public catalogue only: a short shared cache avoids a backend round-trip
+ * on every page navigation. Order placement still validates against the server.
+ * Updates from the admin become visible within approximately 15 seconds.
+ */
+const getPublicBootstrap=unstable_cache(async(origin:string):Promise<ResponseData>=>{
+ const response=await fetch(`${origin}/api/store/bootstrap`,{
+  cache:"no-store",signal:AbortSignal.timeout(6000)
+ });
+ if(!response.ok)throw Error(`Upstream catalog ${response.status}`);
+ return await response.json() as ResponseData;
+},["edition02-public-catalogue-v2"],{revalidate:15});
+
 /** Kept per request; no browser CORS, no client secret, and never rewrites demo fixtures. */
 export const loadStore=cache(async():Promise<StoreData>=>{
  const origin=process.env.STOREFRONT_ADMIN_ORIGIN?.trim().replace(/\/$/,"");
  if(!origin)return demo;
  try{
-  const response=await fetch(`${origin}/api/store/bootstrap`,{cache:"no-store",signal:AbortSignal.timeout(6000)});
-  if(!response.ok)throw Error(`Upstream catalog ${response.status}`);
-  const data=await response.json() as ResponseData;
+  const data=await getPublicBootstrap(origin);
   if(data.mode!=="live"||!Array.isArray(data.products)||!Array.isArray(data.categories))throw Error("Invalid catalog response");
   const cats:StoreCategory[]=data.categories.map(c=>({id:c.slug,name:c.name,description:c.description||"",image:cleanUrl(c.imageUrl)||demoCategories.find(x=>x.id===c.slug)?.image||IMAGE_FALLBACK}));
   const products:Product[]=data.products.map(p=>{
