@@ -72,7 +72,13 @@ const scaleFromMatrix=(m)=>{
     await page.screenshot({path:`${out}/${job.label}-during.png`,fullPage:false,animations:"allow"});
     await page.waitForTimeout(970);
     const revealed=await node.evaluate(reading);
-    await page.waitForTimeout(2200);
+    await page.waitForTimeout(1200);
+    // Screenshot and device rendering can interrupt RAF ticks. Wait for
+    // the actual GSAP timeline completion instead of relying on a brittle
+    // hard-coded 3.4-second wall-clock budget.
+    await page.waitForFunction(({selector,index})=>
+      document.querySelectorAll(selector)[index]?.getAttribute("data-photo-reveal-complete")==="true",
+      job,{timeout:7000});
     const zoomed=await node.evaluate(reading);
     const result={...job,before,during,revealed,zoomed,errors};
     reports.push(result);
