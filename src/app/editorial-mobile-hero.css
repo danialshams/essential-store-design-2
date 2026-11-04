@@ -231,6 +231,10 @@
  .ed-hero-carousel .ed-hero-visual .ed-hero-photo{
   object-position:center 31%;
  }
+ /* Keep the main editorial portrait's eyes and hairline inside the frame. */
+ .ed-hero-carousel .ed-hero-slide:first-child .ed-hero-mobile-photo{
+  object-position:center 14%!important;
+ }
  .ed-hero-carousel .ed-hero-slide:nth-child(2) .ed-hero-photo,
  .ed-hero-carousel .ed-hero-slide:nth-child(3) .ed-hero-photo{
   object-position:center 42%;
@@ -268,6 +272,9 @@
  }
  .ed-hero-carousel .ed-hero-controls-row{
   padding-top:4px;
+ }
+ .ed-hero-carousel .ed-hero-slide:first-child .ed-hero-mobile-photo{
+  object-position:center 3%!important;
  }
 }
 @media(max-width:760px) and (max-width:350px){
