@@ -208,7 +208,7 @@ export function SiteMotion({children}:{children:ReactNode}){
 
  return <>
   {introPhase!=="done"&&<div className={`maison-intro ${introPhase==="leaving"?"is-leaving":""}`} role="status" aria-label="در حال آماده‌سازی مجموعه" aria-live="polite">
-   <div className="maison-intro-center"><span className="maison-intro-kicker">THE EDITION / 02</span><span className="maison-intro-word">{store.settings.storeName||"THE EDITION"}</span><span className="maison-intro-rule"/><span className="maison-intro-caption">یک روایت از سادگی</span></div>
+   <div className="maison-intro-center"><span className="maison-intro-kicker">THE EDITION / 02</span><span className="maison-intro-word" lang={/[\u0600-\u06FF]/.test(store.settings.storeName)?"fa":"en"}>{store.settings.storeName||"THE EDITION"}</span><span className="maison-intro-rule"/><span className="maison-intro-caption">یک روایت از سادگی</span></div>
   </div>}
   <div ref={root} className="editorial-page-shell" data-page-motion="initial">{children}</div>
  </>;
