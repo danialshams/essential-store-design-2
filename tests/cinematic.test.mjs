@@ -32,6 +32,23 @@ test("Motion is scoped, progressive, efficient and respects mobile/reduced motio
  for(const pattern of [/prefers-reduced-motion/,/gsap\.context/,/context\.revert\(\)/,/ScrollTrigger/,/clipPath/,/once:true/,/gsap\.matchMedia/,/pin:true/,/data-motion-status/,/data-editorial-grid/,/data-scene=/])assert.match(motion,pattern);
  assert.doesNotMatch(motion,/repeat:\s*-1/);
 });
+test("Mobile hero is one editorial viewport with its own controls and normalized text",()=>{
+ const home=load("src/app/page.tsx");
+ const component=load("src/components/HeroCarousel.tsx");
+ const css=load("src/app/editorial-mobile-hero.css");
+ const motion=load("src/components/EditorialMotion.tsx");
+ assert.doesNotMatch(home,/className="ed-quiet-strip"/);
+ assert.match(component,/ed-hero-controls-row/);
+ assert.match(component,/titleLines\(slide.title\)/);
+ assert.match(component,/title\.replace\(/);
+ assert.match(css,/grid-template-rows:minmax\(0,54%\) minmax\(0,46%\)/);
+ assert.match(css,/height:calc\(100svh - 90px - 59px\)/);
+ assert.match(css,/max-height:740px/);
+ assert.match(motion,/image\.decode\(\)/);
+ assert.match(motion,/inView\(detail,detailTl/);
+ assert.match(motion,/data-chapter/);
+ assert.match(motion,/opening=gsap\.timeline/);
+});
 test("High-resolution local demo photographs have explicit provenance",()=>{
  const photos=["hero-main","hero-mobile","category-clothing","category-bags","category-shoes",
   "category-accessories","campaign","story-portrait","story-detail","chapter-form",
