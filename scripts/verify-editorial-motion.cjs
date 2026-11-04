@@ -145,7 +145,9 @@ const {chromium}=require("playwright");
     width:el.getBoundingClientRect().width,
     imageWidth:el.querySelector("img")?.naturalWidth||0
   }));
-  assert.ok(insetState.opacity>.92&&insetState.imageWidth>250,
+  // Next/Image serves a DPR- and layout-sized srcset image. A 119px mobile
+  // inset legitimately has a 136px decoded image; absolute 250px is invalid.
+  assert.ok(insetState.opacity>.92&&insetState.imageWidth>=insetState.width*.9,
     "Brand-story inset failed its own on-view photo reveal: "+JSON.stringify(insetState));
   for(const copy of await mp.locator(".ed-mobile-chapter-copy").all()){
    await copy.scrollIntoViewIfNeeded();
