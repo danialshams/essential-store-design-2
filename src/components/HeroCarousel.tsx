@@ -40,13 +40,13 @@ export function HeroCarousel({slides}:Props){
  const go=(value:number)=>setActive((value+slides.length)%slides.length);
  const slide=slides[active]??slides[0];
  if(!slide)return null;
- return <section className="ed-hero ed-hero-carousel" aria-roledescription="carousel" aria-label="کالکشن‌های منتخب" 
+ return <section className="ed-hero ed-hero-carousel" data-paused={paused} aria-roledescription="carousel" aria-label="کالکشن‌های منتخب" 
    aria-labelledby="ed-hero-title"
 }
    onTouchStart={event=>{touchX.current=event.touches[0]?.clientX??null}}
    onTouchEnd={event=>{if(touchX.current==null)return;const diff=event.changedTouches[0].clientX-touchX.current;if(Math.abs(diff)>65)go(active+(diff>0?1:-1));touchX.current=null}}>
   <div className="ed-hero-content">
-   <div key={slide.id} className="ed-hero-copy-frame" data-active-hero-copy>
+   <div key={slide.id} className="ed-hero-copy-frame" data-active-hero-copy aria-live={paused?"polite":"off"}>
     <span className="ed-hero-eyebrow" data-hero-kicker><span/> THE EDITORIAL / {String(active+1).padStart(2,"0")}</span>
     <p className="ed-hero-intro" data-hero-kicker>{slide.eyebrow}</p>
     <h1 id="ed-hero-title">{slide.title.split("\n").filter(Boolean).map((line,i)=>
