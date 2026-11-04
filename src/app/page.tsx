@@ -1,20 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
-import {ArrowLeft, ArrowUpLeft, Check, Headphones, PackageCheck, RotateCcw, ShoppingBag, Truck} from "lucide-react";
+import {ArrowLeft, ArrowUpLeft, Headphones, PackageCheck, RotateCcw, Truck} from "lucide-react";
 import {loadStore,type StoreCategory} from "@/lib/live-store";
 import {ProductCard} from "@/components/ProductCard";
 import {EditorialMotion} from "@/components/EditorialMotion";
 
 const editorialImages:Record<string,string>={
-  clothing:"/images/editorial-portrait.webp",
-  bags:"/images/editorial-bag.webp",
-  shoes:"/images/sneakers.webp",
-  accessories:"/images/classic-watch.webp",
+  clothing:"/images/editorial/category-clothing.webp",
+  bags:"/images/editorial/category-bags.webp",
+  shoes:"/images/editorial/category-shoes.webp",
+  accessories:"/images/editorial/category-accessories.webp",
 };
 const fallbackEditorial={
-  hero:"/images/editorial-hero.webp",
-  portrait:"/images/editorial-portrait.webp",
-  bag:"/images/editorial-bag.webp",
+  hero:"/images/editorial/hero-main.webp",
+  portrait:"/images/editorial/story-portrait.webp",
+  bag:"/images/editorial/story-detail.webp",
 };
 function categoryImage(category:StoreCategory){
   const fallback=editorialImages[category.id];
@@ -29,17 +29,16 @@ export default async function Home(){
   const sections=[...(store.settings.homeSections||[])].filter(section=>section.enabled).sort((a,b)=>a.position-b.position);
   const hero=sections[0];
   const heroImage=hero?.imageUrl||fallbackEditorial.hero;
-  const heroMobileImage=hero?.mobileImageUrl||heroImage;
-  const heroDetailImage=hero?.secondaryImageUrl||fallbackEditorial.bag;
+  const heroMobileImage=hero?.mobileImageUrl||(hero?.imageUrl?heroImage:"/images/editorial/hero-mobile.webp");
   const featured=store.products.filter(p=>p.featured).slice(0,4);
   const collection=featured.length>=4?featured:store.products.slice(0,4);
   const nextProducts=store.products.filter(p=>!collection.some(x=>x.id===p.id)).slice(0,4);
   const firstBanner=store.banners[0];
   const otherBanners=store.banners.slice(1);
-  const lookbookImage=firstBanner?.imageUrl||fallbackEditorial.bag;
+  const lookbookImage=firstBanner?.imageUrl||"/images/editorial/campaign.webp";
   const editorialHeading=sections[1];
-  const storyImage=editorialHeading?.imageUrl||fallbackEditorial.portrait;
-  const storyDetail=editorialHeading?.secondaryImageUrl||fallbackEditorial.bag;
+  const storyImage=editorialHeading?.imageUrl||"/images/editorial/story-portrait.webp";
+  const storyDetail=editorialHeading?.secondaryImageUrl||"/images/editorial/story-detail.webp";
   const storyCta=editorialHeading?.ctaHref?.startsWith("/")?editorialHeading.ctaHref:"/info/about";
   const heading=hero?.title||"زیبایی در سادگی\nاتفاق می‌افتد.";
   const titleLines=heading.split(/\n/).filter(Boolean);
@@ -64,21 +63,21 @@ export default async function Home(){
             <Image src={heroImage} alt="تصویر کالکشن ادیتوریال" fill priority unoptimized={heroImage.startsWith("http")} sizes="(max-width: 760px) 100vw, 58vw" className={`ed-hero-photo ${heroMobileImage!==heroImage?"ed-hero-desktop-photo":""}`}/>
             {heroMobileImage!==heroImage&&<Image src={heroMobileImage} alt="" fill unoptimized={heroMobileImage.startsWith("http")} sizes="100vw" className="ed-hero-photo ed-hero-mobile-photo"/>}
           </div>
-          <div className="ed-hero-detail" data-hero-detail><Image src={heroDetailImage} alt="جزئیات منتخب کالکشن" fill unoptimized={heroDetailImage.startsWith("http")} sizes="(max-width:760px) 32vw, 15vw"/></div>
-          <span className="ed-hero-vertical">STYLE IS IN THE DETAILS — NO. 02</span>
-          <span className="ed-hero-photo-stamp">THE EDITORIAL<br/>COLLECTION</span>
+          
+          <span className="ed-hero-vertical">THE ART OF LIVING WELL</span>
+          <span className="ed-hero-photo-stamp">AN ESSENTIAL<br/>PERSPECTIVE</span>
           <span className="ed-hero-number">01 / EDITION</span>
         </div>
       </section>
 
-      <div className="ed-quiet-strip" aria-label="شعار فروشگاه"><span>CURATED WITH INTENTION</span><span className="ed-quiet-symbol">✳</span><span>LESS, BUT BETTER</span><span className="ed-quiet-symbol">✳</span><span>MADE FOR EVERYDAY</span></div>
+      <div className="ed-quiet-strip" aria-label="هویت کالکشن"><span>ESSENTIAL — AN EDITORIAL WARDROBE</span><span className="ed-quiet-strip-line"/><span>ISSUE NO. 02 / 2026</span></div>
 
       <section className="ed-categories-section premium-container" id="ed-categories">
         <div className="ed-section-heading" data-reveal="up">
-          <div><span className="premium-eyebrow">EXPLORE THE EDITION / 01</span><h2>دسته‌بندی‌هایی برای <em>هر سلیقه</em></h2></div>
+          <div><span className="premium-eyebrow">EXPLORE THE EDITION / 01</span><h2>کالکشن را <em>کشف کنید</em></h2></div>
           <Link href="/products" className="ed-inline-link">تمام محصولات <ArrowUpLeft size={18}/></Link>
         </div>
-        <div className="ed-categories-grid" data-stagger data-editorial-grid>
+        <div className="ed-categories-grid" data-editorial-grid>
           {store.categories.slice(0,4).map((category,index)=>{
             const image=categoryImage(category);
             return <Link href={`/category/${category.id}`} key={category.id} className={`ed-category-tile ed-cat-${index+1}`}>
@@ -92,13 +91,13 @@ export default async function Home(){
       </section>
 
       <section className="ed-products-section premium-container" id="ed-selected">
-        <div className="ed-section-heading" data-reveal="up"><div><span className="premium-eyebrow">THE SELECTED PIECES / 02</span><h2>انتخاب‌های <em>این فصل</em></h2><p>چیزهایی که امروز دوستشان دارید، فردا هم دوست‌داشتنی می‌مانند.</p></div><Link href="/products" className="ed-inline-link">مشاهده مجموعه <ArrowUpLeft size={18}/></Link></div>
+        <div className="ed-section-heading" data-reveal="up"><div><span className="premium-eyebrow">THE SELECTED PIECES / 02</span><h2>منتخب <em>این فصل</em></h2><p>قطعاتی برای امروز؛ انتخاب‌هایی برای سال‌های بعد.</p></div><Link href="/products" className="ed-inline-link">مشاهده مجموعه <ArrowUpLeft size={18}/></Link></div>
         <div className="ed-featured-grid" data-stagger>{collection.map(product=><ProductCard key={product.id} product={product}/>)}</div>
       </section>
 
-      <section className="ed-lookbook ed-full-bleed" aria-labelledby="ed-lookbook-title" data-reveal="up">
+      <section className="ed-lookbook ed-full-bleed" aria-labelledby="ed-lookbook-title" data-campaign>
         <div className="ed-lookbook-media" data-image-wipe><Image src={lookbookImage} alt={firstBanner?.title||"کالکشن کیف و اکسسوری چرمی"} fill sizes="100vw" unoptimized={lookbookImage.startsWith("http")} className="ed-lookbook-photo" data-parallax/></div>
-        <div className="ed-lookbook-detail"><Image src={storyDetail} alt="بافت و جزئیات کالکشن" fill unoptimized={storyDetail.startsWith("http")} sizes="(max-width:760px) 34vw, 19vw"/></div>
+        
         <div className="ed-lookbook-copy">
           <span className="premium-eyebrow">THE ART OF DETAILS / 03</span>
           <h2 id="ed-lookbook-title">{firstBanner?.title||"جزئیاتی که\nتفاوت می‌سازند."}</h2>
@@ -120,12 +119,12 @@ export default async function Home(){
       <section className="ed-chapter" data-chapter aria-label="روایت تصویری کالکشن">
         <div className="ed-chapter-scene" data-chapter-scene>
           <div className="ed-chapter-photographs">
-            <div className="ed-chapter-frame" data-chapter-frame><Image src={storyImage} alt="فصل اول: استایل ماندگار" fill sizes="(max-width:760px) 100vw, 60vw" unoptimized={storyImage.startsWith("http")}/></div>
-            <div className="ed-chapter-frame" data-chapter-frame><Image src={lookbookImage} alt="فصل دوم: جزئیات کالکشن" fill sizes="(max-width:760px) 100vw, 60vw" unoptimized={lookbookImage.startsWith("http")}/></div>
+            <div className="ed-chapter-frame" data-chapter-frame><Image src="/images/editorial/chapter-form.webp" alt="فصل اول: فرم و استایل ماندگار" fill sizes="60vw"/></div>
+            <div className="ed-chapter-frame" data-chapter-frame><Image src="/images/editorial/chapter-detail.webp" alt="فصل دوم: جزئیات و نور" fill sizes="60vw"/></div>
             <span className="ed-chapter-photo-label">THE COLLECTION / IN TWO ACTS</span>
           </div>
           <div className="ed-chapter-narrative">
-            <span className="premium-eyebrow">A VISUAL JOURNEY — EDITION 02</span>
+            <span className="premium-eyebrow">AN EDITORIAL STUDY / 02</span>
             <div className="ed-chapter-words">
               <div className="ed-chapter-copy" data-chapter-copy><span>CHAPTER 01 — FORM</span><h2>{editorialHeading?.title||"هر انتخاب، یک روایت."}</h2><p>{editorialHeading?.description||"زیبایی واقعی از جنس جزئیاتی است که با دقت کنار هم قرار می‌گیرند."}</p></div>
               <div className="ed-chapter-copy" data-chapter-copy><span>CHAPTER 02 — DETAIL</span><h2>{firstBanner?.title||"کیفیتی که می‌ماند."}</h2><p>{firstBanner?.subtitle||"طرح‌های ماندگار و کیفیتی که در هر فصل همراه شماست."}</p></div>
@@ -134,6 +133,17 @@ export default async function Home(){
             <div className="ed-chapter-footer"><span>01</span><span>02</span></div>
           </div>
         </div>
+      </section>
+
+      <section className="ed-mobile-chapters" aria-label="دو فصل تصویری کالکشن">
+        <article className="ed-mobile-chapter" data-reveal="up">
+          <div className="ed-mobile-chapter-photo" data-image-wipe><Image src="/images/editorial/chapter-form.webp" alt="فصل فرم؛ استایل آرام و ماندگار" fill sizes="100vw"/></div>
+          <div className="ed-mobile-chapter-copy"><span className="premium-eyebrow">CHAPTER 01 / FORM</span><h2>{editorialHeading?.title||"هر انتخاب، یک روایت."}</h2><p>{editorialHeading?.description||"زیبایی واقعی از جنس جزئیاتی است که با دقت کنار هم قرار می‌گیرند."}</p></div>
+        </article>
+        <article className="ed-mobile-chapter" data-reveal="up">
+          <div className="ed-mobile-chapter-photo" data-image-wipe><Image src="/images/editorial/chapter-detail.webp" alt="فصل جزئیات؛ نور و کیفیت" fill sizes="100vw"/></div>
+          <div className="ed-mobile-chapter-copy"><span className="premium-eyebrow">CHAPTER 02 / DETAIL</span><h2>{firstBanner?.title||"کیفیتی که می‌ماند."}</h2><p>{firstBanner?.subtitle||"انتخاب‌هایی که هر فصل، بخشی از سبک شخصی شما می‌مانند."}</p></div>
+        </article>
       </section>
 
       {sections.slice(2).map((section,index)=><section className={`ed-admin-story premium-container ${index%2?"is-reversed":""} ${section.layout?`ed-layout-${section.layout}`:""}`} data-motion={section.animation||"mask"} key={section.id}>
@@ -150,13 +160,13 @@ export default async function Home(){
 
       {otherBanners.map((banner,index)=><section key={banner.id} className="ed-secondary-banner premium-container" data-reveal="up"><div><span className="premium-eyebrow">DISCOVER THE COLLECTION / {String(index+6).padStart(2,"0")}</span><h2>{banner.title}</h2><p>{banner.subtitle}</p><Link href={banner.linkUrl?.startsWith("/")?banner.linkUrl:"/products"} className="ed-dark-button">مشاهده بیشتر <ArrowUpLeft size={18}/></Link></div>{banner.imageUrl&&<div className="ed-secondary-banner-image"><Image src={banner.imageUrl} alt={banner.title} fill unoptimized sizes="(max-width: 760px) 100vw, 50vw"/></div>}</section>)}
 
-      <section className="ed-affirmation" aria-label="فلسفه برند" data-reveal="up"><span>THE EDITORIAL POINT OF VIEW</span><p>خوب پوشیدن، از <i>خوب انتخاب کردن</i> شروع می‌شود.</p><span>EST. MMXXVI — A QUIETER KIND OF LUXURY</span></section>
+      <section className="ed-affirmation" aria-label="فلسفه برند" data-reveal="up"><span>THE EDITORIAL POINT OF VIEW</span><p>زیبایی، در <i>انتخاب‌های آگاهانه</i> است.</p><span>EST. MMXXVI — A QUIETER KIND OF LUXURY</span></section>
 
-      <section className="ed-journal premium-container" data-reveal="up">
-        <div className="ed-section-heading"><div><span className="premium-eyebrow">THE JOURNAL / 06</span><h2>کمی بیشتر از <em>یک فروشگاه</em></h2></div><Link href="/blog" className="ed-inline-link">ورود به ژورنال <ArrowUpLeft size={18}/></Link></div>
+      <section className="ed-journal premium-container" data-journal>
+        <div className="ed-section-heading"><div><span className="premium-eyebrow">THE JOURNAL / 06</span><h2>از نگاه <em>ژورنال</em></h2></div><Link href="/blog" className="ed-inline-link">ورود به ژورنال <ArrowUpLeft size={18}/></Link></div>
         <div className="ed-journal-grid" data-stagger>
-          <Link href={store.articles[0]?`/blog/${store.articles[0].slug}`:"/blog"} className="ed-journal-card"><div className="ed-journal-photo"><Image src={store.articles[0]?.coverUrl||"/images/editorial-portrait.webp"} alt="نگاهی به هنر پوشیدن" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(store.articles[0]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 01</div><h3>{store.articles[0]?.title||"هنر ساختن یک استایل ماندگار"}</h3><p>{store.articles[0]?.summary||"از پارچه‌ها و فرم‌ها تا ظرافت‌هایی که در نگاه اول دیده نمی‌شوند."}</p><span>ادامه مطلب <ArrowUpLeft size={17}/></span></Link>
-          <Link href={store.articles[1]?`/blog/${store.articles[1].slug}`:"/info/about"} className="ed-journal-card"><div className="ed-journal-photo"><Image src={store.articles[1]?.coverUrl||"/images/editorial-bag.webp"} alt="جزئیات و اکسسوری‌ها" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(store.articles[1]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 02</div><h3>{store.articles[1]?.title||"چرا جزئیات، مهم‌ترین بخش استایل‌اند؟"}</h3><p>{store.articles[1]?.summary||"روایتی کوتاه از نقش انتخاب‌های کوچک در شخصیت یک استایل."}</p><span>بیشتر بخوانید <ArrowUpLeft size={17}/></span></Link>
+          <Link href={store.articles[0]?`/blog/${store.articles[0].slug}`:"/blog"} className="ed-journal-card"><div className="ed-journal-photo"><Image src={store.articles[0]?.coverUrl||"/images/editorial/journal-style.webp"} alt="نگاهی به هنر پوشیدن" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(store.articles[0]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 01</div><h3>{store.articles[0]?.title||"هنر ساختن یک استایل ماندگار"}</h3><p>{store.articles[0]?.summary||"از پارچه‌ها و فرم‌ها تا ظرافت‌هایی که در نگاه اول دیده نمی‌شوند."}</p><span>ادامه مطلب <ArrowUpLeft size={17}/></span></Link>
+          <Link href={store.articles[1]?`/blog/${store.articles[1].slug}`:"/info/about"} className="ed-journal-card"><div className="ed-journal-photo"><Image src={store.articles[1]?.coverUrl||"/images/editorial/journal-details.webp"} alt="جزئیات و اکسسوری‌ها" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(store.articles[1]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 02</div><h3>{store.articles[1]?.title||"چرا جزئیات، مهم‌ترین بخش استایل‌اند؟"}</h3><p>{store.articles[1]?.summary||"روایتی کوتاه از نقش انتخاب‌های کوچک در شخصیت یک استایل."}</p><span>بیشتر بخوانید <ArrowUpLeft size={17}/></span></Link>
         </div>
       </section>
 
@@ -166,7 +176,7 @@ export default async function Home(){
         <div><Headphones size={25} strokeWidth={1.35}/><strong>پشتیبانی و همراهی</strong><span>اطلاعات تماس از پنل مدیریت</span></div>
         <div><RotateCcw size={25} strokeWidth={1.35}/><strong>قوانین خرید روشن</strong><span>مطابق شرایط درج‌شده در فروشگاه</span></div>
       </section>
-      <div className="ed-end-note premium-container"><Check size={14}/><span>DESIGNED TO BE DIFFERENT — EDITION 02</span><ShoppingBag size={14}/></div>
+      
     </div>
   </EditorialMotion>;
 }
