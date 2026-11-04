@@ -1,0 +1,46 @@
+name: Editorial 02 Browser QA
+on:
+  push:
+    branches:
+      - qa/editorial-browser-20261104
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install application
+        run: npm install --no-audit --no-fund
+      - name: Verify source and build
+        run: |
+          npm test
+          npm run typecheck
+          npm run build
+      - name: Install browser runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps --only-shell chromium
+      - name: Test rendered desktop and mobile experience
+        shell: bash
+        run: |
+          npm run start > /tmp/editorial-next.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3000/ > /dev/null; then break; fi
+            sleep 2
+          done
+          node scripts/verify-editorial-motion.cjs
+      - name: Store screenshots and diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-02-browser-qa
+          path: |
+            artifacts/
+            /tmp/editorial-next.log
+          if-no-files-found: ignore
