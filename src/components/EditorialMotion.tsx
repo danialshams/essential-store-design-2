@@ -376,8 +376,12 @@ export function EditorialMotion({children}:{children:ReactNode}){
     else if(rect.bottom<=0){enter();}
    }
   };
+  let scanFrame=0;
+  const onScroll=()=>{
+   if(scanFrame||!alive)return;
+   scanFrame=requestAnimationFrame(()=>{scanFrame=0;scan()});
+  };
   const firstFrame=requestAnimationFrame(scan);
-  const onScroll=()=>requestAnimationFrame(scan);
   window.addEventListener("scroll",onScroll,{passive:true});
 
   // Existing image dimensions are reserved by Next.js. Refresh only on
@@ -390,6 +394,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
    alive=false;
    visibilityFallback.disconnect();
    cancelAnimationFrame(firstFrame);
+   if(scanFrame)cancelAnimationFrame(scanFrame);
    window.removeEventListener("scroll",onScroll);
    window.removeEventListener("load",refresh);
    window.removeEventListener("orientationchange",refresh);
