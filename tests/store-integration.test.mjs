@@ -34,8 +34,8 @@ test("editorial homepage consumes shared admin catalog, banners, content, catego
 });
 test("GSAP ScrollTrigger has reduced-motion, scoped cleanup and no scroll hijacking",()=>{
  const src=read("../src/components/EditorialMotion.tsx");
- assert.match(src,/import\("gsap"\)/);
- assert.match(src,/import\("gsap\/ScrollTrigger"\)/);
+ assert.match(src,/import gsap from "gsap"/);
+ assert.match(src,/import \{ScrollTrigger\} from "gsap\/ScrollTrigger"/);
  assert.match(src,/prefers-reduced-motion/);
  assert.match(src,/context\.revert\(\)/);
  assert.doesNotMatch(src,/ScrollSmoother/);
