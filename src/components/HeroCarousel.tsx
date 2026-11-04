@@ -36,13 +36,13 @@ export function HeroCarousel({slides}:Props){
   },INTERVAL);
   return()=>window.clearInterval(timer);
  },[paused,reduce,slides.length]);
+ // Autoplay never stops just because the pointer rests on this hero.
  const go=(value:number)=>setActive((value+slides.length)%slides.length);
  const slide=slides[active]??slides[0];
  if(!slide)return null;
  return <section className="ed-hero ed-hero-carousel" aria-roledescription="carousel" aria-label="کالکشن‌های منتخب" 
    aria-labelledby="ed-hero-title"
-   // Autoplay intentionally does NOT pause on hover/focus: pointer resting on the hero
-   // previously stopped every transition. Only the explicit control can pause it.}
+}
    onTouchStart={event=>{touchX.current=event.touches[0]?.clientX??null}}
    onTouchEnd={event=>{if(touchX.current==null)return;const diff=event.changedTouches[0].clientX-touchX.current;if(Math.abs(diff)>65)go(active+(diff>0?1:-1));touchX.current=null}}>
   <div className="ed-hero-content">
