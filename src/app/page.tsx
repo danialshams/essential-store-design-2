@@ -84,7 +84,7 @@ export default async function Home(){
           {store.categories.slice(0,4).map((category,index)=>{
             const image=categoryImage(category);
             return <Link href={`/category/${category.id}`} key={category.id} className={`ed-category-tile ed-cat-${index+1}`} data-editorial-frame>
-              <FrameImage src={image} alt={category.name} fill sizes="(max-width: 760px) 50vw, 25vw" unoptimized={image.startsWith("http")} className="ed-category-photo"/>
+              <FrameImage src={image} alt={category.name} fill loading="eager" decoding="async" sizes="(max-width: 760px) 50vw, 25vw" unoptimized={image.startsWith("http")} className="ed-category-photo"/>
               <div className="ed-category-overlay"/>
               <div className="ed-category-caption"><span>0{index+1} / CATEGORY</span><h3>{category.name}</h3></div>
               <span className="ed-category-arrow"><ArrowUpLeft size={18}/></span>

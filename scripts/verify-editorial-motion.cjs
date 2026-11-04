@@ -172,14 +172,62 @@ const systemChrome=spawnSync("which",["google-chrome"]).status===0;
     fullPage:false,animations:"allow"});
   await mp.locator('html[data-intro-state="complete"]').waitFor({timeout:16000});
   await mp.waitForTimeout(540);
-  // The second category row is below the fold. It must start its own wipe
-  // as soon as it becomes visible, not several seconds after arriving.
-  const categoryLast=mp.locator(".ed-category-tile").last();
-  await categoryLast.scrollIntoViewIfNeeded();
-  await mp.waitForFunction(()=>{
-   const node=document.querySelector(".ed-category-tile:last-child");
-   return node?.getAttribute("data-reveal-state")==="playing";
-  },null,{timeout:4000});
+  // Verify each collection photograph owns its OWN GSAP mask.
+  // Previously shared-trigger callback replacement meant 01/03/04 could
+  // render without a wipe while the last caption animation still passed.
+  const categoryCards=mp.locator(".ed-category-tile");
+  assert.equal(await categoryCards.count(),4,"Expected all four collection cards");
+  for(let index=0;index<4;index++){
+   const card=categoryCards.nth(index);
+   await card.scrollIntoViewIfNeeded();
+   await mp.waitForFunction(i=>{
+    const node=document.querySelectorAll(".ed-category-tile")[i];
+    return node?.getAttribute("data-photo-reveal-state")==="playing";
+   },index,{timeout:4400});
+   const motion=await card.evaluate(el=>({
+    state:el.getAttribute("data-photo-reveal-state"),
+    photoWidth:el.querySelector("img")?.naturalWidth||0,
+    clip:getComputedStyle(el).clipPath
+   }));
+   assert.equal(motion.state,"playing","Card "+(index+1)+" photo did not run GSAP");
+   assert.ok(motion.photoWidth>0,"Card "+(index+1)+" image was not decoded");
+   console.log("COLLECTION PHOTO REVEAL",index+1,JSON.stringify(motion));
+   if(index===0||index===2||index===3){
+    // Capture an actual animation frame instead of merely testing the
+    // final image. Cards that simply pop in have no measurable in-between.
+    await mp.waitForTimeout(140);
+    const interpolated=await card.evaluate(el=>getComputedStyle(el).clipPath);
+    assert.ok(interpolated.startsWith("inset("),
+     "Collection "+(index+1)+" lacks a cinematic image wipe: "+interpolated);
+   }
+  }
+  // Verify lower editorial sections also register the photo timelines,
+  // independently of their captions and text reveals.
+  const photoScenes=[
+   ".ed-products-section .premium-product-media",
+   ".ed-lookbook-media",".ed-story-visual",".ed-story-inset",
+   ".ed-mobile-chapter-photo",".ed-journal-photo",
+   ".ed-admin-story-picture",".ed-secondary-banner-image"
+  ];
+  for(const selector of photoScenes){
+   const photos=mp.locator(selector);
+   if(!await photos.count())continue;
+   const limit=Math.min(2,await photos.count());
+   for(let index=0;index<limit;index++){
+    const node=photos.nth(index);
+    await node.scrollIntoViewIfNeeded({timeout:12000});
+    await mp.waitForFunction(({selector,index})=>{
+     const element=document.querySelectorAll(selector)[index];
+     return element?.getAttribute("data-photo-reveal-state")==="playing";
+    },{selector,index},{timeout:4800});
+    const status=await node.evaluate(el=>({
+     state:el.getAttribute("data-photo-reveal-state"),
+     ready:!!el.querySelector("img")?.naturalWidth
+    }));
+    assert.ok(status.ready&&status.state==="playing",
+     "Missing lower editorial image reveal "+selector+": "+JSON.stringify(status));
+   }
+  }
   await mp.evaluate(()=>window.scrollTo(0,0));
   await mp.waitForTimeout(130);
   assert.equal(await mp.locator(".ed-quiet-strip").count(),0,

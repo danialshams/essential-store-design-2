@@ -20,20 +20,28 @@ export function EditorialMotion({children}:{children:ReactNode}){
   gsap.registerPlugin(ScrollTrigger);
   let active=true;
   let curtainFinished=document.documentElement.dataset.introState==="complete";
-  const callbacks=new WeakMap<Element,()=>void>();
-  const warmCallbacks=new WeakMap<Element,()=>void>();
+  const callbacks=new WeakMap<Element,Set<()=>void>>();
+  const warmCallbacks=new WeakMap<Element,Set<()=>void>>();
+  // An editorial card may register a photo wipe, two caption tweens and
+  // an arrow reveal on the SAME element. One callback per node silently
+  // replaced the earlier registrations, so card photos never animated.
+  const append=(registry:WeakMap<Element,Set<()=>void>>,node:Element,handler:()=>void)=>{
+   const handlers=registry.get(node)??new Set<()=>void>();
+   handlers.add(handler);
+   registry.set(node,handlers);
+  };
   // Preload near-future images far enough ahead of the visible viewport,
   // but never START their GSAP entrance until the element is actually seen.
   const warmObserver=new IntersectionObserver(entries=>{
    for(const entry of entries){
     if(!entry.isIntersecting)continue;
-    warmCallbacks.get(entry.target)?.();
+    warmCallbacks.get(entry.target)?.forEach(prepare=>prepare());
     warmObserver.unobserve(entry.target);
    }
-  },{rootMargin:window.innerWidth<=760?"0px 0px 900px 0px":"0px 0px 640px 0px",threshold:0});
+  },{rootMargin:window.innerWidth<=760?"0px 0px 1700px 0px":"0px 0px 1100px 0px",threshold:0});
   const observer=new IntersectionObserver(entries=>{
    for(const entry of entries){
-    if(entry.isIntersecting)callbacks.get(entry.target)?.();
+    if(entry.isIntersecting)callbacks.get(entry.target)?.forEach(enter=>enter());
    }
   },{root:null,rootMargin:"0px 0px -6% 0px",threshold:0});
   const seen=new Set<Element>();
@@ -45,7 +53,7 @@ export function EditorialMotion({children}:{children:ReactNode}){
   };
   const near=(node:Element)=>{
    const r=node.getBoundingClientRect();
-   return r.bottom>-(innerHeight*.1)&&r.top<innerHeight+(innerWidth<=760?900:640);
+   return r.bottom>-(innerHeight*.1)&&r.top<innerHeight+(innerWidth<=760?1700:1100);
   };
   const register=(trigger:Element,tl:gsap.core.Timeline,image?:HTMLImageElement|null)=>{
    animations.push(tl);
@@ -81,15 +89,16 @@ export function EditorialMotion({children}:{children:ReactNode}){
     if(started||!active)return;
     started=true;
     trigger.setAttribute("data-reveal-state","passed");
-    observer.unobserve(trigger);
-    warmObserver.unobserve(trigger);
+    if(image)trigger.setAttribute("data-photo-reveal-state","passed");
+    // Do not unobserve a shared trigger: its caption/arrow/photo timelines
+    // may still need an intersection notification.
     tl.progress(1).pause();
    };
    const start=()=>{
     if(!active||started||!loaded||!curtainFinished||!visible(trigger))return;
     started=true;
     trigger.setAttribute("data-reveal-state","playing");
-    observer.unobserve(trigger);
+    if(image)trigger.setAttribute("data-photo-reveal-state","playing");
     tl.play();
    };
    const enter=()=>{
@@ -98,8 +107,9 @@ export function EditorialMotion({children}:{children:ReactNode}){
     start();
    };
    trigger.setAttribute("data-reveal-state","waiting");
-   warmCallbacks.set(trigger,prepare);
-   callbacks.set(trigger,enter);
+   if(image)trigger.setAttribute("data-photo-reveal-state","waiting");
+   append(warmCallbacks,trigger,prepare);
+   append(callbacks,trigger,enter);
    registered.push({node:trigger,enter,settle});
    warmObserver.observe(trigger);
    observer.observe(trigger);

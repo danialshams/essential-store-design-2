@@ -168,3 +168,17 @@ test("Header live search offers immediate results and dismisses on outside point
  assert.match(css,/premium-bottom-nav/);
  assert.match(css,/rgba\(250,248,245,\.89\)/);
 });
+
+test("Every editorial image has an independent observer callback even on shared category cards",()=>{
+ const motion=load("src/components/EditorialMotion.tsx");
+ const homepage=load("src/app/page.tsx");
+ assert.match(motion,/WeakMap<Element,Set<\(\)=>void>>/);
+ assert.match(motion,/append\(callbacks,trigger,enter\)/);
+ assert.match(motion,/append\(warmCallbacks,trigger,prepare\)/);
+ assert.doesNotMatch(motion,/callbacks\.set\(trigger,enter\)/);
+ assert.doesNotMatch(motion,/warmCallbacks\.set\(trigger,prepare\)/);
+ assert.match(motion,/data-photo-reveal-state/);
+ assert.match(homepage,/loading="eager" decoding="async"/);
+ assert.match(motion,/1700px/);
+ assert.match(motion,/1100px/);
+});
