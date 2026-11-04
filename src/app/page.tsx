@@ -17,6 +17,16 @@ const fallbackEditorial={
   portrait:"/images/editorial/story-portrait.webp",
   bag:"/images/editorial/story-detail.webp",
 };
+// Only replace legacy *demo* imagery; uploaded merchant photography is
+// always authoritative. Old demo paths explain why some live sections kept
+// showing low-resolution pictures despite replacing the local fallbacks.
+const legacyDemoArt=new Set([
+ "/images/editorial-hero.webp","/images/editorial-portrait.webp",
+ "/images/editorial-bag.webp","/images/bag.webp","/images/linen-shirt.webp",
+ "/images/sneakers.webp","/images/sunglasses.webp","/images/classic-watch.webp",
+]);
+const editorialPhoto=(url:string|null|undefined,fallback:string)=>
+ url&&!legacyDemoArt.has(url)?url:fallback;
 function categoryImage(category:StoreCategory){
   const fallback=editorialImages[category.id];
   // A custom image from the admin overrides the template's editorial demo photography.
@@ -29,17 +39,17 @@ export default async function Home(){
   const store=await loadStore();
   const sections=[...(store.settings.homeSections||[])].filter(section=>section.enabled).sort((a,b)=>a.position-b.position);
   const hero=sections[0];
-  const heroImage=hero?.imageUrl||fallbackEditorial.hero;
-  const heroMobileImage=hero?.mobileImageUrl||(hero?.imageUrl?heroImage:"/images/editorial/hero-mobile.webp");
+  const heroImage=editorialPhoto(hero?.imageUrl,fallbackEditorial.hero);
+  const heroMobileImage=editorialPhoto(hero?.mobileImageUrl,(hero?.imageUrl&&!legacyDemoArt.has(hero.imageUrl))?heroImage:"/images/editorial/hero-mobile.webp");
   const featured=store.products.filter(p=>p.featured).slice(0,4);
   const collection=featured.length>=4?featured:store.products.slice(0,4);
   const nextProducts=store.products.filter(p=>!collection.some(x=>x.id===p.id)).slice(0,4);
   const firstBanner=store.banners[0];
   const otherBanners=store.banners.slice(1);
-  const lookbookImage=firstBanner?.imageUrl||"/images/editorial/campaign.webp";
+  const lookbookImage=editorialPhoto(firstBanner?.imageUrl,"/images/editorial/campaign.webp");
   const editorialHeading=sections[1];
-  const storyImage=editorialHeading?.imageUrl||"/images/editorial/story-portrait.webp";
-  const storyDetail=editorialHeading?.secondaryImageUrl||"/images/editorial/story-detail.webp";
+  const storyImage=editorialPhoto(editorialHeading?.imageUrl,"/images/editorial/story-portrait.webp");
+  const storyDetail=editorialPhoto(editorialHeading?.secondaryImageUrl,"/images/editorial/story-detail.webp");
   const storyCta=editorialHeading?.ctaHref?.startsWith("/")?editorialHeading.ctaHref:"/info/about";
   const heading=hero?.title||"زیبایی در سادگی\nاتفاق می‌افتد.";
   const heroCta=hero?.ctaHref?.startsWith("/")?hero.ctaHref:"/products";
