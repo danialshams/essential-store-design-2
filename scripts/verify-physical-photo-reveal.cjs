@@ -38,11 +38,15 @@ const scaleFromMatrix=(m)=>{
    {selector:".ed-category-tile",index:2,label:"cat-03",expected:"right"},
    {selector:".ed-category-tile",index:3,label:"cat-04",expected:"fade"},
    {selector:".ed-products-section .premium-product-media",index:0,label:"products",expected:"up"},
+   {selector:".ed-products-section .premium-product-media",index:1,label:"products-fade",expected:"fade"},
    {selector:".ed-lookbook-media",index:0,label:"campaign",expected:"left"},
    {selector:".ed-story-visual",index:0,label:"story",expected:"right"},
    {selector:".ed-story-inset",index:0,label:"detail",expected:"fade"},
    {selector:".ed-mobile-chapter-photo",index:0,label:"chapter",expected:"left"},
+   {selector:".ed-mobile-chapter-photo",index:1,label:"chapter-fade",expected:"fade"},
+   {selector:".ed-secondary-banner-image",index:0,label:"banner",expected:"left"},
    {selector:".ed-journal-photo",index:0,label:"journal",expected:"right"},
+   {selector:".ed-journal-photo",index:1,label:"journal-fade",expected:"fade"},
   ];
   for(const job of jobs){
    const context=await browser.newContext({viewport:{width:390,height:844},
