@@ -4,6 +4,9 @@ on:
     branches: [feature/editorial-luxury-homepage-20261104]
     paths: [.github/workflows/editorial-demo-assets.yml, scripts/fetch-editorial-images.py]
   workflow_dispatch:
+concurrency:
+  group: editorial-assets-20261104
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -12,6 +15,8 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: feature/editorial-luxury-homepage-20261104
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -26,6 +31,7 @@ jobs:
           git add public/images/editorial
           if ! git diff --cached --quiet; then
             git commit -m "assets: add high-resolution optimized editorial demo photography"
+            git pull --rebase origin feature/editorial-luxury-homepage-20261104
             git push origin HEAD:feature/editorial-luxury-homepage-20261104
           fi
       - name: Upload photo manifest and samples
