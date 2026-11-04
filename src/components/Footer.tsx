@@ -1,12 +1,36 @@
 "use client";
 
 import Link from "next/link";
+import {useLayoutEffect,useRef} from "react";
+import gsap from "gsap";
+import {ScrollTrigger} from "gsap/ScrollTrigger";
 import {ArrowLeft, Instagram, Mail, MapPin, Phone} from "lucide-react";
 import {useShop} from "@/components/ShopProvider";
 
 export function Footer(){
   const {store}=useShop();
-  return <footer className="premium-footer">
+  const footerRef=useRef<HTMLElement>(null);
+  useLayoutEffect(()=>{
+    const el=footerRef.current;
+    if(!el||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    gsap.registerPlugin(ScrollTrigger);
+    const context=gsap.context(()=>{
+      const text=el.querySelector(".premium-footer-story");
+      const cols=Array.from(el.querySelectorAll(".premium-footer-links>div"));
+      const wordmark=el.querySelector(".premium-footer-wordmark");
+      if(text)gsap.fromTo(Array.from(text.children),{autoAlpha:0,y:24},
+        {autoAlpha:1,y:0,duration:1.05,stagger:.2,ease:"power3.out",
+          scrollTrigger:{trigger:el,start:"top 89%",once:true}});
+      if(cols.length)gsap.fromTo(cols,{autoAlpha:0,y:30},
+        {autoAlpha:1,y:0,duration:1.1,stagger:.16,ease:"power3.out",
+          scrollTrigger:{trigger:el,start:"top 85%",once:true}});
+      if(wordmark)gsap.fromTo(wordmark,{autoAlpha:0,x:40},
+        {autoAlpha:1,x:0,duration:1.3,ease:"power3.out",
+          scrollTrigger:{trigger:wordmark,start:"top 94%",once:true}});
+    },el);
+    return()=>context.revert();
+  },[]);
+  return <footer ref={footerRef} className="premium-footer">
     <div className="premium-footer-top premium-container">
       <div className="premium-footer-story">
         <span className="premium-eyebrow">THE WAY WE SEE STYLE</span>
