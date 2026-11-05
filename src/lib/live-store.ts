@@ -37,12 +37,22 @@ const getPublicBootstrap=unstable_cache(async(origin:string):Promise<ResponseDat
  return await response.json() as ResponseData;
 },["edition02-public-catalogue-v2"],{revalidate:15});
 
+const getLocalBootstrap=unstable_cache(async():Promise<ResponseData>=>{
+  // The storefront and visual administrator live in one Next.js application.
+  // Read the same database without a cross-origin request or shared public key.
+  const {GET}=await import("@/app/api/store/bootstrap/route");
+  const response=await GET();
+  if(!response.ok)throw Error("Local catalog "+response.status);
+  return await response.json() as ResponseData;
+},["edition02-local-public-catalog-v1"],{revalidate:15});
+
 /** Kept per request; no browser CORS, no client secret, and never rewrites demo fixtures. */
 export const loadStore=cache(async():Promise<StoreData>=>{
  const origin=process.env.STOREFRONT_ADMIN_ORIGIN?.trim().replace(/\/$/,"");
- if(!origin)return demo;
+ const local=process.env.STORE_ADMIN_LOCAL==="1"&&Boolean(process.env.DATABASE_URL);
+ if(!origin&&!local)return demo;
  try{
-  const data=await getPublicBootstrap(origin);
+  const data=local?await getLocalBootstrap():await getPublicBootstrap(origin!);
   if(data.mode!=="live"||!Array.isArray(data.products)||!Array.isArray(data.categories))throw Error("Invalid catalog response");
   const cats:StoreCategory[]=data.categories.map(c=>({id:c.slug,dbId:c.id,name:c.name,description:c.description||"",image:cleanUrl(c.imageUrl)||demoCategories.find(x=>x.id===c.slug)?.image||IMAGE_FALLBACK}));
   const products:Product[]=data.products.map(p=>{
