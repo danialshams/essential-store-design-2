@@ -1,6 +1,6 @@
+"use client";
 import "../admin/admin-base.css";
 import "../admin/edition-two-admin.css";
-"use client";
 import {adminFetch} from "@/lib/admin/demo-api";
 import {useState, type FormEvent} from "react";
 import {useRouter} from "next/navigation";
