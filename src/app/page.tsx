@@ -67,7 +67,7 @@ export default async function Home(){
   const heroSlides:EditorialSlide[]=edition?edition.hero.filter(slide=>slide.enabled).map(slide=>({
    id:slide.id,image:slide.imageUrl||fallbackEditorial.hero,mobileImage:slide.mobileImageUrl||slide.imageUrl,
    title:slide.title,description:slide.description,eyebrow:slide.eyebrow,ctaLabel:slide.ctaLabel,
-   ctaHref:targetUrl(slide.target,store),alt:slide.title
+   ctaHref:targetUrl(slide.target,store),hasCta:slide.target.kind!=="none",alt:slide.title
   })):[
 
    {id:"edition-primary",image:heroWide(heroImage,fallbackEditorial.hero),mobileImage:heroWide(heroMobileImage,fallbackEditorial.hero),title:heading,
@@ -117,7 +117,7 @@ export default async function Home(){
           <span className="premium-eyebrow">THE ART OF DETAILS / 03</span>
           <h2 id="ed-lookbook-title">{edition?.campaign.title||firstBanner?.title||"جزئیاتی که\nتفاوت می‌سازند."}</h2>
           <p>{edition?.campaign.description||firstBanner?.subtitle||"یک اکسسوری خوب، فقط یک انتخاب نیست؛ امضای سبک شخصی شماست. طراحی‌هایی که هر روز همراهتان می‌مانند."}</p>
-          <Link href={edition?targetUrl(edition.campaign.target,store):firstBanner?.target?targetUrl(firstBanner.target,store):firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags"} className="ed-light-button">{edition?.campaign.ctaLabel||"دیدن کالکشن"} <ArrowUpLeft size={18}/></Link>
+          {edition?.campaign.target.kind!=="none"&&<Link href={edition?targetUrl(edition.campaign.target,store):firstBanner?.target?targetUrl(firstBanner.target,store):firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags"} className="ed-light-button">{edition?.campaign.ctaLabel||"دیدن کالکشن"} <ArrowUpLeft size={18}/></Link>}
           
         </div>
       </section>
@@ -128,7 +128,7 @@ export default async function Home(){
           <div className="ed-story-inset" data-editorial-frame data-story-inset><FrameImage src={storyDetail} alt="جزئیات استایل" fill sizes="(max-width: 760px) 35vw, 17vw" unoptimized={storyDetail.startsWith("http")}/></div>
           
         </div>
-        <div className="ed-story-copy" data-reveal="left"><span className="premium-eyebrow">A NOTE ON STYLE / 04</span><h2>{edition?.story.title||editorialHeading?.title||"کمتر انتخاب کن.\nبهتر انتخاب کن."}</h2><div className="ed-story-rule"/><p>{edition?.story.description||editorialHeading?.description||"برای ما، استایل یعنی ترکیب سادگی و شخصیت. انتخاب‌هایی باکیفیت که برای مد زودگذر ساخته نشده‌اند و در هر فصل همراهتان هستند."}</p><Link href={storyCta} className="ed-inline-link">{edition?.story.ctaLabel||editorialHeading?.ctaLabel||"داستان این نگاه"} <ArrowUpLeft size={18}/></Link></div>
+        <div className="ed-story-copy" data-reveal="left"><span className="premium-eyebrow">A NOTE ON STYLE / 04</span><h2>{edition?.story.title||editorialHeading?.title||"کمتر انتخاب کن.\nبهتر انتخاب کن."}</h2><div className="ed-story-rule"/><p>{edition?.story.description||editorialHeading?.description||"برای ما، استایل یعنی ترکیب سادگی و شخصیت. انتخاب‌هایی باکیفیت که برای مد زودگذر ساخته نشده‌اند و در هر فصل همراهتان هستند."}</p>{edition?.story.target.kind!=="none"&&<Link href={storyCta} className="ed-inline-link">{edition?.story.ctaLabel||editorialHeading?.ctaLabel||"داستان این نگاه"} <ArrowUpLeft size={18}/></Link>}</div>
       </section>
 
       <section className="ed-chapter" data-chapter aria-label="روایت تصویری کالکشن">
