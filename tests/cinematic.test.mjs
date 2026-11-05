@@ -20,7 +20,7 @@ test("Homepage uses independent editorial art direction and all data-managed sec
  for(const key of ["HeroCarousel","ed-story-inset","ed-chapter","ed-mobile-chapters","data-image-wipe","data-editorial-grid","ed-admin-story"])assert.ok(home.includes(key),key);
  assert.match(home,/hero\?\.mobileImageUrl/);
  assert.match(home,/editorialHeading\?\.secondaryImageUrl/);
- assert.match(home,/sections\.slice\(2\)\.map/);
+ assert.match(home,/edition\?\[\]:sections\.slice\(2\)/);
  assert.doesNotMatch(home,/className="ed-hero-detail"/);
  assert.doesNotMatch(home,/className="ed-lookbook-detail"/);
  assert.match(style,/--ed-paper/);
@@ -70,7 +70,8 @@ test("High-resolution local demo photographs have explicit provenance",()=>{
  assert.ok(existsSync("src/app/editorial-refinement.css"));
  assert.ok(existsSync("src/app/cinematic-finish.css"));
  assert.ok(existsSync("src/components/SiteMotion.tsx"));
- assert.match(load("src/app/layout.tsx"),/SiteMotion/);
+ assert.match(load("src/app/layout.tsx"),/StoreChrome/);
+ assert.match(load("src/components/StoreChrome.tsx"),/SiteMotion/);
 });
 test("Client components using the shop context are client boundaries",()=>{
  for(const path of ["src/components/Header.tsx","src/components/Footer.tsx","src/components/ProductCard.tsx"]){
@@ -198,4 +199,28 @@ test("Cinematic image openings use numeric, frame-by-frame GSAP masks and post-r
  assert.doesNotMatch(motion,/\.to\(frame,\{clipPath:/);
  assert.match(page,/ed-category-image-stage/);
  assert.match(style,/ed-category-image-stage/);
+});
+
+test("Published Edition 02 CMS controls every photo and copy while keeping old stores backward compatible",()=>{
+ const home=load("src/app/page.tsx");
+ const data=load("src/lib/live-store.ts");
+ const model=load("src/lib/edition-two-content.ts");
+ const header=load("src/components/Header.tsx");
+ const footer=load("src/components/Footer.tsx");
+ const hero=load("src/components/HeroCarousel.tsx");
+ for(const key of [
+  "edition.hero.filter","edition.categories.items","edition.featured.productIds",
+  "edition?.campaign.title","edition?.story.title","edition?.chapters[0]",
+  "edition?.chapters[1]","edition?.journal.title","edition?.benefits"
+ ])assert.ok(home.includes(key),key);
+ assert.match(data,/isEditionTwo\(data\.settings\?\.editorialConfig\)/);
+ assert.match(model,/x\.dbId===target\.id/);
+ assert.match(header,/edition\.navigation\.filter/);
+ assert.match(footer,/edition\?\.footer\.title/);
+ assert.match(hero,/slide\.ctaLabel/);
+ assert.match(home,/selectedArticles\[0\]\.slug/);
+ assert.match(home,/selectedArticles\[1\]\.slug/);
+ assert.match(home,/selectedArticles\[0\]\?\.coverUrl/);
+ assert.doesNotMatch(home,/editorialPhoto\(store\.articles\[/);
+ assert.doesNotMatch(data,/editorialDraft:/);
 });

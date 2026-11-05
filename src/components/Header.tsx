@@ -7,6 +7,7 @@ import {useEffect,useMemo,useRef,useState,type FormEvent,type KeyboardEvent as R
 import {ArrowLeft,ArrowUpLeft,Heart,Search,ShoppingBag,UserRound,X} from "lucide-react";
 import {useShop} from "@/components/ShopProvider";
 import {toman} from "@/lib/catalog";
+import {targetUrl} from "@/lib/edition-two-content";
 
 const fallbackPhoto="/images/editorial/category-bags.webp";
 const normalizeSearch=(value:string)=>value.normalize("NFKC").toLocaleLowerCase("fa")
@@ -23,6 +24,7 @@ export function Header(){
  const requestedMenuPhoto=useRef(0);
  const name=store.settings.storeName||"مزون";
  const firstCategory=store.categories[0];
+ const edition=store.settings.editorialConfig;
  const normalizedQuery=normalizeSearch(query);
  const results=useMemo(()=>{
   if(!normalizedQuery)return [];
@@ -34,7 +36,11 @@ export function Header(){
    return terms.every(term=>haystack.includes(term));
   }).slice(0,7);
  },[normalizedQuery,store.products]);
- const menuItems=[
+ const menuItems=edition?edition.navigation.filter(x=>x.target.kind!=="none").map(link=>({
+   label:link.label,href:targetUrl(link.target,store),
+   image:link.target.kind==="product"?store.products.find(p=>p.id===link.target.id)?.image||fallbackPhoto:
+    link.target.kind==="category"?store.categories.find(c=>c.dbId===link.target.id||c.id===link.target.id)?.image||fallbackPhoto:fallbackPhoto
+  })):[
   {label:"صفحه اصلی",href:"/",image:"/images/editorial/hero-main.webp"},
   {label:"کالکشن‌ها",href:"/products",image:"/images/editorial/category-clothing.webp"},
   ...store.categories.slice(0,5).map(category=>({label:category.name,href:`/category/${category.id}`,image:category.image?.startsWith("/images/")?(demoCategoryImages[category.id]||category.image):category.image||fallbackPhoto})),
@@ -105,12 +111,12 @@ export function Header(){
   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
  }
  return <>
-  <div className="premium-announcement"><span className="premium-announcement-dot"/><span>{store.live?"کالکشن‌های منتخب، با امکان سفارش از فروشگاه":"نسخه نمایشی کالکشن ادیتوریال · محصولات و قیمت‌ها نمونه هستند"}</span><span className="premium-announcement-line"/><span className="premium-announcement-en">THE EDITION / 02</span></div>
+  <div className="premium-announcement"><span className="premium-announcement-dot"/><span>{edition?.announcement||(store.live?"کالکشن‌های منتخب، با امکان سفارش از فروشگاه":"نسخه نمایشی کالکشن ادیتوریال · محصولات و قیمت‌ها نمونه هستند")}</span><span className="premium-announcement-line"/><span className="premium-announcement-en">THE EDITION / 02</span></div>
   <header className="premium-header">
    <div className="premium-header-inner premium-container">
     <div className="premium-header-right">
      <button ref={menuButton} type="button" className={`premium-icon premium-menu-trigger ${menuOpen?"is-open":""}`} aria-label="باز کردن فهرست" aria-expanded={menuOpen} aria-controls="maison-menu" onClick={()=>{setSearchOpen(false);setMenuPhoto(fallbackPhoto);setMenuOpen(true)}}><span className="premium-menu-lines" aria-hidden="true"><i/><i/></span><span className="premium-menu-word">MENU</span></button>
-     <nav className="premium-navigation" aria-label="منوی اصلی"><Link className={pathname==="/"?"current":""} href="/">خانه</Link><Link href="/products">فروشگاه</Link>{firstCategory&&<Link href={`/category/${firstCategory.id}`}>{firstCategory.name}</Link>}<Link href="/blog">ژورنال</Link></nav>
+     <nav className="premium-navigation" aria-label="منوی اصلی">{edition?edition.navigation.filter(x=>x.target.kind!=="none").map(link=><Link key={link.id} className={pathname===targetUrl(link.target,store)?"current":""} href={targetUrl(link.target,store)}>{link.label}</Link>):<><Link className={pathname==="/"?"current":""} href="/">خانه</Link><Link href="/products">فروشگاه</Link>{firstCategory&&<Link href={`/category/${firstCategory.id}`}>{firstCategory.name}</Link>}<Link href="/blog">ژورنال</Link></>}</nav>
     </div>
     <Link href="/" className="premium-brand" aria-label={`${name}، صفحه اصلی`}>{store.settings.logoUrl&&<Image src={store.settings.logoUrl} width={37} height={37} alt="" unoptimized className="premium-logo-img"/>}<strong lang={/[\u0600-\u06FF]/.test(name)?"fa":"en"}>{name}</strong><span>THE EDITORIAL STORE</span></Link>
     <div className="premium-header-left">

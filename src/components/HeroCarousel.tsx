@@ -14,6 +14,7 @@ export type EditorialSlide={
  eyebrow:string;
  ctaLabel:string;
  ctaHref:string;
+ hasCta?:boolean;
  alt:string;
 };
 type Props={slides:EditorialSlide[]};
@@ -95,9 +96,9 @@ export function HeroCarousel({slides}:Props){
    </div>
    <div className="ed-hero-content" aria-label="توضیحات روایت">
     <p className="ed-hero-description" aria-live="off">{slide.description}</p>
-    <Link className="ed-dark-button ed-hero-stable-action" href={slide.ctaHref}>
-     کشف داستان <ArrowUpLeft size={19} strokeWidth={1.4}/>
-    </Link>
+    {slide.hasCta!==false&&<Link className="ed-dark-button ed-hero-stable-action" href={slide.ctaHref}>
+     {slide.ctaLabel||"کشف داستان"} <ArrowUpLeft size={19} strokeWidth={1.4}/>
+    </Link>}
     <span className="ed-hero-progress-count" dir="ltr" aria-label={`اسلاید ${active+1} از ${slides.length}`}>
      {String(active+1).padStart(2,"0")} / {String(slides.length).padStart(2,"0")}
     </span>
