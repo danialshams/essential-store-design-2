@@ -51,7 +51,7 @@ jobs:
       - run: npm run build
       - name: Real database checkout / CMS publish integration
         run: node scripts/test-admin-integration.mjs
-      - name: Browser regression: all admin modules, mobile and desktop
+      - name: "Browser regression: all admin modules, mobile and desktop"
         env:
           NEXT_PUBLIC_STUDIO_DEMO: "1"
         run: node scripts/test-admin-browser.mjs
