@@ -217,5 +217,9 @@ test("Published Edition 02 CMS controls every photo and copy while keeping old s
  assert.match(header,/edition\.navigation\.filter/);
  assert.match(footer,/edition\?\.footer\.title/);
  assert.match(hero,/slide\.ctaLabel/);
+ assert.match(home,/selectedArticles\[0\]\.slug/);
+ assert.match(home,/selectedArticles\[1\]\.slug/);
+ assert.match(home,/selectedArticles\[0\]\?\.coverUrl/);
+ assert.doesNotMatch(home,/editorialPhoto\(store\.articles\[/);
  assert.doesNotMatch(data,/editorialDraft:/);
 });
