@@ -472,3 +472,10 @@ body:has(.ed2-admin) .note-box{background:#f6f1e9;border-color:#e7ddcf;color:#81
  .ed2-part-selector{position:static;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:14px}
  .ed2-part-selector button{min-height:46px;padding:10px;font-size:12px}
 }
+
+/* Fixed modal overlays must span the physical viewport, including the space
+   normally reserved for the storefront scroll bar. */
+body:has(.ed2-admin) .modal-backdrop{
+ position:fixed!important;top:0!important;left:0!important;right:auto!important;bottom:auto!important;
+ width:100vw!important;height:100dvh!important;max-width:none!important;
+}
