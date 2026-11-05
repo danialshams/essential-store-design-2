@@ -97,6 +97,8 @@ try{
   await evalJS('document.querySelector(".page-create").click();true');
   await waitFor(()=>evalJS('!!document.querySelector(".modal-backdrop .editor-panel")'),view.name+" product editor");
   await sleep(360);
+  await waitFor(()=>evalJS('Math.abs(document.querySelector(".modal-backdrop").getBoundingClientRect().width-window.innerWidth)<4'),
+   view.name+" overlay physical viewport width",8000);
   const layout=await evalJS(`(() => {
    const root=document.querySelector(".modal-backdrop");
    const panel=root?.querySelector(".editor-panel");
