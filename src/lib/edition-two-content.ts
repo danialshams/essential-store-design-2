@@ -13,6 +13,7 @@ export type EditionTwoContent={
  journal:{title:string;articleIds:string[]};
  benefits:Array<{id:string;title:string;description:string;icon:"truck"|"package"|"headphones"|"shield"}>;
  footer:{eyebrow:string;title:string;bottomNote:string};
+ footerColumns?:Array<{id:string;title:string;links:Array<{id:string;label:string;target:Destination}>}>;
  navigation:Array<{id:string;label:string;target:Destination}>;
 };
 export type LinkData={
@@ -37,7 +38,7 @@ export function targetUrl(target:Destination|undefined,store:LinkData):string{
    return row?"/category/"+encodeURIComponent(row.slug||row.id):"/products";}
   case "product":{const row=store.products.find(x=>x.id===target.id);
    return row?"/product/"+encodeURIComponent(row.slug):"/products";}
-  case "page":{if(target.id==="blog")return "/blog";const row=store.pages.find(x=>x.id===target.id||x.slug===target.id);
+  case "page":{if(target.id==="blog")return "/blog";if(target.id==="cart")return "/cart";if(target.id==="account")return "/account";const row=store.pages.find(x=>x.id===target.id||x.slug===target.id);
    return "/info/"+encodeURIComponent(row?.slug||target.id||"about");}
   case "article":{const row=store.articles.find(x=>x.id===target.id);
    return row?"/blog/"+encodeURIComponent(row.slug):"/blog";}
