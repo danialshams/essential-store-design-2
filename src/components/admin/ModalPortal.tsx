@@ -23,8 +23,8 @@ export function ModalPortal({children,onClose,variant="drawer"}:{
   // screen edges regardless of the document scrollbar.
   const forceViewport=()=>{
    if(rootRef.current){
-    rootRef.current.style.width=window.innerWidth+"px";
-    rootRef.current.style.height=window.innerHeight+"px";
+    rootRef.current.style.setProperty("width",window.innerWidth+"px","important");
+    rootRef.current.style.setProperty("height",window.innerHeight+"px","important");
    }
   };
   forceViewport();
