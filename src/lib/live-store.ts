@@ -4,7 +4,7 @@ import {unstable_cache} from "next/cache";
 import {categories as demoCategories,demoProducts,IMAGE_FALLBACK,type Product} from "@/lib/catalog";
 
 export type StoreCategory={id:string;dbId?:string;name:string;description:string;image:string};
-export type StoreBanner={id:string;title:string;subtitle:string;imageUrl:string|null;linkUrl:string|null};
+export type StoreBanner={id:string;title:string;subtitle:string;imageUrl:string|null;linkUrl:string|null;target?:import("@/lib/edition-two-content").Destination|null};
 export type StorePage={id?:string;slug:string;title:string;body:string;seoTitle?:string|null;seoDescription?:string|null};
 export type StoreArticle={id?:string;slug:string;title:string;summary:string;body:string;coverUrl:string|null;createdAt:string};
 export type StoreShipping={id:string;title:string;cost:number;freeAbove:number|null;estimatedDays?:string|null};
