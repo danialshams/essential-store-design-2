@@ -18,6 +18,17 @@ export function ModalPortal({children,onClose,variant="drawer"}:{
  useEffect(()=>setMounted(true),[]);
  useLayoutEffect(()=>{
   if(!mounted)return;
+  // The commerce storefront can reserve a 15px scrollbar gutter.
+  // Physical viewport dimensions keep nested admin drawers flush with both
+  // screen edges regardless of the document scrollbar.
+  const forceViewport=()=>{
+   if(rootRef.current){
+    rootRef.current.style.width=window.innerWidth+"px";
+    rootRef.current.style.height=window.innerHeight+"px";
+   }
+  };
+  forceViewport();
+  window.addEventListener("resize",forceViewport,{passive:true});
   const previousOverflow=document.body.style.overflow;
   const previousPadding=document.body.style.paddingRight;
   const active=document.activeElement instanceof HTMLElement?document.activeElement:null;
@@ -48,6 +59,7 @@ export function ModalPortal({children,onClose,variant="drawer"}:{
   }
   document.addEventListener("keydown",onKeyDown);
   return ()=>{
+   window.removeEventListener("resize",forceViewport);
    cancelAnimationFrame(raf);
    document.removeEventListener("keydown",onKeyDown);
    document.body.style.overflow=previousOverflow;
