@@ -14,7 +14,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, time, urllib.request, urllib.error
-          admin='https://studio-commerce-admin.vercel.app'
+          admin='https://essential-store-design-2.vercel.app'
           store='https://essential-store-design-2.vercel.app'
           def fetch(path):
               req=urllib.request.Request(store+path,headers={'User-Agent':'Edition2-Smoke/1.0'})
@@ -45,7 +45,7 @@ jobs:
                   admin_data=read_json(admin+'/api/store/bootstrap')
                   store_data=read_json(store+'/api/catalog')
                   if admin_data.get('mode')!='live' or store_data.get('demo') is not False:
-                      raise AssertionError('Edition 02 not using live admin')
+                      raise AssertionError('Edition 02 not using its unified local admin database')
                   remote={p['slug']:p for p in admin_data['products']}
                   local={p['slug']:p for p in store_data['products']}
                   if len(local)<8 or set(remote)!=set(local):
@@ -69,7 +69,7 @@ jobs:
                       response=json.loads(e.read().decode('utf8'))
                       if 'کالا' not in response.get('error',''):
                           raise AssertionError('Order relay did not reach the admin validation API: '+str(response))
-                  print('PASS: 9 rendered pages + 3 new high-resolution editorial images + 8 admin-synced products + safe order relay')
+                  print('PASS: 9 rendered pages + 3 cinematic images + 8 products synced to local Edition 02 database + safe local order service')
                   break
               except Exception as e:
                   print('Attempt',attempt+1,'failed:',type(e).__name__,str(e),flush=True)
