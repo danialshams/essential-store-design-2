@@ -17,7 +17,7 @@ export type EditionTwoContent={
 };
 export type LinkData={
  products:Array<{id:string;slug:string}>;
- categories:Array<{id:string;slug:string;dbId?:string}>;
+ categories:Array<{id:string;slug?:string;dbId?:string}>;
  articles:Array<{id?:string;slug:string}>;
  pages:Array<{id?:string;slug:string}>;
 };
@@ -34,7 +34,7 @@ export function targetUrl(target:Destination|undefined,store:LinkData):string{
   case "home":return "/";
   case "products":return "/products";
   case "category":{const row=store.categories.find(x=>x.dbId===target.id||x.id===target.id||x.slug===target.id);
-   return row?"/category/"+encodeURIComponent(row.slug):"/products";}
+   return row?"/category/"+encodeURIComponent(row.slug||row.id):"/products";}
   case "product":{const row=store.products.find(x=>x.id===target.id);
    return row?"/product/"+encodeURIComponent(row.slug):"/products";}
   case "page":{if(target.id==="blog")return "/blog";const row=store.pages.find(x=>x.id===target.id||x.slug===target.id);
