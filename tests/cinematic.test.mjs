@@ -70,7 +70,8 @@ test("High-resolution local demo photographs have explicit provenance",()=>{
  assert.ok(existsSync("src/app/editorial-refinement.css"));
  assert.ok(existsSync("src/app/cinematic-finish.css"));
  assert.ok(existsSync("src/components/SiteMotion.tsx"));
- assert.match(load("src/app/layout.tsx"),/SiteMotion/);
+ assert.match(load("src/app/layout.tsx"),/StoreChrome/);
+ assert.match(load("src/components/StoreChrome.tsx"),/SiteMotion/);
 });
 test("Client components using the shop context are client boundaries",()=>{
  for(const path of ["src/components/Header.tsx","src/components/Footer.tsx","src/components/ProductCard.tsx"]){
