@@ -1,0 +1,64 @@
+name: Edition 02 Unified Admin QA
+on:
+  push:
+    branches:
+      - feature/edition02-admin-in-project
+  pull_request:
+    branches: [main]
+    paths:
+      - src/app/admin/**
+      - src/app/login/**
+      - src/app/api/admin/**
+      - src/app/api/auth/**
+      - src/app/api/store/**
+      - src/components/admin/**
+      - src/components/StoreChrome.tsx
+      - src/lib/admin/**
+      - prisma/**
+      - package.json
+      - scripts/test-admin-*
+      - .github/workflows/edition02-admin-qa.yml
+concurrency:
+  group: edition02-admin-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: edition02
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/edition02?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx prisma migrate deploy
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Real database checkout / CMS publish integration
+        run: node scripts/test-admin-integration.mjs
+      - name: Browser regression: all admin modules, mobile and desktop
+        env:
+          NEXT_PUBLIC_STUDIO_DEMO: "1"
+        run: node scripts/test-admin-browser.mjs
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-edition02-admin-qa
+          path: .artifacts/dialogs/*.png
+          if-no-files-found: ignore
