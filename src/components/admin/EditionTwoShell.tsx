@@ -27,7 +27,7 @@ const groups:{name:string;items:NavItem[]}[]=[
  {name:"فروشگاه من",items:[
   {href:"/admin/settings",label:"تنظیمات و سئو",icon:Settings}]}
 ];
-export function EditionTwoShell({children,email}:{children:ReactNode;email:string}){
+export function EditionTwoShell({children,email,publicAdmin=false}:{children:ReactNode;email:string;publicAdmin?:boolean}){
  const pathname=usePathname(),router=useRouter();
  const [open,setOpen]=useState(false),[busy,setBusy]=useState(false),[storeName,setStoreName]=useState("ESSENTIAL");
  useEffect(()=>{setOpen(false)},[pathname]);
@@ -50,7 +50,7 @@ export function EditionTwoShell({children,email}:{children:ReactNode;email:strin
      <item.icon size={18} strokeWidth={1.65}/><span>{item.label}</span></Link>)}</div>)}
   </nav>
   <div className="ed2-sidebar-bottom"><span className="ed2-side-user" title={email}>{email}</span>
-   <button type="button" onClick={()=>void signOut()} disabled={busy||DEMO_MODE} aria-label="خروج از حساب" title={DEMO_MODE?"ورود نمایشی": "خروج"}><LogOut size={18}/></button></div>
+   {!publicAdmin&&<button type="button" onClick={()=>void signOut()} disabled={busy||DEMO_MODE} aria-label="خروج از حساب" title={DEMO_MODE?"ورود نمایشی": "خروج"}><LogOut size={18}/></button>}</div>
  </>;
  return <div className="ed2-admin" dir="rtl">
   {open&&<button type="button" className="ed2-mobile-overlay" aria-label="بستن منو" onClick={()=>setOpen(false)}/>}
