@@ -20,7 +20,7 @@ test("Homepage uses independent editorial art direction and all data-managed sec
  for(const key of ["HeroCarousel","ed-story-inset","ed-chapter","ed-mobile-chapters","data-image-wipe","data-editorial-grid","ed-admin-story"])assert.ok(home.includes(key),key);
  assert.match(home,/hero\?\.mobileImageUrl/);
  assert.match(home,/editorialHeading\?\.secondaryImageUrl/);
- assert.match(home,/sections\.slice\(2\)\.map/);
+ assert.match(home,/edition\?\[\]:sections\.slice\(2\)/);
  assert.doesNotMatch(home,/className="ed-hero-detail"/);
  assert.doesNotMatch(home,/className="ed-lookbook-detail"/);
  assert.match(style,/--ed-paper/);
@@ -198,4 +198,24 @@ test("Cinematic image openings use numeric, frame-by-frame GSAP masks and post-r
  assert.doesNotMatch(motion,/\.to\(frame,\{clipPath:/);
  assert.match(page,/ed-category-image-stage/);
  assert.match(style,/ed-category-image-stage/);
+});
+
+test("Published Edition 02 CMS controls every photo and copy while keeping old stores backward compatible",()=>{
+ const home=load("src/app/page.tsx");
+ const data=load("src/lib/live-store.ts");
+ const model=load("src/lib/edition-two-content.ts");
+ const header=load("src/components/Header.tsx");
+ const footer=load("src/components/Footer.tsx");
+ const hero=load("src/components/HeroCarousel.tsx");
+ for(const key of [
+  "edition.hero.filter","edition.categories.items","edition.featured.productIds",
+  "edition?.campaign.title","edition?.story.title","edition?.chapters[0]",
+  "edition?.chapters[1]","edition?.journal.title","edition?.benefits"
+ ])assert.ok(home.includes(key),key);
+ assert.match(data,/isEditionTwo\(data\.settings\?\.editorialConfig\)/);
+ assert.match(model,/x\.dbId===target\.id/);
+ assert.match(header,/edition\.navigation\.filter/);
+ assert.match(footer,/edition\?\.footer\.title/);
+ assert.match(hero,/slide\.ctaLabel/);
+ assert.doesNotMatch(data,/editorialDraft:/);
 });
