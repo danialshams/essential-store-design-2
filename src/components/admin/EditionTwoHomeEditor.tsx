@@ -153,7 +153,7 @@ export function EditionTwoHomeEditor(){
  return <div className="ed2-editor-page">
   <div className="ed2-page-heading"><div><small>EDITION 02 / VISUAL CONTENT MANAGER</small><h1>مدیریت صفحه اصلی</h1>
    <p>روی هر بخش از پیش‌نمایش بزنید و همان قسمت را ویرایش کنید. چیدمان و انیمیشن‌ها ثابت می‌مانند.</p></div>
-   <div className="ed2-page-actions"><Link className="ed2-button ed2-button-soft" href="https://essential-store-design-2.vercel.app" target="_blank" rel="noreferrer">مشاهده سایت <ExternalLink size={16}/></Link>
+   <div className="ed2-page-actions"><Link className="ed2-button ed2-button-soft" href="/" target="_blank" rel="noreferrer">مشاهده سایت <ExternalLink size={16}/></Link>
     <button className="ed2-button ed2-button-outline" disabled={saving||publishing||(!dirty&&hasDraft)} onClick={()=>void saveDraft()}>{saving?"در حال ذخیره": "ذخیره پیش‌نویس"} <Save size={16}/></button>
     <button className="ed2-button ed2-button-dark" disabled={saving||publishing||(!dirty&&!hasDraft)} onClick={()=>void publish()}>{publishing?"در حال انتشار":"انتشار تغییرات"} <Check size={16}/></button></div>
   </div>

@@ -60,7 +60,7 @@ export function EditionTwoShell({children,email}:{children:ReactNode;email:strin
     <button type="button" className="ed2-mobile-menu" aria-label="باز کردن منو" onClick={()=>setOpen(true)}><Menu size={21}/></button>
     <span className="ed2-breadcrumb">فروشگاه من <ChevronLeft size={13}/></span><strong>{location}</strong></div>
     <div className="ed2-topbar-end"><span className="ed2-topbar-store">{storeName}</span>
-     <a href="https://essential-store-design-2.vercel.app" target="_blank" rel="noreferrer" title="مشاهده فروشگاه">مشاهده سایت <ArrowUpLeft size={17}/></a></div>
+     <a href="/" target="_blank" rel="noreferrer" title="مشاهده فروشگاه">مشاهده سایت <ArrowUpLeft size={17}/></a></div>
    </header>
    {DEMO_MODE&&<div className="ed2-demo-strip">پیش‌نمایش آزمایشی پنل — اطلاعات نمونه هستند و فروشگاه واقعی تغییر نمی‌کند.</div>}
    <main id="main-content" className="ed2-main-content">{children}</main>
