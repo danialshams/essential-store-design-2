@@ -78,7 +78,7 @@ export default async function Home(){
     eyebrow:"روایت دوم / فرم و سبک",ctaLabel:editorialHeading?.ctaLabel||"کشف داستان",ctaHref:storyCta,alt:"عکاسی مد با پالت خنثی"},
    {id:"edition-details",image:heroWide(lookbookImage,"/images/editorial/category-bags.webp"),mobileImage:heroWide(lookbookImage,"/images/editorial/chapter-detail.webp"),title:firstBanner?.title||"زیبایی در\nجزئیات است.",
     description:firstBanner?.subtitle||"بافت، متریال و جزئیاتی که انتخاب‌های ماندگار را از دیگران متمایز می‌کنند.",
-    eyebrow:"روایت سوم / هنر جزئیات",ctaLabel:"دیدن کالکشن",ctaHref:firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags",alt:"تصویر کمپین سینمایی مد"}
+    eyebrow:"روایت سوم / هنر جزئیات",ctaLabel:"دیدن کالکشن",ctaHref:firstBanner?.target?targetUrl(firstBanner.target,store):firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags",alt:"تصویر کمپین سینمایی مد"}
   ]; // Always retain all three stories; even matching merchant photos have distinct copy.
 
 
@@ -117,7 +117,7 @@ export default async function Home(){
           <span className="premium-eyebrow">THE ART OF DETAILS / 03</span>
           <h2 id="ed-lookbook-title">{edition?.campaign.title||firstBanner?.title||"جزئیاتی که\nتفاوت می‌سازند."}</h2>
           <p>{edition?.campaign.description||firstBanner?.subtitle||"یک اکسسوری خوب، فقط یک انتخاب نیست؛ امضای سبک شخصی شماست. طراحی‌هایی که هر روز همراهتان می‌مانند."}</p>
-          <Link href={edition?targetUrl(edition.campaign.target,store):firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags"} className="ed-light-button">{edition?.campaign.ctaLabel||"دیدن کالکشن"} <ArrowUpLeft size={18}/></Link>
+          <Link href={edition?targetUrl(edition.campaign.target,store):firstBanner?.target?targetUrl(firstBanner.target,store):firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags"} className="ed-light-button">{edition?.campaign.ctaLabel||"دیدن کالکشن"} <ArrowUpLeft size={18}/></Link>
           
         </div>
       </section>
@@ -168,7 +168,7 @@ export default async function Home(){
         <div className="ed-admin-story-copy" data-reveal={index%2?"right":"left"}><span className="premium-eyebrow">CURATED STORY / {String(index+5).padStart(2,"0")}</span><h2>{section.title}</h2><p>{section.description}</p><Link href={section.ctaHref?.startsWith("/")?section.ctaHref:"/products"} className="ed-inline-link">{section.ctaLabel||"کشف بیشتر"} <ArrowUpLeft size={18}/></Link></div>
       </section>)}
 
-      {otherBanners.map((banner,index)=><section key={banner.id} className="ed-secondary-banner premium-container" data-reveal="up"><div><span className="premium-eyebrow">DISCOVER THE COLLECTION / {String(index+6).padStart(2,"0")}</span><h2>{banner.title}</h2><p>{banner.subtitle}</p><Link href={banner.linkUrl?.startsWith("/")?banner.linkUrl:"/products"} className="ed-dark-button">مشاهده بیشتر <ArrowUpLeft size={18}/></Link></div>{banner.imageUrl&&<div className="ed-secondary-banner-image" data-editorial-frame><FrameImage src={editorialPhoto(banner.imageUrl,"/images/editorial/campaign.webp")} alt={banner.title} fill unoptimized sizes="(max-width: 760px) 100vw, 50vw"/></div>}</section>)}
+      {otherBanners.map((banner,index)=><section key={banner.id} className="ed-secondary-banner premium-container" data-reveal="up"><div><span className="premium-eyebrow">DISCOVER THE COLLECTION / {String(index+6).padStart(2,"0")}</span><h2>{banner.title}</h2><p>{banner.subtitle}</p><Link href={banner.target?targetUrl(banner.target,store):banner.linkUrl?.startsWith("/")?banner.linkUrl:"/products"} className="ed-dark-button">مشاهده بیشتر <ArrowUpLeft size={18}/></Link></div>{banner.imageUrl&&<div className="ed-secondary-banner-image" data-editorial-frame><FrameImage src={editorialPhoto(banner.imageUrl,"/images/editorial/campaign.webp")} alt={banner.title} fill unoptimized sizes="(max-width: 760px) 100vw, 50vw"/></div>}</section>)}
 
       <section className="ed-journal premium-container" data-journal data-scene="journal">
         <div className="ed-section-heading"><div><span className="premium-eyebrow">THE JOURNAL / 05</span><h2>{edition?.journal.title||<>از نگاه <em>ژورنال</em></>}</h2></div><Link href="/blog" className="ed-inline-link">ورود به ژورنال <ArrowUpLeft size={18}/></Link></div>
