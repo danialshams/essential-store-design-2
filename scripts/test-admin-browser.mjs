@@ -178,6 +178,19 @@ try{
   await send("Page.navigate",{url:appURL+"/admin/editorial"});
   await waitFor(()=>evalJS('!!document.querySelector(".ed2-preview-screen") && document.querySelectorAll(".ed2-preview-section").length>=9'),
    view.name+" editorial builder",22000);
+  const tabs=await evalJS(`(() => {
+   const nav=document.querySelector(".ed2-part-selector");
+   const buttons=[...nav.querySelectorAll("button")];
+   const rects=buttons.map(x=>x.getBoundingClientRect());
+   const overlap=rects.some((a,i)=>rects.some((b,j)=>i!==j&&a.left<b.right-3&&a.right>b.left+3&&a.top<b.bottom-3&&a.bottom>b.top+3));
+   return {display:getComputedStyle(nav).display,width:nav.clientWidth,
+    scrollWidth:nav.scrollWidth,overlap,
+    count:buttons.length,minButtonWidth:Math.min(...rects.map(r=>r.width)),
+    clipped:buttons.some(x=>x.scrollWidth>x.clientWidth+3||x.scrollHeight>x.clientHeight+3)};
+  })()`);
+  assert.equal(tabs.display,"grid",view.name+": sections must use a legible responsive grid");
+  assert.ok(!tabs.overlap&&!tabs.clipped&&tabs.minButtonWidth>75&&tabs.scrollWidth<=tabs.width+3,
+   view.name+": cramped/overlapping section navigation "+JSON.stringify(tabs));
   const editor=await evalJS(`(() => {
    const root=document.querySelector(".ed2-admin");
    const preview=document.querySelector(".ed2-preview-column");
