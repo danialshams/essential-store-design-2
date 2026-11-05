@@ -10,10 +10,10 @@ const db=new PrismaClient();
 let server;
 let output="";
 
-async function post(body,key=secret){
+async function post(body,key=secret,requestOrigin="http://localhost:3349"){
   const response=await fetch(origin+"/api/store/order",{
     method:"POST",
-    headers:{"Content-Type":"application/json","x-storefront-key":key},
+    headers:{"Content-Type":"application/json","x-storefront-key":key,Origin:requestOrigin},
     body:JSON.stringify(body)
   });
   return {status:response.status,data:await response.json()};
@@ -51,8 +51,8 @@ try{
     shippingId:"ci-shipping",coupon:"CITEST10"
   });
 
-  const unauthorized=await post(sample("09120000000"),"");
-  assert.equal(unauthorized.status,401,"invalid server key must be rejected");
+  const unauthorized=await post(sample("09120000000"),"","https://untrusted.invalid");
+  assert.equal(unauthorized.status,403,"cross-origin public checkout must be rejected");
 
   const invalid=sample("09120000001");
   invalid.items[0].productId="not-an-existing-product";
