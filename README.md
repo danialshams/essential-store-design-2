@@ -75,3 +75,23 @@ The demo lookbook and portrait images are **generated for this template**. They 
 ## QA and caveats
 
 `npm test` validates project shape, image assets, admin API contracts, no client-side secret, editorial content wiring and animation conventions. Next.js runtime/visual E2E tests require a dependency install; the project has not been connected to a new GitHub/Vercel project until the owner provides its URL.
+
+
+### Essential Edition 02: temporary direct editing (no login)
+
+For the **isolated prototype database only**, set the **server-only** Vercel
+production environment variable `TEMP_PUBLIC_ADMIN_EDIT=1`, keep
+`STORE_ADMIN_LOCAL=1` and `DATABASE_URL` configured, and keep
+`NEXT_PUBLIC_STUDIO_DEMO=0`. Then `/admin` opens without a login screen
+and all administrator API operations use the **real PostgreSQL database**.
+Saving/publishing the editorial homepage updates the live storefront; the
+in-memory showcase mode is **not** active. `/login` redirects to `/admin`.
+
+**WARNING:** This exposes the full administrator UI, including orders and
+customer information, to anyone who can visit the public URL. Do not use
+this switch once real users, customers, or payments are present. To restore
+authentication, set `TEMP_PUBLIC_ADMIN_EDIT=0` (or remove it), redeploy,
+and use the normal administrator login. Same-origin checks still apply to
+mutating requests, but are not a substitute for authentication.
+
+Image uploads still require the separately configured S3-compatible storage.
