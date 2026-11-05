@@ -3,6 +3,17 @@ import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { db } from "@/lib/admin/db";
 export const COOKIE_NAME = "studio_admin_session";
+/**
+ * TEMPORARY: allow full, persisted admin editing without sign-in on the
+ * isolated Edition 02 installation. This is deliberately server-only and
+ * disabled unless explicitly enabled in the deployment environment.
+ * Remove/disable this before handling real customer or payment data.
+ */
+export function publicOpenEditorEnabled(){
+  return process.env.TEMP_PUBLIC_ADMIN_EDIT === "1"
+    && Boolean(process.env.DATABASE_URL)
+    && process.env.NEXT_PUBLIC_STUDIO_DEMO !== "1";
+}
 const ONE_WEEK = 7 * 24 * 3600 * 1000;
 export function passwordHash(password: string) {
   const salt=randomBytes(16).toString("hex");
@@ -28,6 +39,9 @@ export async function clearSession(){
   jar.delete(COOKIE_NAME);
 }
 export async function currentAdmin(){
+  if(publicOpenEditorEnabled()){
+    return {id:"edition02-public-editor",email:"ویرایش مستقیم سایت"};
+  }
   const token=(await cookies()).get(COOKIE_NAME)?.value;
   if(!token)return null;
   const session=await db.session.findUnique({where:{tokenHash:hashToken(token)},include:{admin:true}});
