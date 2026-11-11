@@ -1,3 +1,4 @@
+import {generatedShowcasePhotos} from "@/lib/generated-showcase-photos";
 /** Media safety: all template images resolve to files bundled in /public/images/.
  * This is required for locations where Unsplash/CDN requests are blocked.
  * Merchant-uploaded images from other origins are preserved unchanged.
@@ -61,10 +62,10 @@ export function showcasePhoto(raw:string|null|undefined):string{
   try{
    const url=new URL(raw);
    const known=previouslyExternal[url.pathname.slice(1)];
-   if(known)return known;
+   if(known)return generatedShowcasePhotos[known]||known;
   }catch{return raw}
  }
- return bundled[key]||key;
+ return generatedShowcasePhotos[key]||bundled[key]||key;
 }
 export const legacyTemplatePhoto=(raw:string|null|undefined):boolean=>{
  if(!raw)return false;
