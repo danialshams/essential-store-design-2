@@ -3,12 +3,13 @@
 export type Destination={kind:"none"|"home"|"products"|"product"|"category"|"page"|"article"|"external";id?:string;url?:string};
 export type HeroSlide={id:string;title:string;description:string;eyebrow:string;imageUrl:string;mobileImageUrl:string;ctaLabel:string;target:Destination;enabled:boolean};
 export type ImageCopy={title:string;description:string;imageUrl:string;mobileImageUrl?:string;secondaryImageUrl?:string;ctaLabel:string;target:Destination};
+export type FestivalContent=ImageCopy&{enabled:boolean;eyebrow:string};
 export type EditionTwoContent={
  version:2;announcement:string;
  hero:HeroSlide[];
  categories:{title:string;items:Array<{categoryId:string;imageUrl?:string}>};
  featured:{title:string;description:string;productIds:string[]};
- campaign:ImageCopy;story:ImageCopy;
+ campaign:ImageCopy;story:ImageCopy;festival?:FestivalContent;
  chapters:Array<{id:string;title:string;description:string;imageUrl:string;mobileImageUrl?:string}>;
  journal:{title:string;articleIds:string[]};
  benefits:Array<{id:string;title:string;description:string;icon:"truck"|"package"|"headphones"|"shield"}>;
