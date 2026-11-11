@@ -49,11 +49,13 @@ export function ShopProvider({children,store}:{children:ReactNode;store:StoreDat
  },[notify]);
  const setQuantity=useCallback((id:string,quantity:number)=>{
   if(quantity<=0){setLines(old=>old.filter(x=>x.id!==id));return}
-  setLines(old=>old.map(x=>{
-   if(x.id!==id)return x;
+  setLines(old=>old.flatMap(x=>{
+   if(x.id!==id)return [x];
    const p=store.products.find(p=>p.id===x.productId),v=p?.variants?.find(v=>v.id===x.variantId);
-   const limit=Math.max(1,v?v.inventory:p?.inventory||1);
-   return {...x,quantity:Math.min(limit,quantity)};
+   if(!p||(p.variants?.length&&!v))return [];
+   const limit=v?v.inventory:p.inventory;
+   if(limit<=0)return [];
+   return [{...x,quantity:Math.min(limit,Math.max(1,quantity))}];
   }));
  },[store.products]);
  const remove=useCallback((id:string)=>setLines(old=>old.filter(x=>x.id!==id)),[]);
