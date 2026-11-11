@@ -6,6 +6,7 @@ import {StoreChrome} from "@/components/StoreChrome";
 
 import {loadStore} from "@/lib/live-store";
 import "./globals.css";
+import "./festival.css";
 import "./premium.css";
 import "./cinematic.css";
 import "./editorial-refinement.css";

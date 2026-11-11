@@ -7,8 +7,8 @@ import {adminFetch,DEMO_MODE} from "@/lib/admin/demo-api";
 import {DestinationPicker,MediaField,EntityChoices} from "@/components/admin/EditionTwoControls";
 import {editionTwoDefaults,editionTwoTitleFor,type EditionTwoConfig,type EdCatalog,type EdImageText,type Destination} from "@/lib/admin/edition-two";
 
-type Part="hero"|"categories"|"featured"|"campaign"|"story"|"chapters"|"journal"|"benefits"|"footer";
-const parts:Part[]=["hero","categories","featured","campaign","story","chapters","journal","benefits","footer"];
+type Part="hero"|"categories"|"featured"|"campaign"|"festival"|"story"|"chapters"|"journal"|"benefits"|"footer";
+const parts:Part[]=["hero","categories","featured","campaign","festival","story","chapters","journal","benefits","footer"];
 const empty:EdCatalog={products:[],categories:[],articles:[],pages:[]};
 const photo=(url:string)=>url||"https://essential-store-design-2.vercel.app/images/editorial/chapter-detail.webp";
 function fallbackName(id:string,catalog:EdCatalog){return catalog.categories.find(x=>x.id===id||x.slug===id)?.name||
@@ -70,6 +70,12 @@ function VisualPreview({value,catalog,selected,onSelect,viewport,slideIndex}:{va
    <div className="ed2-story-pictures"><img src={photo(value.story.imageUrl)} alt=""/>{value.story.secondaryImageUrl&&<img className="ed2-story-inset" src={value.story.secondaryImageUrl} alt=""/>}</div>
    <div className="ed2-story-text"><small>A NOTE ON STYLE / 04</small><h2>{value.story.title}</h2><p>{value.story.description}</p><span>{value.story.ctaLabel} ↗</span></div>
   </Editable>
+
+  <Editable id="festival" selected={selected} select={onSelect} className={"ed2-preview-festival "+(!value.festival.enabled?"ed2-festival-disabled":"")}>
+    <div className="ed2-preview-festival-photo"><img src={photo(viewport==="mobile"?value.festival.mobileImageUrl||value.festival.imageUrl:value.festival.imageUrl)} alt=""/></div>
+    <div className="ed2-preview-festival-copy"><small>{value.festival.enabled?value.festival.eyebrow:"CAMPAIGN HIDDEN"}</small>
+      <h2>{value.festival.title}</h2><p>{value.festival.description}</p><span>{value.festival.ctaLabel} ↗</span></div>
+  </Editable>
   <Editable id="chapters" selected={selected} select={onSelect}>
    <div className="ed2-preview-chapters">{value.chapters.map((chapter,i)=><div key={chapter.id} className="ed2-chapter">
     <img src={photo(viewport==="mobile"?(chapter.mobileImageUrl||chapter.imageUrl):chapter.imageUrl)} alt=""/>
@@ -107,10 +113,11 @@ export function EditionTwoHomeEditor(){
    const r=await adminFetch("/api/admin/edition-2");
    const data=await r.json();
    if(!r.ok)throw Error(data.error||"اطلاعات صفحه اصلی دریافت نشد");
-   setValue(data.draft||editionTwoDefaults);setCatalog(data.catalog||empty);setHasDraft(Boolean(data.hasUnpublishedDraft));setDirty(false);
+   setValue({...editionTwoDefaults,...(data.draft||{}),festival:data.draft?.festival??structuredClone(editionTwoDefaults.festival)});setCatalog(data.catalog||empty);setHasDraft(Boolean(data.hasUnpublishedDraft));setDirty(false);
   }catch(e){setError(e instanceof Error?e.message:"خطا در بارگذاری صفحه")}finally{setLoading(false)}
  },[]);
  useEffect(()=>{void load()},[load]);
+ useEffect(()=>{if(!message)return;const timer=window.setTimeout(()=>setMessage(""),7000);return()=>window.clearTimeout(timer)},[message]);
  useEffect(()=>{
   const before=(e:BeforeUnloadEvent)=>{if(dirty){e.preventDefault();e.returnValue=""}};
   window.addEventListener("beforeunload",before);return()=>window.removeEventListener("beforeunload",before);
@@ -135,12 +142,21 @@ export function EditionTwoHomeEditor(){
    if(dirty&&!await saveDraft())return;
    const r=await adminFetch("/api/admin/edition-2",{method:"POST"});
    const body=await r.json();if(!r.ok)throw Error(body.error||"انتشار انجام نشد");
+   if(!DEMO_MODE){
+    const verification=await adminFetch("/api/admin/edition-2");
+    if(!verification.ok)throw Error("انتشار ارسال شد اما تأیید وضعیت نهایی ممکن نبود.");
+    const confirmed=await verification.json();
+    if(!confirmed.published||confirmed.published.festival?.enabled!==value?.festival.enabled||
+      confirmed.published.festival?.title!==value?.festival.title){
+      throw Error("انتشار در پایگاه داده هنوز تأیید نشده؛ پیش از تکرار، وضعیت سایت را بررسی کنید.");
+    }
+   }
    setDirty(false);setHasDraft(false);setMessage(DEMO_MODE?
     "در نسخه نمایشی انتشار شبیه‌سازی شد؛ سایت واقعی تغییر نکرد.":"تغییرات منتشر شدند. نمایش در فروشگاه ممکن است چند ثانیه زمان ببرد.");
   }catch(e){setError(e instanceof Error?e.message:"انتشار ناموفق بود")}
   finally{setPublishing(false)}
  }
- function editorField(kind:"campaign"|"story",field:keyof EdImageText,x:unknown){
+ function editorField(kind:"campaign"|"story"|"festival",field:keyof EdImageText,x:unknown){
   edit(v=>{(v[kind] as unknown as Record<string,unknown>)[field]=x});
  }
  function moveHero(i:number,delta:number){edit(v=>swap(v.hero,i,i+delta));setSlideIndex(Math.max(0,Math.min((value?.hero.length||1)-1,i+delta)))}
@@ -149,7 +165,7 @@ export function EditionTwoHomeEditor(){
  const current=value.hero[Math.min(slideIndex,value.hero.length-1)];
  const target=(x:Destination,fn:(t:Destination)=>void)=><DestinationPicker value={x} onChange={fn} catalog={catalog}/>;
  const photoField=(label:string,url:string,fn:(x:string)=>void)=><MediaField label={label} value={url||""} onChange={fn} catalog={catalog}
-  extras={[...value.hero.flatMap(x=>[x.imageUrl,x.mobileImageUrl]),value.campaign.imageUrl,value.story.imageUrl,value.story.secondaryImageUrl||"",...value.chapters.map(x=>x.imageUrl)]}/>;
+  extras={[...value.hero.flatMap(x=>[x.imageUrl,x.mobileImageUrl]),value.festival.imageUrl,value.festival.mobileImageUrl||"",value.campaign.imageUrl,value.story.imageUrl,value.story.secondaryImageUrl||"",...value.chapters.map(x=>x.imageUrl)]}/>;
  return <div className="ed2-editor-page">
   <div className="ed2-page-heading"><div><small>EDITION 02 / VISUAL CONTENT MANAGER</small><h1>مدیریت صفحه اصلی</h1>
    <p>روی هر بخش از پیش‌نمایش بزنید و همان قسمت را ویرایش کنید. چیدمان و انیمیشن‌ها ثابت می‌مانند.</p></div>
@@ -160,7 +176,7 @@ export function EditionTwoHomeEditor(){
   {DEMO_MODE&&<div className="ed2-demo-hint">حالت آزمایشی: تغییرات فقط در همین نشست پنل نمایش داده می‌شوند و فروشگاه زنده را تغییر نمی‌دهند.</div>}
   {dirty&&<div className="ed2-draft-hint">تغییرات ذخیره‌نشده دارید.</div>}
   {error&&<div className="ed2-message error" role="alert">{error}</div>}
-  {message&&<div className="ed2-message success" role="status">{message}</div>}
+  {message&&<div className="ed2-message success ed2-toast-confirmed" role="status" aria-live="polite"><Check size={18}/><span>{message}</span><button type="button" onClick={()=>setMessage("")} aria-label="بستن اعلان">×</button></div>}
   <div className="ed2-builder-layout">
    <div className="ed2-preview-column">
     <div className="ed2-preview-toolbar"><div><strong>پیش‌نمایش فروشگاه</strong><small>برای ویرایش، بخش موردنظر را انتخاب کنید.</small></div>
@@ -222,6 +238,20 @@ export function EditionTwoHomeEditor(){
        {selected==="story"&&photoField("تصویر کوچک روی تصویر اصلی",value.story.secondaryImageUrl||"",x=>editorField("story","secondaryImageUrl",x))}
        <Field label="متن دکمه" value={value[selected].ctaLabel} onChange={x=>editorField(selected,"ctaLabel",x)}/>
        {target(value[selected].target,x=>editorField(selected,"target",x))}
+      </div>}
+     {selected==="festival"&&<div className="ed2-inspector-body ed2-festival-inspector">
+       <label className="ed2-festival-enable"><input type="checkbox" checked={value.festival.enabled}
+         onChange={e=>edit(v=>{v.festival.enabled=e.target.checked})}/>
+         <span>نمایش جشنواره در صفحه اصلی</span><small>{value.festival.enabled?"فعال":"غیرفعال"}</small>
+       </label>
+       <div className="ed2-hint">این بخش مستقل از هیرو و بنرهای قبلی است. خاموش‌کردن آن، اطلاعات کمپین را برای استفاده بعدی حفظ می‌کند.</div>
+       <Field label="برچسب کوتاه جشنواره" value={value.festival.eyebrow} onChange={x=>edit(v=>{v.festival.eyebrow=x})}/>
+       <Field label="عنوان کمپین" multiline value={value.festival.title} onChange={x=>editorField("festival","title",x)}/>
+       <Field label="توضیحات" multiline value={value.festival.description} onChange={x=>editorField("festival","description",x)}/>
+       {photoField("تصویر جشنواره",value.festival.imageUrl,x=>editorField("festival","imageUrl",x))}
+       {photoField("تصویر موبایل (اختیاری)",value.festival.mobileImageUrl||"",x=>editorField("festival","mobileImageUrl",x))}
+       <Field label="متن دکمه" value={value.festival.ctaLabel} onChange={x=>editorField("festival","ctaLabel",x)}/>
+       {target(value.festival.target,x=>editorField("festival","target",x))}
       </div>}
      {selected==="chapters"&&<div className="ed2-inspector-body">
        <div className="ed2-hint">دو فصل تصویری و انیمیشن اسکرول آن‌ها ثابت هستند؛ فقط عکس‌ها و متن‌ها تغییر می‌کنند.</div>

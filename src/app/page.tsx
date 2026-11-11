@@ -5,6 +5,7 @@ import {loadStore,type StoreCategory} from "@/lib/live-store";
 import {ProductCard} from "@/components/ProductCard";
 import type {Product} from "@/lib/catalog";
 import {targetUrl} from "@/lib/edition-two-content";
+import {editionTwoDefaults} from "@/lib/admin/edition-two";
 import {EditorialMotion} from "@/components/EditorialMotion";
 import {HeroCarousel,type EditorialSlide} from "@/components/HeroCarousel";
 
@@ -40,6 +41,7 @@ function categoryImage(category:StoreCategory){
 export default async function Home(){
   const store=await loadStore();
   const edition=store.settings.editorialConfig;
+  const festival=edition?.festival??editionTwoDefaults.festival;
   const sections=[...(store.settings.homeSections||[])].filter(section=>section.enabled).sort((a,b)=>a.position-b.position);
   const hero=sections[0];
   const heroImage=editorialPhoto(hero?.imageUrl,fallbackEditorial.hero);
@@ -122,6 +124,21 @@ export default async function Home(){
         </div>
       </section>
 
+
+      {festival.enabled&&<section className="ed2-seasonal-festival premium-container" aria-labelledby="ed2-festival-title" data-scene="festival">
+        <div className="ed2-festival-image" data-image-wipe data-editorial-frame>
+          <picture className="ed2-festival-picture"><source media="(max-width:760px)" srcSet={festival.mobileImageUrl||festival.imageUrl||"/images/editorial/campaign.webp"}/><FrameImage src={festival.imageUrl||"/images/editorial/campaign.webp"} alt={festival.title}
+            fill sizes="(max-width: 760px) 100vw, 55vw" unoptimized={festival.imageUrl.startsWith("http")} className="ed2-festival-photo"/></picture>
+        </div>
+        <div className="ed2-festival-copy" data-reveal="up">
+          <span className="premium-eyebrow">{festival.eyebrow}</span>
+          <span className="ed2-festival-rule" aria-hidden="true"/>
+          <h2 id="ed2-festival-title">{festival.title}</h2>
+          <p>{festival.description}</p>
+          {festival.target.kind!=="none"&&<Link href={targetUrl(festival.target,store)} className="ed2-festival-link">{festival.ctaLabel||"کشف انتخاب‌ها"} <ArrowUpLeft size={18}/></Link>}
+          <span className="ed2-festival-caption">A MOMENT IN THE EDITION / 2026</span>
+        </div>
+      </section>}
       <section className="ed-editorial-story premium-container" data-scene="story">
         <div className="ed-story-collage" data-reveal="right">
           <div className="ed-story-visual" data-editorial-frame data-image-wipe><FrameImage src={storyImage} alt={editorialHeading?.title||"استایل کلاسیک و مینیمال"} fill sizes="(max-width: 760px) 100vw, 47vw" unoptimized={storyImage.startsWith("http")} className="ed-story-photo"/><span>AN EDITORIAL PERSPECTIVE</span></div>

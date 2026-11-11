@@ -55,7 +55,7 @@ export async function POST(req:NextRequest){
  const parsed=editionTwoSchema.safeParse(settings?.editorialDraft);
  if(!parsed.success)return NextResponse.json({error:"ابتدا پیش‌نویس معتبر را ذخیره کنید."},{status:400});
  const config=parsed.data;
- const targets=[...config.hero.map(s=>s.target),config.campaign.target,config.story.target,...config.navigation.map(s=>s.target),...config.footerColumns.flatMap(c=>c.links.map(l=>l.target))];
+ const targets=[...config.hero.map(s=>s.target),config.campaign.target,config.story.target,...(config.festival.enabled?[config.festival.target]:[]),...config.navigation.map(s=>s.target),...config.footerColumns.flatMap(c=>c.links.map(l=>l.target))];
  const [productIds,categoryIds,articleIds,pageIds]=await Promise.all([
   db.product.findMany({where:{status:"ACTIVE"},select:{id:true}}),
   db.category.findMany({select:{id:true,slug:true}}),

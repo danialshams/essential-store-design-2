@@ -113,6 +113,12 @@ try{
   assert.ok(current.body.catalog.products.find(x=>x.id===p.id));
   const editing=structuredClone(current.body.draft);
   editing.hero[0].title="CI Published Hero Headline";
+  editing.festival.enabled=true;
+  editing.festival.title="CI Festival Goes Live";
+  editing.festival.description="A real database festival integration test";
+  editing.festival.target={kind:"product",id:p.id};
+  editing.festival.imageUrl="/images/hero-woman.webp";
+
   editing.featured.productIds=[p.id];
   editing.categories.items=[{categoryId:category.id,imageUrl:""}];
   editing.footerColumns[0].links[0].label="CI Dynamic Footer Link";
@@ -125,6 +131,8 @@ try{
   assert.equal(drafted.status,200,JSON.stringify(drafted.body));
   const privateState=await cmsRequest("GET");
   assert.equal(privateState.body.draft.hero[0].title,editing.hero[0].title);
+  assert.equal(privateState.body.draft.festival.title,"CI Festival Goes Live");
+  assert.equal(privateState.body.draft.festival.enabled,true);
   assert.equal(privateState.body.hasUnpublishedDraft,true);
   const stillPublic=await fetch(origin+"/api/store/bootstrap").then(x=>x.json());
   assert.equal(stillPublic.settings?.editorialConfig??null,null,
@@ -133,6 +141,9 @@ try{
   assert.equal(published.status,200,JSON.stringify(published.body));
   const publicAfter=await fetch(origin+"/api/store/bootstrap").then(x=>x.json());
   assert.equal(publicAfter.settings.editorialConfig.hero[0].title,editing.hero[0].title);
+  assert.equal(publicAfter.settings.editorialConfig.festival.title,"CI Festival Goes Live");
+  assert.equal(publicAfter.settings.editorialConfig.festival.enabled,true);
+  assert.deepEqual(publicAfter.settings.editorialConfig.festival.target,{kind:"product",id:p.id});
   assert.equal(publicAfter.settings.editorialConfig.footerColumns[0].links[0].label,
    "CI Dynamic Footer Link");
   assert.equal(publicAfter.settings.editorialDraft,undefined,
@@ -149,6 +160,23 @@ try{
   const safePublic=await fetch(origin+"/api/store/bootstrap").then(x=>x.json());
   assert.equal(safePublic.settings.editorialConfig.hero[0].title,editing.hero[0].title);
   assert.equal(safePublic.settings.editorialConfig.hero[0].target.kind,"products");
+  const invalidFestival=structuredClone(editing);
+  invalidFestival.festival.target={kind:"product",id:"missing-festival-product"};
+  assert.equal((await cmsRequest("PUT",invalidFestival)).status,200);
+  const invalidFestivalPublish=await cmsRequest("POST");
+  assert.equal(invalidFestivalPublish.status,400,"Broken festival product link must block publication");
+  const stillValid=await fetch(origin+"/api/store/bootstrap").then(x=>x.json());
+  assert.equal(stillValid.settings.editorialConfig.festival.target.id,p.id,
+    "Rejected festival destination must not overwrite published copy");
+  const disableFestival=structuredClone(editing);
+  disableFestival.festival.enabled=false;
+  disableFestival.festival.target={kind:"none"};
+  assert.equal((await cmsRequest("PUT",disableFestival)).status,200);
+  assert.equal((await cmsRequest("POST")).status,200);
+  const afterDisabled=await fetch(origin+"/api/store/bootstrap").then(x=>x.json());
+  assert.equal(afterDisabled.settings.editorialConfig.festival.enabled,false,
+    "Festival toggle off must be persisted in public content");
+
   console.log("PASS: Edition 02 content draft remains private, publishes atomically, resolves stable IDs, rejects broken destinations");
   console.log("PASS: valid checkout persists customer, order, item and verified amounts in isolated PostgreSQL");
   console.log("PASS: payment remains unverified, inventory unchanged, duplicate/invalid/unauthorized requests rejected");
