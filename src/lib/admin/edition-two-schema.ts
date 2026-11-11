@@ -22,7 +22,7 @@ export const editionTwoSchema=z.object({
  featured:z.object({title:z.string().max(100),description:z.string().max(240),
   productIds:z.array(z.string().max(150)).max(12)}),
  campaign:copy,story:copy,
- festival:copy.extend({enabled:z.boolean(),eyebrow:z.string().max(90),showCountdown:z.boolean().optional(),endsAt:z.string().datetime({offset:true}).optional(),expiredText:z.string().max(120).optional(),productIds:z.array(z.string().max(150)).max(8).default([])}).default(editionTwoDefaults.festival),
+ festival:copy.extend({enabled:z.boolean(),eyebrow:z.string().max(90),showCountdown:z.boolean().optional(),endsAt:z.string().datetime({offset:true}).optional(),expiredText:z.string().max(120).optional(),productIds:z.array(z.string().max(150)).max(12).default([])}).default(editionTwoDefaults.festival),
  chapters:z.array(z.object({id:z.string().max(80),title:z.string().max(160),description:z.string().max(800),
   imageUrl:image,mobileImageUrl:image.optional()})).length(2),
  journal:z.object({title:z.string().max(100),articleIds:z.array(z.string().max(150)).max(12)}),
