@@ -2,9 +2,9 @@
 export type Destination={kind:"none"|"home"|"products"|"product"|"category"|"page"|"article"|"external";id?:string;url?:string};
 export type EdSlide={id:string;title:string;description:string;eyebrow:string;imageUrl:string;mobileImageUrl:string;ctaLabel:string;target:Destination;enabled:boolean};
 export type EdImageText={title:string;description:string;imageUrl:string;mobileImageUrl?:string;secondaryImageUrl?:string;ctaLabel:string;target:Destination};
-export type EdFestival=EdImageText&{enabled:boolean;eyebrow:string};
+export type EdFestival=EdImageText&{enabled:boolean;eyebrow:string;productIds:string[]};
 export type EditionTwoConfig={
- version:2;announcement:string;hero:EdSlide[];
+ version:2;announcement:string;hero:EdSlide[];sectionOrder:string[];
  categories:{title:string;items:Array<{categoryId:string;imageUrl?:string}>};
  featured:{title:string;description:string;productIds:string[]};
  campaign:EdImageText;story:EdImageText;festival:EdFestival;
@@ -20,7 +20,7 @@ const photo=(file:string)=>origin+file;
 const products:Destination={kind:"products"};
 const category:Destination={kind:"category",id:"bags"};
 export const editionTwoDefaults:EditionTwoConfig={
- version:2,announcement:"انتخاب‌های ماندگار برای سلیقه‌های متفاوت",
+ version:2,sectionOrder:["hero","festival","categories","featured","campaign","story","chapters","journal","benefits"],announcement:"انتخاب‌های ماندگار برای سلیقه‌های متفاوت",
  hero:[
   {id:"hero-1",title:"زیبایی در سادگی\nاتفاق می‌افتد.",description:"انتخاب‌هایی برای کسانی که زیبایی را در جزئیات پیدا می‌کنند.",eyebrow:"کالکشن منتخب فصل",imageUrl:photo("chapter-detail.webp"),mobileImageUrl:photo("chapter-detail.webp"),ctaLabel:"کشف کالکشن",target:products,enabled:true},
   {id:"hero-2",title:"فرم‌های ساده.\nاثر ماندگار.",description:"آرامش در فرم و کیفیت در انتخاب.",eyebrow:"روایت دوم / فرم و سبک",imageUrl:photo("story-detail.webp"),mobileImageUrl:photo("story-detail.webp"),ctaLabel:"کشف داستان",target:{kind:"page",id:"about"},enabled:true},
@@ -28,7 +28,7 @@ export const editionTwoDefaults:EditionTwoConfig={
  ],
  categories:{title:"کالکشن را کشف کنید",items:[{categoryId:"clothing",imageUrl:photo("category-clothing.webp")},{categoryId:"bags",imageUrl:photo("category-bags.webp")},{categoryId:"shoes",imageUrl:photo("category-shoes.webp")},{categoryId:"accessories",imageUrl:photo("category-accessories.webp")}]},
  featured:{title:"منتخب این فصل",description:"قطعاتی برای امروز؛ انتخاب‌هایی برای سال‌های بعد.",productIds:[]},
- festival:{enabled:true,eyebrow:"A PRIVATE EDITION / SEASONAL EVENT",title:"لحظه‌ای برای انتخاب‌های ماندگار.",description:"روایتی کوتاه از انتخاب‌های این فصل؛ بی‌هیاهو، دقیق و خاص.",imageUrl:"https://essential-store-design-2.vercel.app/images/editorial/campaign.webp",mobileImageUrl:"https://essential-store-design-2.vercel.app/images/editorial/campaign.webp",ctaLabel:"کشف ادیشن",target:{kind:"products"}},
+ festival:{enabled:true,productIds:[],eyebrow:"A PRIVATE EDITION / SEASONAL EVENT",title:"انتخاب‌های ویژه این فصل.",description:"روایتی کوتاه از انتخاب‌های این فصل؛ بی‌هیاهو، دقیق و خاص.",imageUrl:"https://essential-store-design-2.vercel.app/images/editorial/campaign.webp",mobileImageUrl:"https://essential-store-design-2.vercel.app/images/editorial/campaign.webp",ctaLabel:"کشف ادیشن",target:{kind:"products"}},
  campaign:{title:"جزئیاتی که\nتفاوت می‌سازند.",description:"طراحی‌هایی که هر روز همراهتان می‌مانند.",imageUrl:photo("campaign.webp"),ctaLabel:"دیدن کالکشن",target:category},
  story:{title:"کمتر انتخاب کن.\nبهتر انتخاب کن.",description:"استایل یعنی ترکیب سادگی و شخصیت.",imageUrl:photo("story-portrait.webp"),secondaryImageUrl:photo("story-detail.webp"),ctaLabel:"داستان این نگاه",target:{kind:"page",id:"about"}},
  chapters:[
@@ -78,4 +78,4 @@ export function resolveTarget(target:Destination,catalog:EdCatalog):string{
   default:return "#";
  }
 }
-export function editionTwoTitleFor(kind:string){return ({hero:"هیرو",categories:"کالکشن‌ها",featured:"منتخب فصل",campaign:"کمپین تصویری",festival:"جشنواره و کمپین",story:"داستان برند",chapters:"فصل‌های تصویری",journal:"ژورنال",benefits:"مزایای فروشگاه",footer:"فوتر و هدر"} as Record<string,string>)[kind]||kind;}
+export function editionTwoTitleFor(kind:string){return ({hero:"هیرو",categories:"کالکشن‌ها",featured:"منتخب فصل",campaign:"کمپین تصویری",festival:"جشنواره تخفیف‌ها",story:"داستان برند",chapters:"فصل‌های تصویری",journal:"ژورنال",benefits:"مزایای فروشگاه",footer:"فوتر و هدر"} as Record<string,string>)[kind]||kind;}
