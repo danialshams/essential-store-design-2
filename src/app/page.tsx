@@ -127,8 +127,8 @@ export default async function Home(){
 
       {festival.enabled&&<section className="ed2-seasonal-festival premium-container" aria-labelledby="ed2-festival-title" data-scene="festival">
         <div className="ed2-festival-image" data-image-wipe data-editorial-frame>
-          <FrameImage src={festival.imageUrl||"/images/editorial/campaign.webp"} alt={festival.title}
-            fill sizes="(max-width: 760px) 100vw, 55vw" unoptimized={festival.imageUrl.startsWith("http")} className="ed2-festival-photo"/>
+          <picture className="ed2-festival-picture"><source media="(max-width:760px)" srcSet={festival.mobileImageUrl||festival.imageUrl||"/images/editorial/campaign.webp"}/><FrameImage src={festival.imageUrl||"/images/editorial/campaign.webp"} alt={festival.title}
+            fill sizes="(max-width: 760px) 100vw, 55vw" unoptimized={festival.imageUrl.startsWith("http")} className="ed2-festival-photo"/></picture>
         </div>
         <div className="ed2-festival-copy" data-reveal="up">
           <span className="premium-eyebrow">{festival.eyebrow}</span>
