@@ -23,3 +23,7 @@
 @media(prefers-reduced-motion:reduce){.ed2-festival-photo,.ed2-festival-link{transition:none}}
 
 .ed2-festival-picture{display:block;position:absolute;inset:0;width:100%;height:100%}
+
+.ed2-toast-confirmed{position:fixed!important;top:85px;left:clamp(16px,3vw,46px);right:auto;z-index:4000;display:flex!important;align-items:center;gap:11px;max-width:min(430px,calc(100vw - 32px));padding:15px 18px!important;background:#e5f7ed!important;border:1px solid #8fcaab!important;color:#166239!important;box-shadow:0 15px 35px #15392023;line-height:1.9;font-size:12px;border-radius:10px}
+.ed2-toast-confirmed svg{flex:none}.ed2-toast-confirmed span{flex:1}.ed2-toast-confirmed button{border:0;background:transparent;color:inherit;font-size:23px;cursor:pointer}
+@media(max-width:700px){.ed2-toast-confirmed{top:15px;right:16px;left:16px;max-width:none;font-size:12px}}
