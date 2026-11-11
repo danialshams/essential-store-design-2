@@ -7,6 +7,7 @@ import {ProductCard} from "@/components/ProductCard";
 import type {Product} from "@/lib/catalog";
 import {targetUrl} from "@/lib/edition-two-content";
 import {editionTwoDefaults} from "@/lib/admin/edition-two";
+import {FestivalCountdown} from "@/components/FestivalCountdown";
 import {EditorialMotion} from "@/components/EditorialMotion";
 import {HeroCarousel,type EditorialSlide} from "@/components/HeroCarousel";
 
@@ -42,13 +43,25 @@ function categoryImage(category:StoreCategory){
 export default async function Home(){
   const store=await loadStore();
   const edition=store.settings.editorialConfig;
-  const festival=edition?.festival??editionTwoDefaults.festival;
+  // Existing published CMS drafts predate the countdown/banner design. Show the
+  // requested sale right beneath the hero until the merchant republishes it.
+  // New settings (with endsAt) keep the merchant's enable toggle and custom order.
+  const legacyFestival=!edition?.festival?.endsAt;
+  const festival={...editionTwoDefaults.festival,...(edition?.festival||{}),
+    enabled:legacyFestival?true:(edition?.festival?.enabled??true)};
+  const oldFestivalPhoto="https://essential-store-design-2.vercel.app/images/editorial/campaign.webp";
+  const festivalImage=festival.imageUrl&&festival.imageUrl!==oldFestivalPhoto?
+    festival.imageUrl:editionTwoDefaults.festival.imageUrl;
+  const festivalMobileImage=festival.mobileImageUrl&&festival.mobileImageUrl!==oldFestivalPhoto?
+    festival.mobileImageUrl:festivalImage;
   const discounted=store.products.filter(p=>p.inventory>0&&typeof p.comparePrice==="number"&&p.comparePrice>p.price);
   const saleProducts=(festival.productIds?.length?
     festival.productIds.map(id=>discounted.find(p=>p.id===id)).filter((p):p is Product=>Boolean(p)):
     discounted).slice(0,8);
+  const bestDiscount=saleProducts.reduce((best,p)=>Math.max(best,Math.round((1-p.price/p.comparePrice!)*100)),0);
   const allowedOrder=editionTwoDefaults.sectionOrder;
   const sectionOrder=[...new Set([...(edition?.sectionOrder||allowedOrder).filter(id=>allowedOrder.includes(id)),...allowedOrder])];
+  if(legacyFestival){const at=sectionOrder.indexOf("festival");if(at!==-1)sectionOrder.splice(at,1);sectionOrder.splice(1,0,"festival");}
   const sectionNumber=(id:string)=>String(sectionOrder.indexOf(id)+1).padStart(2,"0");
 
   const sections=[...(store.settings.homeSections||[])].filter(section=>section.enabled).sort((a,b)=>a.position-b.position);
@@ -138,17 +151,40 @@ campaign:(<>
 </>),
 festival:(<>
 {festival.enabled&&<section className="ed2-sale-festival premium-container" data-scene="festival" aria-labelledby="ed2-festival-title">
-  <div className="ed2-sale-head" data-reveal="up">
-    <div><span className="premium-eyebrow">{festival.eyebrow||"THE SEASONAL EDIT / LIMITED OFFERS"}</span>
-      <h2 id="ed2-festival-title">{festival.title}</h2><p>{festival.description}</p></div>
-    {festival.target.kind!=="none"&&<Link href={targetUrl(festival.target,store)} className="ed2-festival-link">{festival.ctaLabel||"همه محصولات"} <ArrowUpLeft size={17}/></Link>}
+  <div className="ed2-festival-banner">
+    <div className="ed2-festival-banner-copy">
+      <span className="ed2-festival-offer-tag"><span aria-hidden="true"/> جشنواره فروش ویژه</span>
+      <span className="ed2-festival-kicker">{festival.eyebrow||"PRIVATE SALE / LIMITED TIME"}</span>
+      <h2 id="ed2-festival-title">{festival.title||"جشنواره انتخاب‌های ویژه"}</h2>
+      <p>{festival.description}</p>
+      {festival.showCountdown!==false&&<FestivalCountdown endsAt={festival.endsAt||editionTwoDefaults.festival.endsAt} expiredText={festival.expiredText}/>}
+      {festival.target.kind!=="none"&&<Link href={targetUrl(festival.target,store)} className="ed2-festival-cta">
+        {festival.ctaLabel||"مشاهده محصولات جشنواره"} <ArrowUpLeft size={19} strokeWidth={1.8}/>
+      </Link>}
+      <span className="ed2-festival-small-note">پیشنهادهای منتخب • تعداد محدود</span>
+    </div>
+    <div className="ed2-festival-banner-media" aria-label="عکس کمپین جشنواره">
+      <picture>
+        <source media="(max-width: 760px)" srcSet={festivalMobileImage}/>
+        <img src={festivalImage} alt={festival.title||"جشنواره فروش ویژه"} loading="eager" decoding="async"/>
+      </picture>
+      <div className="ed2-festival-media-shade" aria-hidden="true"/>
+      {bestDiscount>0&&<span className="ed2-festival-discount-seal">
+        <small>تخفیف تا</small><strong>{bestDiscount.toLocaleString("fa-IR")}٪</strong>
+      </span>}
+      <span className="ed2-festival-photo-label">THE PRIVATE SALE / ESSENTIAL</span>
+    </div>
+  </div>
+  <div className="ed2-sale-section-title">
+    <div><span>CURATED OFFERS</span><h3>محصولات جشنواره</h3></div>
+    <p>انتخاب‌های ویژه با قیمت پیش از تخفیف و قیمت فروش</p>
   </div>
   <div className="ed2-sale-products" data-stagger>
     {saleProducts.map(p=><div className="ed2-sale-product" key={p.id}>
       <span className="ed2-sale-percent">{Math.round((1-p.price/p.comparePrice!)*100).toLocaleString("fa-IR")}٪ تخفیف</span>
       <ProductCard product={p}/>
     </div>)}
-    {!saleProducts.length&&<div className="ed2-sale-empty" role="status">محصول تخفیف‌دار فعالی برای این جشنواره ثبت نشده است. محصولات واجد شرایط پس از تعیین قیمت قبل از تخفیف در پنل نمایش داده می‌شوند.</div>}
+    {!saleProducts.length&&<div className="ed2-sale-empty" role="status">فعلاً محصول تخفیف‌دار فعالی ثبت نشده است. قیمت قبل از تخفیف را در پنل محصولات تعیین کنید.</div>}
   </div>
 </section>}
 </>),
