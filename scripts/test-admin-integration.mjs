@@ -32,7 +32,7 @@ try{
   const category=await db.category.create({data:{name:"CI Collection",slug:"ci-collection"}});
   const p=await db.product.create({data:{
     name:"Checkout integration fixture",slug:"ci-checkout-fixture",status:"ACTIVE",
-    price:200000,inventory:6,categoryId:category.id,
+    price:200000,comparePrice:260000,inventory:6,categoryId:category.id,
     variants:{create:[{label:"size M",inventory:3,price:180000,sku:"CI-M"}]}
   },include:{variants:true}});
   const variant=p.variants[0];
@@ -116,6 +116,8 @@ try{
   editing.festival.enabled=true;
   editing.festival.title="CI Festival Goes Live";
   editing.festival.description="A real database festival integration test";
+  editing.festival.productIds=[p.id];
+  editing.sectionOrder=["hero","featured","festival","categories","campaign","story","chapters","journal","benefits"];
   editing.festival.target={kind:"product",id:p.id};
   editing.festival.imageUrl="/images/hero-woman.webp";
 
@@ -133,6 +135,8 @@ try{
   assert.equal(privateState.body.draft.hero[0].title,editing.hero[0].title);
   assert.equal(privateState.body.draft.festival.title,"CI Festival Goes Live");
   assert.equal(privateState.body.draft.festival.enabled,true);
+  assert.deepEqual(privateState.body.draft.festival.productIds,[p.id]);
+  assert.deepEqual(privateState.body.draft.sectionOrder,editing.sectionOrder);
   assert.equal(privateState.body.hasUnpublishedDraft,true);
   const stillPublic=await fetch(origin+"/api/store/bootstrap").then(x=>x.json());
   assert.equal(stillPublic.settings?.editorialConfig??null,null,
@@ -143,6 +147,8 @@ try{
   assert.equal(publicAfter.settings.editorialConfig.hero[0].title,editing.hero[0].title);
   assert.equal(publicAfter.settings.editorialConfig.festival.title,"CI Festival Goes Live");
   assert.equal(publicAfter.settings.editorialConfig.festival.enabled,true);
+  assert.deepEqual(publicAfter.settings.editorialConfig.festival.productIds,[p.id]);
+  assert.deepEqual(publicAfter.settings.editorialConfig.sectionOrder,editing.sectionOrder);
   assert.deepEqual(publicAfter.settings.editorialConfig.festival.target,{kind:"product",id:p.id});
   assert.equal(publicAfter.settings.editorialConfig.footerColumns[0].links[0].label,
    "CI Dynamic Footer Link");
@@ -168,9 +174,18 @@ try{
   const stillValid=await fetch(origin+"/api/store/bootstrap").then(x=>x.json());
   assert.equal(stillValid.settings.editorialConfig.festival.target.id,p.id,
     "Rejected festival destination must not overwrite published copy");
+
+  const invalidDiscount=structuredClone(editing);
+  invalidDiscount.festival.productIds=["not-a-real-discount"];
+  assert.equal((await cmsRequest("PUT",invalidDiscount)).status,200);
+  assert.equal((await cmsRequest("POST")).status,400,
+   "Nonexistent or non-discounted product selection must never publish");
+  const stillDiscounted=await fetch(origin+"/api/store/bootstrap").then(x=>x.json());
+  assert.deepEqual(stillDiscounted.settings.editorialConfig.festival.productIds,[p.id]);
   const disableFestival=structuredClone(editing);
   disableFestival.festival.enabled=false;
   disableFestival.festival.target={kind:"none"};
+  disableFestival.festival.productIds=[];
   assert.equal((await cmsRequest("PUT",disableFestival)).status,200);
   assert.equal((await cmsRequest("POST")).status,200);
   const afterDisabled=await fetch(origin+"/api/store/bootstrap").then(x=>x.json());
