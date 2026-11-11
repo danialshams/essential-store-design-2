@@ -479,3 +479,26 @@ body:has(.ed2-admin) .modal-backdrop{
  position:fixed!important;top:0!important;left:0!important;right:auto!important;bottom:auto!important;
  width:100vw!important;height:100dvh!important;max-width:none!important;
 }
+
+
+/* Festival merchandising: existing products or create a real discounted product. */
+.festival-product-manager{border:1px solid #e2d8cc;border-radius:14px;padding:16px;margin:16px 0 20px;background:#fbfaf7;color:#3d3530;display:grid;gap:14px}
+.festival-product-stats{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.festival-product-stats strong{font-size:13px;font-weight:800}
+.festival-product-stats small{color:#83766b;font-size:11px;line-height:1.8}
+.festival-product-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.festival-product-tabs button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:41px;padding:9px 11px;border:1px solid #d6c7b5;border-radius:8px;background:white;color:#665a50;font-size:12px;cursor:pointer;transition:background .2s,color .2s}
+.festival-product-tabs button.active{background:#342b27;color:#fff;border-color:#342b27}
+.festival-product-create{display:grid;gap:11px}
+.festival-product-create>label,.festival-product-fields label{display:grid;gap:6px;color:#4a413a;font-size:12px;font-weight:600}
+.festival-product-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.festival-product-create input,.festival-product-create select{width:100%;min-width:0;min-height:40px;padding:8px 11px;border:1px solid #d9cabe;border-radius:7px;background:#fff;color:#332d27;font:inherit;font-size:13px}
+.festival-product-create input:focus,.festival-product-create select:focus{outline:2px solid #ba9a7b;outline-offset:1px}
+.festival-product-create-button{width:100%;min-height:45px;display:flex;align-items:center;justify-content:center;gap:9px;color:white;background:#38312d;border:0;border-radius:8px;font-weight:750;font-size:12px;cursor:pointer}
+.festival-product-create-button:disabled{opacity:.56;cursor:not-allowed}
+.festival-product-note{margin:0;color:#82766c;line-height:1.9;font-size:11px}
+.festival-product-link{display:inline-flex;align-items:center;gap:8px;color:#745238;text-decoration:underline;font-size:12px;font-weight:700;width:fit-content}
+.festival-product-error{font-size:12px;color:#9e2727;border-radius:7px;background:#fff0f0;padding:9px 12px;margin:0}
+.festival-product-success{display:flex;align-items:center;gap:7px;background:#eef9ef;color:#216c35;padding:10px 12px;border-radius:7px;font-size:11px;margin:0;line-height:1.8}
+.ed2-entity-list img,.ed2-target-results img,.ed2-media-grid img,.ed2-preview-category img,.ed2-preview-festival img,.ed1-preview-campaign-image img{object-fit:cover!important;object-position:center!important}
+@media(max-width:650px){.festival-product-manager{padding:12px}.festival-product-tabs{grid-template-columns:1fr}.festival-product-fields{grid-template-columns:1fr}}

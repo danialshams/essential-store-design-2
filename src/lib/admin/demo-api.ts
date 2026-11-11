@@ -14,8 +14,12 @@ const item=(id:string,fields:Record<string,unknown>):Item=>({id,createdAt,update
 const seeds:Record<string,Item[]>={
  products:[
   item("p1",{name:"کیف چرمی مینیمال",slug:"leather-bag",sku:"BAG-01",price:1890000,comparePrice:2190000,inventory:18,lowStockAt:5,status:"ACTIVE",featured:true,description:"کیف روزمره با طراحی ساده",gallery:[],variants:[],coverUrl:null}),
-  item("p2",{name:"کفش روزمره سفید",slug:"white-sneakers",sku:"SHO-02",price:2450000,inventory:5,lowStockAt:7,status:"ACTIVE",featured:true,description:"مدل راحتی",gallery:[],variants:[{id:"v1",label:"سایز ۴۱",sku:"SHO-41",price:2450000,inventory:2}],coverUrl:null}),
-  item("p3",{name:"پیراهن کتان آبی",slug:"blue-linen-shirt",sku:"SHI-03",price:980000,inventory:24,status:"ACTIVE",description:"پیراهن سبک",gallery:[],variants:[]}),
+  item("p2",{name:"کفش روزمره سفید",slug:"white-sneakers",sku:"SHO-02",price:2450000,comparePrice:2890000,inventory:5,lowStockAt:7,status:"ACTIVE",featured:true,description:"مدل راحتی",gallery:[],variants:[{id:"v1",label:"سایز ۴۱",sku:"SHO-41",price:2450000,inventory:2}],coverUrl:null}),
+  item("p3",{name:"پیراهن کتان آبی",slug:"blue-linen-shirt",sku:"SHI-03",price:980000,comparePrice:1240000,inventory:24,status:"ACTIVE",description:"پیراهن سبک",gallery:[],variants:[]}),
+  item("p5",{name:"کیف دستی کلاسیک",slug:"classic-handbag",sku:"BAG-05",price:2780000,comparePrice:3490000,inventory:12,status:"ACTIVE",coverUrl:"/images/bag.webp",gallery:[],variants:[]}),
+  item("p6",{name:"کفش اسپرت شهری",slug:"urban-shoes",sku:"SHO-06",price:1980000,comparePrice:2450000,inventory:9,status:"ACTIVE",coverUrl:"/images/sneakers.webp",gallery:[],variants:[]}),
+  item("p7",{name:"پیراهن سبک روزمره",slug:"linen-shirt",sku:"SHI-07",price:1280000,comparePrice:1640000,inventory:18,status:"ACTIVE",coverUrl:"/images/linen-shirt.webp",gallery:[],variants:[]}),
+  item("p8",{name:"عینک آفتابی کلاسیک",slug:"sunglasses",sku:"SUN-08",price:890000,comparePrice:1190000,inventory:20,status:"ACTIVE",coverUrl:"/images/sunglasses.webp",gallery:[],variants:[]}),
   item("p4",{name:"ساعت کلاسیک",slug:"classic-watch",sku:"WAT-04",price:4250000,inventory:3,status:"DRAFT",description:"ساعت با طراحی کلاسیک",gallery:[],variants:[]})],
  categories:[item("c1",{name:"پوشاک",slug:"clothing",description:"پوشاک زنانه و مردانه"}),item("c2",{name:"اکسسوری",slug:"accessories",description:"کیف و اکسسوری"}),item("c3",{name:"کفش",slug:"shoes",description:"کفش‌های روزمره"})],
  orders:[
@@ -67,7 +71,7 @@ export async function adminFetch(input:RequestInfo|URL,init?:RequestInit):Promis
  if(path==="/api/auth/logout")return response({ok:true});
  if(path==="/api/admin/edition-2"){
   const categories=data.records.categories.map(x=>({id:String(x.id),name:String(x.name),slug:String(x.slug||""),imageUrl:String(x.imageUrl||"")}));
-  const products=data.records.products.filter(x=>x.status==="ACTIVE").map(x=>({id:String(x.id),name:String(x.name),slug:String(x.slug||""),imageUrl:String(x.coverUrl||"")}));
+  const products=data.records.products.filter(x=>x.status==="ACTIVE").map(x=>({id:String(x.id),name:String(x.name),slug:String(x.slug||""),imageUrl:String(x.coverUrl||""),price:Number(x.price||0),comparePrice:x.comparePrice==null?null:Number(x.comparePrice),inventory:Number(x.inventory||0)}));
   const articles=data.records.articles.filter(x=>x.status==="PUBLISHED").map(x=>({id:String(x.id),name:String(x.title),slug:String(x.slug||""),imageUrl:String(x.coverUrl||"")}));
   const pages=[...data.records.pages.filter(x=>x.status==="PUBLISHED").map(x=>({id:String(x.id),name:String(x.title),slug:String(x.slug||"")})),
    {id:"about",name:"درباره ما",slug:"about"},{id:"contact",name:"تماس با ما",slug:"contact"},

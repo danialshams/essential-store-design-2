@@ -56,11 +56,17 @@ export default async function Home(){
     festival.imageUrl:editionTwoDefaults.festival.imageUrl);
   const festivalMobileImage=showcasePhoto(festival.mobileImageUrl&&festival.mobileImageUrl!==oldFestivalPhoto?
     festival.mobileImageUrl:festivalImage);
-  const discounted=store.products.filter(p=>p.inventory>0&&typeof p.comparePrice==="number"&&p.comparePrice>p.price);
-  const saleProducts=(festival.productIds?.length?
-    festival.productIds.map(id=>discounted.find(p=>p.id===id)).filter((p):p is Product=>Boolean(p)):
-    discounted).slice(0,8);
-  const bestDiscount=saleProducts.reduce((best,p)=>Math.max(best,Math.round((1-p.price/p.comparePrice!)*100)),0);
+  const inStock=store.products.filter(p=>p.inventory>0);
+  const discounted=inStock.filter(p=>typeof p.comparePrice==="number"&&p.comparePrice>p.price);
+  const chosen=festival.productIds?.map(id=>inStock.find(p=>p.id===id)).filter((p):p is Product=>Boolean(p))||[];
+  // When no manual selection exists, populate the full festival from available items:
+  // genuine sale items first, then regular-priced curated picks (never invent discounts).
+  const saleProducts=[
+    ...chosen,...discounted.filter(p=>!chosen.some(s=>s.id===p.id)),
+    ...inStock.filter(p=>!chosen.some(s=>s.id===p.id)&&!discounted.some(d=>d.id===p.id))
+  ].slice(0,12);
+  const bestDiscount=saleProducts.filter(p=>p.comparePrice&&p.comparePrice>p.price)
+    .reduce((best,p)=>Math.max(best,Math.round((1-p.price/p.comparePrice!)*100)),0);
   const allowedOrder=editionTwoDefaults.sectionOrder;
   const sectionOrder=[...new Set([...(edition?.sectionOrder||allowedOrder).filter(id=>allowedOrder.includes(id)),...allowedOrder])];
   for(const id of ["hero","festival"]){const i=sectionOrder.indexOf(id);if(i>=0)sectionOrder.splice(i,1)}
@@ -185,7 +191,7 @@ festival:(<>
   </div>
   <div className="ed2-sale-products" data-stagger>
     {saleProducts.map(p=><div className="ed2-sale-product" key={p.id}>
-      <span className="ed2-sale-percent">{Math.round((1-p.price/p.comparePrice!)*100).toLocaleString("fa-IR")}٪ تخفیف</span>
+      {p.comparePrice&&p.comparePrice>p.price?<span className="ed2-sale-percent">{Math.round((1-p.price/p.comparePrice)*100).toLocaleString("fa-IR")}٪ تخفیف</span>:<span className="ed2-sale-percent ed2-sale-curated">منتخب جشنواره</span>}
       <ProductCard product={p}/>
     </div>)}
     {!saleProducts.length&&<div className="ed2-sale-empty" role="status">فعلاً محصول تخفیف‌دار فعالی ثبت نشده است. قیمت قبل از تخفیف را در پنل محصولات تعیین کنید.</div>}
@@ -207,8 +213,8 @@ chapters:(<>
 <section className="ed-chapter" data-chapter aria-label="روایت تصویری کالکشن">
         <div className="ed-chapter-scene" data-chapter-scene>
           <div className="ed-chapter-photographs">
-            <div className="ed-chapter-frame" data-chapter-frame data-chapter-intro><FrameImage src={edition?.chapters[0]?.imageUrl||"/images/editorial/chapter-form.webp"} alt="فصل اول: فرم و استایل ماندگار" fill sizes="60vw" unoptimized={Boolean(edition?.chapters[0]?.imageUrl?.startsWith("http"))}/></div>
-            <div className="ed-chapter-frame" data-chapter-frame><FrameImage src={edition?.chapters[1]?.imageUrl||"/images/editorial/chapter-detail.webp"} alt="فصل دوم: جزئیات و نور" fill sizes="60vw" unoptimized={Boolean(edition?.chapters[1]?.imageUrl?.startsWith("http"))}/></div>
+            <div className="ed-chapter-frame" data-chapter-frame data-chapter-intro><FrameImage src={showcasePhoto(edition?.chapters[0]?.imageUrl||"/images/editorial/chapter-form.webp")} alt="فصل اول: فرم و استایل ماندگار" fill sizes="60vw" unoptimized={Boolean(edition?.chapters[0]?.imageUrl?.startsWith("http"))}/></div>
+            <div className="ed-chapter-frame" data-chapter-frame><FrameImage src={showcasePhoto(edition?.chapters[1]?.imageUrl||"/images/editorial/chapter-detail.webp")} alt="فصل دوم: جزئیات و نور" fill sizes="60vw" unoptimized={Boolean(edition?.chapters[1]?.imageUrl?.startsWith("http"))}/></div>
             
           </div>
           <div className="ed-chapter-narrative">

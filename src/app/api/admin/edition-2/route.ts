@@ -70,8 +70,8 @@ export async function POST(req:NextRequest){
  }
  for(const id of config.festival.productIds){
   const found=await db.product.findUnique({where:{id},select:{status:true,price:true,comparePrice:true,inventory:true}});
-  if(!found||found.status!=="ACTIVE"||!found.comparePrice||found.comparePrice<=found.price||found.inventory<=0)
-   return NextResponse.json({error:"محصول جشنواره باید فعال، موجود و دارای قیمت قبل از تخفیف بیشتر از قیمت فروش باشد."},{status:400});
+  if(!found||found.status!=="ACTIVE"||found.inventory<=0)
+   return NextResponse.json({error:"محصول انتخاب‌شده برای جشنواره باید فعال و موجود باشد."},{status:400});
  }
  for(const id of config.featured.productIds){
   if(!ids.product.has(id))return NextResponse.json({error:"یکی از محصولات منتخب دیگر فعال نیست."},{status:400});

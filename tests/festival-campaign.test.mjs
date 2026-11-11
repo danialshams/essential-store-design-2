@@ -27,7 +27,7 @@ test("one optional festival is edited visually, independently enabled/disabled, 
  assert.match(editor,/ed2-section-arrangement-list/);
  assert.match(editor,/onDragStart/);
  assert.match(editor,/reorderSections/);
- assert.match(editor,/محصولات تخفیف‌دار جشنواره/);
+ assert.match(editor,/FestivalProductManager/);
  const publicHome=read("src/app/page.tsx");
  assert.match(publicHome,/festival\.enabled/);
  assert.match(publicHome,/targetUrl\(festival\.target,store\)/);
@@ -48,9 +48,9 @@ test("sale festival shows up to eight products, matching the admin selection lim
  const page=read("src/app/page.tsx");
  const schema=read("src/lib/admin/edition-two-schema.ts");
  const editor=read("src/components/admin/EditionTwoHomeEditor.tsx");
- assert.match(page,/discounted\)\.slice\(0,8\)/);
- assert.match(schema,/productIds:z\.array\(z\.string\(\)\.max\(150\)\)\.max\(8\)/);
- assert.match(editor,/max=\{8\}/);
+ assert.match(page,/\]\.slice\(0,12\)/);
+ assert.match(schema,/productIds:z\.array\(z\.string\(\)\.max\(150\)\)\.max\(12\)/);
+ assert.match(editor,/max=\{12\}/);
 });
 
 test("visual editor festival mirrors product grid and both original/current prices",()=>{
