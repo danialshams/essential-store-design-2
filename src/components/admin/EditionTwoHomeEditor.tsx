@@ -43,7 +43,7 @@ function VisualPreview({value,catalog,selected,onSelect,viewport,slideIndex}:{va
  const slide=value.hero[slideIndex]||value.hero[0];
  const saleItems=(value.festival.productIds?.length?
    value.festival.productIds.map(id=>catalog.products.find(p=>p.id===id)).filter((p):p is EdCatalog["products"][number]=>!!p):
-   catalog.products).filter(p=>typeof p.price==="number"&&typeof p.comparePrice==="number"&&p.comparePrice>p.price&&(p.inventory??1)>0).slice(0,4);
+   catalog.products).filter(p=>typeof p.price==="number"&&typeof p.comparePrice==="number"&&p.comparePrice>p.price&&(p.inventory??1)>0).slice(0,8);
  const sectionRank=(key:string)=>Math.max(0,(value.sectionOrder||editionTwoDefaults.sectionOrder).indexOf(key))+1;
  const categoryList=value.categories.items;
  const features=(value.featured.productIds.length?value.featured.productIds.map(id=>catalog.products.find(x=>x.id===id)).filter((x):x is EdCatalog["products"][number]=>Boolean(x)):catalog.products).slice(0,4);
@@ -76,7 +76,6 @@ function VisualPreview({value,catalog,selected,onSelect,viewport,slideIndex}:{va
   </Editable>
 
   <Editable id="festival" rank={sectionRank("festival")} selected={selected} select={onSelect} className={"ed2-preview-festival "+(!value.festival.enabled?"ed2-festival-disabled":"")}>
-    <div className="ed2-preview-festival-photo"><img src={photo(viewport==="mobile"?value.festival.mobileImageUrl||value.festival.imageUrl:value.festival.imageUrl)} alt=""/></div>
     <div className="ed2-preview-festival-copy"><small>{value.festival.enabled?value.festival.eyebrow:"CAMPAIGN HIDDEN"}</small>
       <h2>{value.festival.title}</h2><p>{value.festival.description}</p><span>{value.festival.ctaLabel} ↗</span></div>
 
@@ -84,6 +83,7 @@ function VisualPreview({value,catalog,selected,onSelect,viewport,slideIndex}:{va
       {saleItems.map(p=><div className="ed2-preview-sale-item" key={p.id}>
         {p.imageUrl?<img src={p.imageUrl} alt=""/>:<PackageCheck size={20}/>}
         <strong>{p.name}</strong><small>{Math.round((1-(p.price||1)/(p.comparePrice||1))*100).toLocaleString("fa-IR")}٪ تخفیف</small>
+        <div className="ed2-preview-sale-prices"><s>{(p.comparePrice??0).toLocaleString("fa-IR")} تومان</s><b>{(p.price??0).toLocaleString("fa-IR")} تومان</b></div>
       </div>)}
       {!saleItems.length&&<small>محصول تخفیف‌دار فعال ثبت نشده است.</small>}
     </div>
@@ -315,8 +315,7 @@ export function EditionTwoHomeEditor(){
        <Field label="برچسب کوتاه جشنواره" value={value.festival.eyebrow} onChange={x=>edit(v=>{v.festival.eyebrow=x})}/>
        <Field label="عنوان کمپین" multiline value={value.festival.title} onChange={x=>editorField("festival","title",x)}/>
        <Field label="توضیحات" multiline value={value.festival.description} onChange={x=>editorField("festival","description",x)}/>
-       {photoField("تصویر جشنواره",value.festival.imageUrl,x=>editorField("festival","imageUrl",x))}
-       {photoField("تصویر موبایل (اختیاری)",value.festival.mobileImageUrl||"",x=>editorField("festival","mobileImageUrl",x))}
+       <div className="ed2-hint">تصاویر جشنواره از تصاویر محصولات تخفیف‌دار انتخاب‌شده نمایش داده می‌شوند.</div>
        <Field label="متن دکمه" value={value.festival.ctaLabel} onChange={x=>editorField("festival","ctaLabel",x)}/>
        {target(value.festival.target,x=>editorField("festival","target",x))}
       </div>}
