@@ -165,7 +165,7 @@ const bringIntoRevealZone=async locator=>{
    "Product frame must not be clipped: "+JSON.stringify(galleryStyle));
   await page.screenshot({path:"artifacts/edition02-product-desktop.png",fullPage:true,animations:"disabled"});
   const imagePath=await page.locator(".product-main-photo img").getAttribute("src");
-  assert.ok(imagePath&&imagePath.includes("/images/products/bag-main.webp"),
+  assert.ok(imagePath&&decodeURIComponent(imagePath).includes("/images/products/bag-main.webp"),
    "Product detail must use the bundled high-resolution handbag photo: "+imagePath);
   assert.equal(errors.length,0,"Uncaught browser errors: "+errors.join(" / "));
   const mobile=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
