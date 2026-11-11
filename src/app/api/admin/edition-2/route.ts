@@ -14,7 +14,7 @@ export async function GET(req:NextRequest){
  const denied=await access(req);if(denied)return denied;
  const [settings,products,categories,articles,pages]=await Promise.all([
   db.storeSettings.upsert({where:{id:"main"},create:{id:"main"},update:{}}),
-  db.product.findMany({where:{status:"ACTIVE"},select:{id:true,name:true,slug:true,coverUrl:true},take:600}),
+  db.product.findMany({where:{status:"ACTIVE"},select:{id:true,name:true,slug:true,coverUrl:true,price:true,comparePrice:true,inventory:true},take:600}),
   db.category.findMany({select:{id:true,name:true,slug:true,imageUrl:true},take:200}),
   db.article.findMany({where:{status:"PUBLISHED"},select:{id:true,title:true,slug:true,coverUrl:true},take:100}),
   db.page.findMany({where:{status:"PUBLISHED"},select:{id:true,title:true,slug:true},take:100})
@@ -30,7 +30,7 @@ export async function GET(req:NextRequest){
   draft:draft.success?draft.data:published.success?published.data:initial,
   hasUnpublishedDraft:draft.success,
   updatedAt:settings.updatedAt,
-  catalog:{products:products.map(x=>({id:x.id,name:x.name,slug:x.slug,imageUrl:x.coverUrl||""})),
+  catalog:{products:products.map(x=>({id:x.id,name:x.name,slug:x.slug,imageUrl:x.coverUrl||"",price:x.price,comparePrice:x.comparePrice,inventory:x.inventory})),
    categories:categories.map(x=>({id:x.id,name:x.name,slug:x.slug,imageUrl:x.imageUrl||""})),
    articles:articles.map(x=>({id:x.id,name:x.title,slug:x.slug,imageUrl:x.coverUrl||""})),
    pages:[...pages.map(x=>({id:x.id,name:x.title,slug:x.slug})),
@@ -67,6 +67,11 @@ export async function POST(req:NextRequest){
  for(const t of targets){
   if(t.kind in ids && !ids[t.kind as keyof typeof ids].has(t.id||""))
    return NextResponse.json({error:"یکی از لینک‌های داخلی به محتوای حذف‌شده یا منتشرنشده اشاره دارد."},{status:400});
+ }
+ for(const id of config.festival.productIds){
+  const found=await db.product.findUnique({where:{id},select:{status:true,price:true,comparePrice:true,inventory:true}});
+  if(!found||found.status!=="ACTIVE"||!found.comparePrice||found.comparePrice<=found.price||found.inventory<=0)
+   return NextResponse.json({error:"محصول جشنواره باید فعال، موجود و دارای قیمت قبل از تخفیف بیشتر از قیمت فروش باشد."},{status:400});
  }
  for(const id of config.featured.productIds){
   if(!ids.product.has(id))return NextResponse.json({error:"یکی از محصولات منتخب دیگر فعال نیست."},{status:400});
