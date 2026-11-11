@@ -43,3 +43,12 @@ test("festival design language differs between the two independently deployed st
  assert.match(css,/@media\(max-width:/);
  assert.match(css,/prefers-reduced-motion/);
 });
+
+test("sale festival shows up to eight products, matching the admin selection limit",()=>{
+ const page=read("src/app/page.tsx");
+ const schema=read("src/lib/admin/edition-two-schema.ts");
+ const editor=read("src/components/admin/EditionTwoHomeEditor.tsx");
+ assert.match(page,/discounted\)\.slice\(0,8\)/);
+ assert.match(schema,/productIds:z\.array\(z\.string\(\)\.max\(150\)\)\.max\(8\)/);
+ assert.match(editor,/max=\{8\}/);
+});
