@@ -71,7 +71,7 @@ test("Edition 02 keeps legacy festivals visible while shipping a real photo bann
  const clock=read("src/components/FestivalCountdown.tsx");
  const css=read("src/app/festival.css");
  assert.match(page,/legacyFestival/);
- assert.match(page,/sectionOrder.splice\(1,0,"festival"\)/);
+ assert.match(page,/sectionOrder.unshift\("hero","festival"\)/);
  assert.match(page,/ed2-festival-banner-media/);
  assert.match(page,/ed2-festival-discount-seal/);
  assert.match(page,/FestivalCountdown endsAt=/);
