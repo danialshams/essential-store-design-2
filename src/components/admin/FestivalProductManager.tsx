@@ -65,7 +65,7 @@ export function FestivalProductManager({catalog,selected,onChange,onCreated,max=
   {tab==="existing"?<>
    <EntityChoices label="انتخاب و ترتیب محصولات موجود" items={candidates} selected={selected}
     onChange={onChange} max={max}/>
-   <p className="festival-product-note">محصولات منتخب می‌توانند از همه محصولات فعال باشند؛ تخفیف واقعی فقط برای محصولاتی نمایش داده می‌شود که «قیمت قبل از تخفیف» آن‌ها بالاتر از قیمت فروش است.</p>
+   <p className="festival-product-note">محصولاتی که انتخاب می‌کنید، در ابتدای جشنواره نمایش داده می‌شوند و بقیه جایگاه‌ها به‌صورت خودکار با محصولات فعال پر می‌شوند. درصد تخفیف فقط برای محصول دارای قیمت قبل از تخفیف معتبر نمایش داده می‌شود.</p>
    <Link href="/admin/products" className="festival-product-link">ویرایش قیمت و تخفیف محصولات <ExternalLink size={15}/></Link>
   </>:<form className="festival-product-create" onSubmit={create}>
    <label>نام محصول<input required maxLength={140} value={name} placeholder="مثلاً کیف چرم قهوه‌ای" onChange={e=>setName(e.target.value)}/></label>
