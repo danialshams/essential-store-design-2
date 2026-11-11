@@ -18,7 +18,7 @@ test("festival has matching admin types, Zod persistence, API target validation 
 });
 test("one optional festival is edited visually, independently enabled/disabled, with accessible publish notice",()=>{
  const editor=read("src/components/admin/EditionTwoHomeEditor.tsx");
- assert.match(editor,/id="festival" selected=\{selected\}/);
+ assert.match(editor,/id="festival" rank=\{sectionRank\("festival"\)\} selected=\{selected\}/);
  assert.match(editor,/selected==="festival"/);
  assert.match(editor,/v\.festival\.enabled=e\.target\.checked/);
  assert.match(editor,/festival\.mobileImageUrl/);
@@ -38,8 +38,8 @@ test("one optional festival is edited visually, independently enabled/disabled, 
 });
 test("festival design language differs between the two independently deployed stores",()=>{
  const home=read("src/app/page.tsx"),css=read("src/app/festival.css");
- assert.match(home,/ed2-seasonal-festival/);
- assert.match(css,/ed2-seasonal-festival/);
+ assert.match(home,/ed2-sale-festival/);
+ assert.match(css,/ed2-sale-festival/);
  assert.match(css,/@media\(max-width:/);
  assert.match(css,/prefers-reduced-motion/);
 });
