@@ -21,3 +21,5 @@
 @media(max-width:900px){.ed2-seasonal-festival{display:flex;flex-direction:column;gap:23px;padding:80px 22px;min-height:0}.ed2-festival-image{width:100%;height:clamp(390px,105vw,580px)}.ed2-festival-copy{width:100%;max-width:650px}.ed2-festival-copy h2{font-size:clamp(48px,10vw,75px)}.ed2-festival-caption{margin-top:55px}}
 @media(max-width:550px){.ed2-seasonal-festival{padding:66px 16px}.ed2-festival-image{height:clamp(365px,110vw,500px)}.ed2-preview-festival{grid-template-columns:1fr;padding:9px}.ed2-preview-festival-photo{aspect-ratio:16/9}.ed2-preview-festival-copy{padding:12px}}
 @media(prefers-reduced-motion:reduce){.ed2-festival-photo,.ed2-festival-link{transition:none}}
+
+.ed2-festival-picture{display:block;position:absolute;inset:0;width:100%;height:100%}
