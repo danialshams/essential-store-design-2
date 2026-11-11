@@ -2,7 +2,7 @@
 import {useCallback,useEffect,useState,type ReactNode} from "react";
 import Link from "next/link";
 import {ArrowLeft,ArrowUp,ArrowDown,ArrowUpLeft,Check,Eye,Loader2,Monitor,Smartphone,
- Plus,Trash2,Truck,Headphones,PackageCheck,ShieldCheck,Undo2,ExternalLink,Save} from "lucide-react";
+ Plus,GripVertical,Trash2,Truck,Headphones,PackageCheck,ShieldCheck,Undo2,ExternalLink,Save} from "lucide-react";
 import {adminFetch,DEMO_MODE} from "@/lib/admin/demo-api";
 import {DestinationPicker,MediaField,EntityChoices} from "@/components/admin/EditionTwoControls";
 import {editionTwoDefaults,editionTwoTitleFor,type EditionTwoConfig,type EdCatalog,type EdImageText,type Destination} from "@/lib/admin/edition-two";
@@ -32,61 +32,73 @@ function swap<T>(arr:T[],index:number,next:number){
 function BenefitIcon({name}:{name:string}){
  return name==="truck"?<Truck/>:name==="package"?<PackageCheck/>:name==="shield"?<ShieldCheck/>:<Headphones/>;
 }
-function Editable({id,selected,select,children,className=""}:{id:Part;selected:Part;select:(id:Part)=>void;children:ReactNode;className?:string}){
+function Editable({id,selected,select,children,className="",rank=99}:{id:Part;selected:Part;select:(id:Part)=>void;children:ReactNode;className?:string;rank?:number}){
  return <section role="button" tabIndex={0} aria-label={"ویرایش "+editionTwoTitleFor(id)}
-  aria-pressed={selected===id} className={"ed2-preview-section "+className+(selected===id?" is-selected":"")}
+  aria-pressed={selected===id} style={{order:rank}} className={"ed2-preview-section "+className+(selected===id?" is-selected":"")}
   onClick={()=>select(id)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(id)}}}>
   {children}<span className="ed2-section-hint">ویرایش {editionTwoTitleFor(id)}</span>
  </section>;
 }
 function VisualPreview({value,catalog,selected,onSelect,viewport,slideIndex}:{value:EditionTwoConfig;catalog:EdCatalog;selected:Part;onSelect:(id:Part)=>void;viewport:"desktop"|"mobile";slideIndex:number}){
  const slide=value.hero[slideIndex]||value.hero[0];
+ const saleItems=(value.festival.productIds?.length?
+   value.festival.productIds.map(id=>catalog.products.find(p=>p.id===id)).filter((p):p is EdCatalog["products"][number]=>!!p):
+   catalog.products).filter(p=>typeof p.price==="number"&&typeof p.comparePrice==="number"&&p.comparePrice>p.price&&(p.inventory??1)>0).slice(0,4);
+ const sectionRank=(key:string)=>Math.max(0,(value.sectionOrder||editionTwoDefaults.sectionOrder).indexOf(key))+1;
  const categoryList=value.categories.items;
  const features=(value.featured.productIds.length?value.featured.productIds.map(id=>catalog.products.find(x=>x.id===id)).filter((x):x is EdCatalog["products"][number]=>Boolean(x)):catalog.products).slice(0,4);
  const posts=(value.journal.articleIds.length?value.journal.articleIds.map(id=>catalog.articles.find(x=>x.id===id)).filter((x):x is EdCatalog["articles"][number]=>Boolean(x)):catalog.articles).slice(0,2);
  return <div className={"ed2-preview-screen "+(viewport==="mobile"?"is-mobile":"is-desktop")} dir="rtl">
   <div className="ed2-site-announcement">{value.announcement||"انتخاب‌های ماندگار"}</div>
   <div className="ed2-site-header"><span>☰ <small>MENU</small></span><strong>ESSENTIAL</strong><span>⌕ ♡ ◇</span></div>
-  <Editable id="hero" selected={selected} select={onSelect} className="ed2-site-hero">
+  <Editable id="hero" rank={sectionRank("hero")} selected={selected} select={onSelect} className="ed2-site-hero">
    <div className="ed2-site-hero-photo"><img src={photo(viewport==="mobile"?(slide.mobileImageUrl||slide.imageUrl):slide.imageUrl)} alt="" loading="lazy"/>
     <div className="ed2-hero-number">0{slideIndex+1} / 0{value.hero.length}</div><h2>{slide.title}</h2></div>
    <div className="ed2-site-hero-caption"><div><span>{slide.eyebrow}</span><p>{slide.description}</p></div><span className="ed2-site-link">{slide.ctaLabel} <ArrowUpLeft size={15}/></span></div>
   </Editable>
-  <Editable id="categories" selected={selected} select={onSelect}>
+  <Editable id="categories" rank={sectionRank("categories")} selected={selected} select={onSelect}>
    <div className="ed2-editorial-header"><small>EXPLORE THE EDITION / 01</small><h2>{value.categories.title}</h2></div>
    <div className="ed2-preview-categories">{categoryList.map((item,i)=><div key={i} className="ed2-preview-category">
     <img src={photo(item.imageUrl||catalog.categories.find(x=>x.id===item.categoryId||x.slug===item.categoryId)?.imageUrl||"")} alt=""/>
     <span>0{i+1} / CATEGORY</span><strong>{fallbackName(item.categoryId,catalog)}</strong></div>)}</div>
   </Editable>
-  <Editable id="featured" selected={selected} select={onSelect}>
+  <Editable id="featured" rank={sectionRank("featured")} selected={selected} select={onSelect}>
    <div className="ed2-editorial-header"><small>THE SELECTED PIECES / 02</small><h2>{value.featured.title}</h2><p>{value.featured.description}</p></div>
    <div className="ed2-preview-products">{features.map(p=><div key={p.id}><div className="ed2-product-photo">{p.imageUrl?<img src={p.imageUrl} alt=""/>:<PackageCheck/>}</div><small>{p.name}</small></div>)}</div>
   </Editable>
-  <Editable id="campaign" selected={selected} select={onSelect} className="ed2-preview-campaign">
+  <Editable id="campaign" rank={sectionRank("campaign")} selected={selected} select={onSelect} className="ed2-preview-campaign">
    <div className="ed2-campaign-photo"><img src={photo(value.campaign.imageUrl)} alt=""/></div>
    <div className="ed2-campaign-copy"><small>THE ART OF DETAILS / 03</small><h2>{value.campaign.title}</h2><p>{value.campaign.description}</p><span>{value.campaign.ctaLabel} ↗</span></div>
   </Editable>
-  <Editable id="story" selected={selected} select={onSelect} className="ed2-preview-story">
+  <Editable id="story" rank={sectionRank("story")} selected={selected} select={onSelect} className="ed2-preview-story">
    <div className="ed2-story-pictures"><img src={photo(value.story.imageUrl)} alt=""/>{value.story.secondaryImageUrl&&<img className="ed2-story-inset" src={value.story.secondaryImageUrl} alt=""/>}</div>
    <div className="ed2-story-text"><small>A NOTE ON STYLE / 04</small><h2>{value.story.title}</h2><p>{value.story.description}</p><span>{value.story.ctaLabel} ↗</span></div>
   </Editable>
 
-  <Editable id="festival" selected={selected} select={onSelect} className={"ed2-preview-festival "+(!value.festival.enabled?"ed2-festival-disabled":"")}>
+  <Editable id="festival" rank={sectionRank("festival")} selected={selected} select={onSelect} className={"ed2-preview-festival "+(!value.festival.enabled?"ed2-festival-disabled":"")}>
     <div className="ed2-preview-festival-photo"><img src={photo(viewport==="mobile"?value.festival.mobileImageUrl||value.festival.imageUrl:value.festival.imageUrl)} alt=""/></div>
     <div className="ed2-preview-festival-copy"><small>{value.festival.enabled?value.festival.eyebrow:"CAMPAIGN HIDDEN"}</small>
       <h2>{value.festival.title}</h2><p>{value.festival.description}</p><span>{value.festival.ctaLabel} ↗</span></div>
+
+    <div className="ed2-preview-sale-items">
+      {saleItems.map(p=><div className="ed2-preview-sale-item" key={p.id}>
+        {p.imageUrl?<img src={p.imageUrl} alt=""/>:<PackageCheck size={20}/>}
+        <strong>{p.name}</strong><small>{Math.round((1-(p.price||1)/(p.comparePrice||1))*100).toLocaleString("fa-IR")}٪ تخفیف</small>
+      </div>)}
+      {!saleItems.length&&<small>محصول تخفیف‌دار فعال ثبت نشده است.</small>}
+    </div>
   </Editable>
-  <Editable id="chapters" selected={selected} select={onSelect}>
+  <Editable id="chapters" rank={sectionRank("chapters")} selected={selected} select={onSelect}>
    <div className="ed2-preview-chapters">{value.chapters.map((chapter,i)=><div key={chapter.id} className="ed2-chapter">
     <img src={photo(viewport==="mobile"?(chapter.mobileImageUrl||chapter.imageUrl):chapter.imageUrl)} alt=""/>
     <div><small>CHAPTER 0{i+1}</small><h2>{chapter.title}</h2><p>{chapter.description}</p></div></div>)}</div>
   </Editable>
-  <Editable id="journal" selected={selected} select={onSelect}>
+  <Editable id="journal" rank={sectionRank("journal")} selected={selected} select={onSelect}>
    <div className="ed2-editorial-header"><small>THE JOURNAL / 05</small><h2>{value.journal.title}</h2></div>
    <div className="ed2-preview-journal">{(posts.length?posts:[{id:"one",name:"هنر انتخاب یک استایل ماندگار",imageUrl:"https://essential-store-design-2.vercel.app/images/editorial/journal-style.webp"},{id:"two",name:"چرا جزئیات مهم‌اند؟",imageUrl:"https://essential-store-design-2.vercel.app/images/editorial/journal-details.webp"}]).map(p=><div key={p.id}>
     <img src={photo(p.imageUrl||"")} alt=""/><small>THE JOURNAL</small><h3>{p.name}</h3></div>)}</div>
   </Editable>
-  <Editable id="benefits" selected={selected} select={onSelect} className="ed2-preview-benefits">
+  <Editable id="benefits" rank={sectionRank("benefits")} selected={selected} select={onSelect} className="ed2-preview-benefits">
    {value.benefits.map(b=><div key={b.id}><BenefitIcon name={b.icon}/><strong>{b.title}</strong><span>{b.description}</span></div>)}
   </Editable>
   <Editable id="footer" selected={selected} select={onSelect} className="ed2-preview-footer">
@@ -108,12 +120,15 @@ export function EditionTwoHomeEditor(){
  const [viewport,setViewport]=useState<"desktop"|"mobile">("desktop");
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[publishing,setPublishing]=useState(false);
  const [dirty,setDirty]=useState(false),[hasDraft,setHasDraft]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
+ const [dragging,setDragging]=useState<string|null>(null);
  const load=useCallback(async()=>{
   try{
    const r=await adminFetch("/api/admin/edition-2");
    const data=await r.json();
    if(!r.ok)throw Error(data.error||"اطلاعات صفحه اصلی دریافت نشد");
-   setValue({...editionTwoDefaults,...(data.draft||{}),festival:data.draft?.festival??structuredClone(editionTwoDefaults.festival)});setCatalog(data.catalog||empty);setHasDraft(Boolean(data.hasUnpublishedDraft));setDirty(false);
+   setValue({...editionTwoDefaults,...(data.draft||{}),
+   festival:{...editionTwoDefaults.festival,...(data.draft?.festival||{})},
+   sectionOrder:data.draft?.sectionOrder?.length===editionTwoDefaults.sectionOrder.length?data.draft.sectionOrder:[...editionTwoDefaults.sectionOrder]});setCatalog(data.catalog||empty);setHasDraft(Boolean(data.hasUnpublishedDraft));setDirty(false);
   }catch(e){setError(e instanceof Error?e.message:"خطا در بارگذاری صفحه")}finally{setLoading(false)}
  },[]);
  useEffect(()=>{void load()},[load]);
@@ -156,7 +171,24 @@ export function EditionTwoHomeEditor(){
   }catch(e){setError(e instanceof Error?e.message:"انتشار ناموفق بود")}
   finally{setPublishing(false)}
  }
- function editorField(kind:"campaign"|"story"|"festival",field:keyof EdImageText,x:unknown){
+ function reorderSections(source:string,target:string){
+   if(source===target)return;
+   edit(v=>{
+     const known=editionTwoDefaults.sectionOrder;
+     const order=[...new Set([...(v.sectionOrder||[]).filter(k=>known.includes(k)),...known])];
+     const from=order.indexOf(source),to=order.indexOf(target);
+     if(from<0||to<0)return;
+     order.splice(from,1);
+     order.splice(to,0,source);
+     v.sectionOrder=order;
+   });
+ }
+ function moveSection(key:string,delta:number){
+   const order=value?.sectionOrder?.length?value.sectionOrder:editionTwoDefaults.sectionOrder;
+   const index=order.indexOf(key),target=order[index+delta];
+   if(target)reorderSections(key,target);
+ }
+  function editorField(kind:"campaign"|"story"|"festival",field:keyof EdImageText,x:unknown){
   edit(v=>{(v[kind] as unknown as Record<string,unknown>)[field]=x});
  }
  function moveHero(i:number,delta:number){edit(v=>swap(v.hero,i,i+delta));setSlideIndex(Math.max(0,Math.min((value?.hero.length||1)-1,i+delta)))}
@@ -177,6 +209,31 @@ export function EditionTwoHomeEditor(){
   {dirty&&<div className="ed2-draft-hint">تغییرات ذخیره‌نشده دارید.</div>}
   {error&&<div className="ed2-message error" role="alert">{error}</div>}
   {message&&<div className="ed2-message success ed2-toast-confirmed" role="status" aria-live="polite"><Check size={18}/><span>{message}</span><button type="button" onClick={()=>setMessage("")} aria-label="بستن اعلان">×</button></div>}
+
+  <section className="ed2-section-arrangement" aria-label="تغییر ترتیب سکشن‌های صفحه اصلی">
+   <div className="ed2-arrange-heading"><div><strong>چیدمان سکشن‌های صفحه اصلی</strong>
+     <small>با کشیدن کارت‌ها یا فلش‌ها، بخش‌ها را جابه‌جا کنید؛ برای اعمال در فروشگاه دکمه «انتشار تغییرات» را بزنید.</small></div>
+     <span>ترتیب فعلی صفحه</span>
+   </div>
+   <div className="ed2-section-arrangement-list">
+     {(value.sectionOrder?.length?value.sectionOrder:editionTwoDefaults.sectionOrder).map((key,index,order)=>
+       <div className={"ed2-sort-row "+(dragging===key?"is-dragging":"")} key={key} draggable
+        onDragStart={e=>{setDragging(key);e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",key)}}
+        onDragEnd={()=>setDragging(null)}
+        onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect="move"}}
+        onDrop={e=>{e.preventDefault();const from=e.dataTransfer.getData("text/plain")||dragging;if(from)reorderSections(from,key);setDragging(null)}}>
+         <GripVertical size={17} aria-hidden="true"/>
+         <span className="ed2-sort-number">{String(index+1).padStart(2,"0")}</span>
+         <button className="ed2-sort-name" type="button" onClick={()=>setSelected(key as Part)}>{editionTwoTitleFor(key)}</button>
+         {key==="festival"&&<span className="ed2-sort-sale-tag">تخفیف</span>}
+         <div className="ed2-sort-actions">
+           <button type="button" aria-label={"بالا بردن "+editionTwoTitleFor(key)} disabled={index===0} onClick={()=>moveSection(key,-1)}><ArrowUp size={15}/></button>
+           <button type="button" aria-label={"پایین بردن "+editionTwoTitleFor(key)} disabled={index===order.length-1} onClick={()=>moveSection(key,1)}><ArrowDown size={15}/></button>
+         </div>
+       </div>
+     )}
+   </div>
+  </section>
   <div className="ed2-builder-layout">
    <div className="ed2-preview-column">
     <div className="ed2-preview-toolbar"><div><strong>پیش‌نمایش فروشگاه</strong><small>برای ویرایش، بخش موردنظر را انتخاب کنید.</small></div>
@@ -245,6 +302,14 @@ export function EditionTwoHomeEditor(){
          <span>نمایش جشنواره در صفحه اصلی</span><small>{value.festival.enabled?"فعال":"غیرفعال"}</small>
        </label>
        <div className="ed2-hint">این بخش مستقل از هیرو و بنرهای قبلی است. خاموش‌کردن آن، اطلاعات کمپین را برای استفاده بعدی حفظ می‌کند.</div>
+
+       <div className="ed2-festival-discount-advice">
+        فقط محصولاتی که در پنل محصولات «قیمت قبل از تخفیف» بالاتر از «قیمت فروش» دارند و موجود هستند، در جشنواره نمایش داده می‌شوند.
+        اگر محصولی انتخاب نکنید، تمام محصولات واجد شرایط به‌صورت خودکار نشان داده می‌شوند.
+       </div>
+       <EntityChoices label="محصولات تخفیف‌دار جشنواره (اختیاری)" max={8}
+         items={catalog.products.filter(p=>typeof p.price==="number"&&typeof p.comparePrice==="number"&&p.comparePrice>p.price&&(p.inventory??1)>0)}
+         selected={value.festival.productIds||[]} onChange={ids=>edit(v=>{v.festival.productIds=ids})}/>
        <Field label="برچسب کوتاه جشنواره" value={value.festival.eyebrow} onChange={x=>edit(v=>{v.festival.eyebrow=x})}/>
        <Field label="عنوان کمپین" multiline value={value.festival.title} onChange={x=>editorField("festival","title",x)}/>
        <Field label="توضیحات" multiline value={value.festival.description} onChange={x=>editorField("festival","description",x)}/>
