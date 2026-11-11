@@ -49,6 +49,7 @@ export default async function Home(){
     discounted).slice(0,6);
   const allowedOrder=editionTwoDefaults.sectionOrder;
   const sectionOrder=[...new Set([...(edition?.sectionOrder||allowedOrder).filter(id=>allowedOrder.includes(id)),...allowedOrder])];
+  const sectionNumber=(id:string)=>String(sectionOrder.indexOf(id)+1).padStart(2,"0");
 
   const sections=[...(store.settings.homeSections||[])].filter(section=>section.enabled).sort((a,b)=>a.position-b.position);
   const hero=sections[0];
@@ -99,7 +100,7 @@ hero:(<>
 categories:(<>
 <section className="ed-categories-section premium-container" id="ed-categories" data-scene="categories">
         <div className="ed-section-heading" data-reveal="up">
-          <div><span className="premium-eyebrow">EXPLORE THE EDITION / 01</span><h2>{edition?.categories.title||<>کالکشن را <em>کشف کنید</em></>}</h2></div>
+          <div><span className="premium-eyebrow">EXPLORE THE EDITION / {sectionNumber("categories")}</span><h2>{edition?.categories.title||<>کالکشن را <em>کشف کنید</em></>}</h2></div>
           <Link href="/products" className="ed-inline-link">تمام محصولات <ArrowUpLeft size={18}/></Link>
         </div>
         <div className="ed-categories-grid" data-editorial-grid>
@@ -118,7 +119,7 @@ categories:(<>
 </>),
 featured:(<>
 <section className="ed-products-section premium-container" id="ed-selected" data-scene="products">
-        <div className="ed-section-heading" data-reveal="up"><div><span className="premium-eyebrow">THE SELECTED PIECES / 02</span><h2>{edition?.featured.title||<>منتخب <em>این فصل</em></>}</h2><p>{edition?.featured.description||"قطعاتی برای امروز؛ انتخاب‌هایی برای سال‌های بعد."}</p></div><Link href="/products" className="ed-inline-link">مشاهده مجموعه <ArrowUpLeft size={18}/></Link></div>
+        <div className="ed-section-heading" data-reveal="up"><div><span className="premium-eyebrow">THE SELECTED PIECES / {sectionNumber("featured")}</span><h2>{edition?.featured.title||<>منتخب <em>این فصل</em></>}</h2><p>{edition?.featured.description||"قطعاتی برای امروز؛ انتخاب‌هایی برای سال‌های بعد."}</p></div><Link href="/products" className="ed-inline-link">مشاهده مجموعه <ArrowUpLeft size={18}/></Link></div>
         <div className="ed-featured-grid" data-stagger>{selectedProducts.map(product=><ProductCard key={product.id} product={product}/>)}</div>
       </section>
 </>),
@@ -127,7 +128,7 @@ campaign:(<>
         <div className="ed-lookbook-media" data-editorial-frame data-image-wipe><FrameImage src={lookbookImage} alt={firstBanner?.title||"کالکشن کیف و اکسسوری چرمی"} fill sizes="100vw" unoptimized={lookbookImage.startsWith("http")} className="ed-lookbook-photo" data-parallax/></div>
         
         <div className="ed-lookbook-copy">
-          <span className="premium-eyebrow">THE ART OF DETAILS / 03</span>
+          <span className="premium-eyebrow">THE ART OF DETAILS / {sectionNumber("campaign")}</span>
           <h2 id="ed-lookbook-title">{edition?.campaign.title||firstBanner?.title||"جزئیاتی که\nتفاوت می‌سازند."}</h2>
           <p>{edition?.campaign.description||firstBanner?.subtitle||"یک اکسسوری خوب، فقط یک انتخاب نیست؛ امضای سبک شخصی شماست. طراحی‌هایی که هر روز همراهتان می‌مانند."}</p>
           {edition?.campaign.target.kind!=="none"&&<Link href={edition?targetUrl(edition.campaign.target,store):firstBanner?.target?targetUrl(firstBanner.target,store):firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags"} className="ed-light-button">{edition?.campaign.ctaLabel||"دیدن کالکشن"} <ArrowUpLeft size={18}/></Link>}
@@ -158,7 +159,7 @@ story:(<>
           <div className="ed-story-inset" data-editorial-frame data-story-inset><FrameImage src={storyDetail} alt="جزئیات استایل" fill sizes="(max-width: 760px) 35vw, 17vw" unoptimized={storyDetail.startsWith("http")}/></div>
           
         </div>
-        <div className="ed-story-copy" data-reveal="left"><span className="premium-eyebrow">A NOTE ON STYLE / 04</span><h2>{edition?.story.title||editorialHeading?.title||"کمتر انتخاب کن.\nبهتر انتخاب کن."}</h2><div className="ed-story-rule"/><p>{edition?.story.description||editorialHeading?.description||"برای ما، استایل یعنی ترکیب سادگی و شخصیت. انتخاب‌هایی باکیفیت که برای مد زودگذر ساخته نشده‌اند و در هر فصل همراهتان هستند."}</p>{edition?.story.target.kind!=="none"&&<Link href={storyCta} className="ed-inline-link">{edition?.story.ctaLabel||editorialHeading?.ctaLabel||"داستان این نگاه"} <ArrowUpLeft size={18}/></Link>}</div>
+        <div className="ed-story-copy" data-reveal="left"><span className="premium-eyebrow">A NOTE ON STYLE / {sectionNumber("story")}</span><h2>{edition?.story.title||editorialHeading?.title||"کمتر انتخاب کن.\nبهتر انتخاب کن."}</h2><div className="ed-story-rule"/><p>{edition?.story.description||editorialHeading?.description||"برای ما، استایل یعنی ترکیب سادگی و شخصیت. انتخاب‌هایی باکیفیت که برای مد زودگذر ساخته نشده‌اند و در هر فصل همراهتان هستند."}</p>{edition?.story.target.kind!=="none"&&<Link href={storyCta} className="ed-inline-link">{edition?.story.ctaLabel||editorialHeading?.ctaLabel||"داستان این نگاه"} <ArrowUpLeft size={18}/></Link>}</div>
       </section>
 </>),
 chapters:(<>
@@ -195,7 +196,7 @@ chapters:(<>
 </>),
 journal:(<>
 <section className="ed-journal premium-container" data-journal data-scene="journal">
-        <div className="ed-section-heading"><div><span className="premium-eyebrow">THE JOURNAL / 05</span><h2>{edition?.journal.title||<>از نگاه <em>ژورنال</em></>}</h2></div><Link href="/blog" className="ed-inline-link">ورود به ژورنال <ArrowUpLeft size={18}/></Link></div>
+        <div className="ed-section-heading"><div><span className="premium-eyebrow">THE JOURNAL / {sectionNumber("journal")}</span><h2>{edition?.journal.title||<>از نگاه <em>ژورنال</em></>}</h2></div><Link href="/blog" className="ed-inline-link">ورود به ژورنال <ArrowUpLeft size={18}/></Link></div>
         <div className="ed-journal-grid" data-stagger>
           <Link href={selectedArticles[0]?`/blog/${selectedArticles[0].slug}`:"/blog"} className="ed-journal-card"><div className="ed-journal-photo" data-editorial-frame><FrameImage src={editorialPhoto(selectedArticles[0]?.coverUrl,"/images/editorial/journal-style.webp")} alt="نگاهی به هنر پوشیدن" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(selectedArticles[0]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 01</div><h3>{selectedArticles[0]?.title||"هنر ساختن یک استایل ماندگار"}</h3><p>{selectedArticles[0]?.summary||"از پارچه‌ها و فرم‌ها تا ظرافت‌هایی که در نگاه اول دیده نمی‌شوند."}</p><span>ادامه مطلب <ArrowUpLeft size={17}/></span></Link>
           <Link href={selectedArticles[1]?`/blog/${selectedArticles[1].slug}`:"/info/about"} className="ed-journal-card"><div className="ed-journal-photo" data-editorial-frame><FrameImage src={editorialPhoto(selectedArticles[1]?.coverUrl,"/images/editorial/journal-details.webp")} alt="جزئیات و اکسسوری‌ها" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(selectedArticles[1]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 02</div><h3>{selectedArticles[1]?.title||"چرا جزئیات، مهم‌ترین بخش استایل‌اند؟"}</h3><p>{selectedArticles[1]?.summary||"روایتی کوتاه از نقش انتخاب‌های کوچک در شخصیت یک استایل."}</p><span>بیشتر بخوانید <ArrowUpLeft size={17}/></span></Link>
