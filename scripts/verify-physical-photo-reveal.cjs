@@ -67,11 +67,19 @@ const scaleFromMatrix=(m)=>{
     const before=await node.evaluate(reading);
     // Reveal begins when the image reaches about 70% of the viewport
     // height. This captures the start instead of testing a finished reveal.
-    await node.evaluate(el=>{
-     const r=el.getBoundingClientRect();
-     window.scrollTo({top:Math.max(0,window.scrollY+r.top-innerHeight*.69),
-      behavior:"instant"});
-    });
+    // A preceding pinned GSAP chapter can change scroll geometry AFTER
+    // the first jump. Re-align until this photo is actually in the viewport.
+    for(let attempt=0;attempt<6;attempt++){
+     const placement=await node.evaluate(el=>{
+      const r=el.getBoundingClientRect();
+      if(r.top>innerHeight*.72||r.bottom<innerHeight*.22){
+       window.scrollBy({top:r.top-innerHeight*.67,behavior:"instant"});
+      }
+      return {top:r.top,bottom:r.bottom,height:innerHeight};
+     });
+     if(placement.top<=placement.height*.72&&placement.bottom>=placement.height*.22)break;
+     await page.waitForTimeout(85);
+    }
     try{
      await page.waitForFunction(({selector,index})=>{
       return document.querySelectorAll(selector)[index]?.getAttribute("data-photo-reveal-state")==="playing";
