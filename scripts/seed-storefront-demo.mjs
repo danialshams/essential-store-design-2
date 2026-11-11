@@ -13,10 +13,10 @@ const categories=[
 ];
 const goods=[
  ["demo-bag","minimal-leather-bag","کیف دستی چرمی زنانه","bags",2490000,2790000,18,true,[{"label":"قهوه‌ای","sku":"BAG-BR","inventory":12},{"label":"مشکی","sku":"BAG-BK","inventory":6}]],
- ["demo-sneakers","white-everyday-sneakers","کفش کتانی سفید مردانه","shoes",1790000,null,24,true,[{"label":"سایز ۴۰","inventory":7},{"label":"سایز ۴۱","inventory":9},{"label":"سایز ۴۲","inventory":8}]],
- ["demo-shirt","blue-linen-shirt","پیراهن لینن مردانه","clothing",1990000,null,32,true,[{"label":"سایز M","inventory":10},{"label":"سایز L","inventory":12},{"label":"سایز XL","inventory":10}]],
+ ["demo-sneakers","white-everyday-sneakers","کفش کتانی سفید مردانه","shoes",1790000,2090000,24,true,[{"label":"سایز ۴۰","inventory":7},{"label":"سایز ۴۱","inventory":9},{"label":"سایز ۴۲","inventory":8}]],
+ ["demo-shirt","blue-linen-shirt","پیراهن لینن مردانه","clothing",1990000,2350000,32,true,[{"label":"سایز M","inventory":10},{"label":"سایز L","inventory":12},{"label":"سایز XL","inventory":10}]],
  ["demo-watch","classic-brown-watch","ساعت کلاسیک مردانه","accessories",3490000,null,7,true,[]],
- ["demo-bag-2","everyday-leather-bag","کیف چرمی روزمره","bags",2190000,null,12,false,[]],
+ ["demo-bag-2","everyday-leather-bag","کیف چرمی روزمره","bags",2190000,2490000,12,false,[]],
  ["demo-shoes-2","urban-sneakers","کتانی اسپرت شهری","shoes",1890000,null,11,false,[]],
  ["demo-shirt-2","sky-blue-linen-shirt","پیراهن آبی آسمانی","clothing",1690000,null,13,false,[]],
  ["demo-sunglasses","classic-sunglasses","عینک آفتابی کلاسیک","accessories",890000,null,17,false,[]]
