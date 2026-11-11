@@ -162,7 +162,9 @@ export function EditionTwoHomeEditor(){
     if(!verification.ok)throw Error("انتشار ارسال شد اما تأیید وضعیت نهایی ممکن نبود.");
     const confirmed=await verification.json();
     if(!confirmed.published||confirmed.published.festival?.enabled!==value?.festival.enabled||
-      confirmed.published.festival?.title!==value?.festival.title){
+      confirmed.published.festival?.title!==value?.festival.title||
+      JSON.stringify(confirmed.published.festival?.productIds||[])!==JSON.stringify(value?.festival.productIds||[])||
+      JSON.stringify(confirmed.published.sectionOrder||[])!==JSON.stringify(value?.sectionOrder||[])){
       throw Error("انتشار در پایگاه داده هنوز تأیید نشده؛ پیش از تکرار، وضعیت سایت را بررسی کنید.");
     }
    }
