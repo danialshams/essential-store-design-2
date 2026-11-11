@@ -6,12 +6,15 @@ test("festival has matching admin types, Zod persistence, API target validation 
  const types=read("src/lib/admin/edition-two.ts"),schema=read("src/lib/admin/edition-two-schema.ts");
  const publicData=read("src/lib/edition-two-content.ts"),api=read("src/app/api/admin/edition-2/route.ts");
  assert.match(types,/festival:EdFestival/);
- assert.match(types,/festival:\{enabled:true/);
+ assert.match(types,/festival:\{enabled:true,productIds:\[\]/);
  assert.match(schema,/festival:copy\.extend\(\{enabled:z\.boolean\(\)/);
+ assert.match(schema,/productIds:z\.array/);
+ assert.match(schema,/sectionOrder:z\.array/);
  assert.match(publicData,/festival\?:FestivalContent/);
  assert.match(api,/config\.festival\.enabled\?\[config\.festival\.target\]/);
  assert.match(api,/editorialDraft/);
  assert.match(api,/editorialConfig/);
+ assert.match(api,/config\.festival\.productIds/);
 });
 test("one optional festival is edited visually, independently enabled/disabled, with accessible publish notice",()=>{
  const editor=read("src/components/admin/EditionTwoHomeEditor.tsx");
@@ -21,10 +24,16 @@ test("one optional festival is edited visually, independently enabled/disabled, 
  assert.match(editor,/festival\.mobileImageUrl/);
  assert.match(editor,/confirmation|verification/);
  assert.match(editor,/role="status"/);
+ assert.match(editor,/ed2-section-arrangement-list/);
+ assert.match(editor,/onDragStart/);
+ assert.match(editor,/reorderSections/);
+ assert.match(editor,/محصولات تخفیف‌دار جشنواره/);
  const publicHome=read("src/app/page.tsx");
  assert.match(publicHome,/festival\.enabled/);
  assert.match(publicHome,/targetUrl\(festival\.target,store\)/);
- assert.match(publicHome,/festival\.mobileImageUrl/);
+ assert.match(publicHome,/saleProducts/);
+ assert.match(publicHome,/comparePrice/);
+ assert.match(publicHome,/sectionOrder\.map\(id=><Fragment/);
  assert.match(read("src/app/layout.tsx"),/festival\.css/);
 });
 test("festival design language differs between the two independently deployed stores",()=>{
