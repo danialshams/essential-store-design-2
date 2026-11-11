@@ -77,3 +77,12 @@
 @media(max-width:1100px){.ed2-section-arrangement-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:690px){.ed2-section-arrangement-list{grid-template-columns:1fr}.ed2-arrange-heading{display:block}.ed2-arrange-heading>span{display:block;margin-top:7px}.ed2-sort-row{padding:9px 12px}.ed2-preview-sale-items{grid-template-columns:repeat(2,minmax(0,1fr))}.ed2-preview-sale-item img{height:90px}}
 @media(prefers-reduced-motion:reduce){.ed1-sale-item,.ed1-sale-item .product-card,.ed2-sale-product,.ed2-sort-row{transition:none!important;animation:none!important}}
+
+/* Match visual CMS preview to the published product-grid festival, including real prices. */
+.ed2-preview-festival.ed2-preview-section{display:flex!important;flex-direction:column;align-items:stretch;gap:6px;min-width:0}
+.ed2-preview-festival .ed2-preview-festival-copy{width:100%;padding:clamp(12px,2vw,20px) clamp(12px,2vw,20px) 4px}
+.ed2-preview-festival .ed2-preview-sale-items{grid-column:auto;padding:12px;width:100%}
+.ed2-preview-sale-prices{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 7px;direction:rtl;line-height:1.6}
+.ed2-preview-sale-prices s{font-size:10px;color:#8b8990}
+.ed2-preview-sale-prices b{font-size:11px;color:var(--ed2-ink,#29374c);font-weight:750}
+@media(max-width:700px){.ed2-preview-festival .ed2-preview-sale-items{grid-template-columns:repeat(2,minmax(0,1fr))}.ed2-preview-sale-prices{flex-direction:column;gap:0}}
