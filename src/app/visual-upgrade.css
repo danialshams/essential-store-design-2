@@ -2,11 +2,11 @@
 .ed-home .ed-hero-minimal.ed-hero-carousel.ed-hero{height:calc(100svh - 111px)!important;min-height:calc(100svh - 111px)!important;max-height:calc(100svh - 111px)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
 .ed-home .ed-hero-minimal .ed-hero-visual{height:auto!important;min-height:0!important;max-height:none!important;flex:1 1 auto!important;background:#d9cec1!important}
 .ed-home .ed-hero-minimal .ed-hero-content{height:auto!important;flex:0 0 auto!important;min-height:92px!important;padding-top:19px!important;padding-bottom:19px!important}
-.ed-home .ed-hero-minimal .ed-hero-slide .ed-hero-photo{object-fit:contain!important;object-position:center!important;background:#d9cec1!important}
-.ed-home .premium-product-media .premium-product-photo{object-fit:contain!important;object-position:center!important;background:#f4f0e9!important}
-.ed-home .ed-categories-grid .ed-category-tile .ed-category-photo,.ed-home .ed-story-visual .ed-story-photo,.ed-home .ed-story-inset img,.ed-home .ed-journal-photo img,.ed-home .ed-lookbook .ed-lookbook-photo{object-fit:contain!important;object-position:center!important;background:#eee7dd!important}
-.ed-home [data-chapter-frame] img,.ed-home .ed-mobile-chapter-photo img,.ed-home .ed-admin-story-picture img{object-fit:contain!important;object-position:center!important;background:#e8dfd3!important}
-.ed-home .ed2-festival-banner-media img{object-fit:contain!important;object-position:center!important;background:#d3c6b6!important}
+.ed-home .ed-hero-minimal .ed-hero-slide .ed-hero-photo{object-fit:cover!important;object-position:center 35%!important;background:#d9cec1!important}
+.ed-home .premium-product-media .premium-product-photo{object-fit:cover!important;object-position:center!important;background:#f4f0e9!important}
+.ed-home .ed-categories-grid .ed-category-tile .ed-category-photo,.ed-home .ed-story-visual .ed-story-photo,.ed-home .ed-story-inset img,.ed-home .ed-journal-photo img,.ed-home .ed-lookbook .ed-lookbook-photo{object-fit:cover!important;object-position:center!important;background:#eee7dd!important}
+.ed-home [data-chapter-frame] img,.ed-home .ed-mobile-chapter-photo img,.ed-home .ed-admin-story-picture img{object-fit:cover!important;object-position:center!important;background:#e8dfd3!important}
+.ed-home .ed2-festival-banner-media img{object-fit:cover!important;object-position:center!important;background:#d3c6b6!important}
 .ed2-festival-banner{box-shadow:0 30px 100px #1b120c2c!important}
 .ed2-festival-discount-seal{transition:transform .7s cubic-bezier(.2,.8,.2,1)}
 .ed2-festival-banner:hover .ed2-festival-discount-seal{transform:rotate(-4deg) scale(1.07)}
@@ -35,5 +35,16 @@
 @keyframes ed2FestivalRise{to{opacity:1;transform:translateY(0)}}
 @keyframes ed2FestivalWipe{to{clip-path:inset(0 0 0 0)}}
 @keyframes ed2FestivalSeal{from{opacity:0;transform:rotate(-20deg) scale(.75)}to{opacity:1;transform:rotate(-10deg) scale(1)}}
-@media(max-width:760px){.ed-home .ed-hero-minimal.ed-hero-carousel.ed-hero{height:calc(100svh - 158px)!important;min-height:calc(100svh - 158px)!important;max-height:calc(100svh - 158px)!important}.ed-home .ed-hero-minimal .ed-hero-visual{min-height:0!important}.ed-home .ed-hero-minimal .ed-hero-content{min-height:123px!important;padding:17px 20px!important}.ed-home .ed-hero-minimal .ed-hero-image-caption{right:24px;bottom:25px;max-width:calc(100% - 45px)}.ed-home .ed2-festival-banner-media img{object-fit:contain!important}.ed-home .ed2-sale-products{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.ed-home .ed-hero-minimal.ed-hero-carousel.ed-hero{height:calc(100svh - 158px)!important;min-height:calc(100svh - 158px)!important;max-height:calc(100svh - 158px)!important}.ed-home .ed-hero-minimal .ed-hero-visual{min-height:0!important}.ed-home .ed-hero-minimal .ed-hero-content{min-height:123px!important;padding:17px 20px!important}.ed-home .ed-hero-minimal .ed-hero-image-caption{right:24px;bottom:25px;max-width:calc(100% - 45px)}.ed-home .ed2-festival-banner-media img{object-fit:cover!important}.ed-home .ed2-sale-products{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.festival-motion-ready .ed2-festival-banner-copy>*,.festival-motion-ready .ed2-festival-banner-media,.festival-motion-ready .ed2-sale-product,.festival-motion-ready .ed2-sale-section-title,.festival-motion-ready .ed2-festival-discount-seal{animation:none!important;opacity:1!important;transform:none!important;clip-path:none!important}}
+
+/* Fill the editorial frame: source aspect ratios determine product card height. */
+.ed-home .premium-product-media{aspect-ratio:var(--actual-media-ratio,2 / 3)!important;height:auto!important;min-height:0!important;background:#e9e3db!important}
+.ed-home .premium-product-photo{object-fit:cover!important;object-position:center!important;mix-blend-mode:normal!important}
+.ed-home .ed2-festival-banner-media img{object-fit:cover!important;object-position:center 29%!important}
+.ed-home .ed-hero-photo{object-fit:cover!important;object-position:center 35%!important}
+.ed-home .ed-category-photo{object-fit:cover!important}
+.ed-home .ed-journal-photo img{object-fit:cover!important}
+.ed-home [data-editorial-frame]{aspect-ratio:var(--frame-ratio,auto)}
+.ed2-sale-curated{background:#f4eee5!important;color:#746452!important}
+@media(max-width:760px){.ed-home .ed2-festival-banner-media img{object-fit:cover!important;object-position:center 23%!important}}
