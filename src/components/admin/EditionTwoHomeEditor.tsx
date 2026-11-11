@@ -7,11 +7,12 @@ import {adminFetch,DEMO_MODE} from "@/lib/admin/demo-api";
 import {DestinationPicker,MediaField,EntityChoices} from "@/components/admin/EditionTwoControls";
 import {editionTwoDefaults,editionTwoTitleFor,type EditionTwoConfig,type EdCatalog,type EdImageText,type Destination} from "@/lib/admin/edition-two";
 import {FestivalCountdown} from "@/components/FestivalCountdown";
+import {showcasePhoto} from "@/lib/showcase-photos";
 
 type Part="hero"|"categories"|"featured"|"campaign"|"festival"|"story"|"chapters"|"journal"|"benefits"|"footer";
 const parts:Part[]=["hero","categories","featured","campaign","festival","story","chapters","journal","benefits","footer"];
 const empty:EdCatalog={products:[],categories:[],articles:[],pages:[]};
-const photo=(url:string)=>url||"/images/editorial/chapter-detail.webp";
+const photo=(url:string)=>showcasePhoto(url||"/images/editorial/chapter-detail.webp");
 const legacyFestivalPhoto="https://essential-store-design-2.vercel.app/images/editorial/campaign.webp";
 const campaignPhoto=(url?:string)=>!url||url===legacyFestivalPhoto?editionTwoDefaults.festival.imageUrl:url;
 function dateTimeLocal(iso:string){
