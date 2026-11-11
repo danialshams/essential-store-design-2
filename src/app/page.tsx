@@ -213,8 +213,8 @@ chapters:(<>
 <section className="ed-chapter" data-chapter aria-label="روایت تصویری کالکشن">
         <div className="ed-chapter-scene" data-chapter-scene>
           <div className="ed-chapter-photographs">
-            <div className="ed-chapter-frame" data-chapter-frame data-chapter-intro><FrameImage src={edition?.chapters[0]?.imageUrl||"/images/editorial/chapter-form.webp"} alt="فصل اول: فرم و استایل ماندگار" fill sizes="60vw" unoptimized={Boolean(edition?.chapters[0]?.imageUrl?.startsWith("http"))}/></div>
-            <div className="ed-chapter-frame" data-chapter-frame><FrameImage src={edition?.chapters[1]?.imageUrl||"/images/editorial/chapter-detail.webp"} alt="فصل دوم: جزئیات و نور" fill sizes="60vw" unoptimized={Boolean(edition?.chapters[1]?.imageUrl?.startsWith("http"))}/></div>
+            <div className="ed-chapter-frame" data-chapter-frame data-chapter-intro><FrameImage src={showcasePhoto(edition?.chapters[0]?.imageUrl||"/images/editorial/chapter-form.webp")} alt="فصل اول: فرم و استایل ماندگار" fill sizes="60vw" unoptimized={Boolean(edition?.chapters[0]?.imageUrl?.startsWith("http"))}/></div>
+            <div className="ed-chapter-frame" data-chapter-frame><FrameImage src={showcasePhoto(edition?.chapters[1]?.imageUrl||"/images/editorial/chapter-detail.webp")} alt="فصل دوم: جزئیات و نور" fill sizes="60vw" unoptimized={Boolean(edition?.chapters[1]?.imageUrl?.startsWith("http"))}/></div>
             
           </div>
           <div className="ed-chapter-narrative">
