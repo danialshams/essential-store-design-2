@@ -1,0 +1,30 @@
+name: Bundle new fashion photographs
+on:
+  push:
+    branches:
+      - fix/festival-catalog-media-fit-20261111
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Download curated licensed photos in exact aspect ratios
+        run: node scripts/sync-curated-media.mjs
+      - name: Persist photos in the repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/images/curated/
+          if ! git diff --cached --quiet; then
+            git commit -m "Bundle actual luxury fashion photos for offline storefront assets"
+            git push origin HEAD:fix/festival-catalog-media-fit-20261111
+          fi
