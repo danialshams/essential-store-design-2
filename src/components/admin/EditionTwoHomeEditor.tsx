@@ -7,6 +7,7 @@ import {adminFetch,DEMO_MODE} from "@/lib/admin/demo-api";
 import {DestinationPicker,MediaField,EntityChoices} from "@/components/admin/EditionTwoControls";
 import {editionTwoDefaults,editionTwoTitleFor,type EditionTwoConfig,type EdCatalog,type EdImageText,type Destination} from "@/lib/admin/edition-two";
 import {FestivalCountdown} from "@/components/FestivalCountdown";
+import {FestivalProductManager} from "@/components/admin/FestivalProductManager";
 import {showcasePhoto} from "@/lib/showcase-photos";
 
 type Part="hero"|"categories"|"featured"|"campaign"|"festival"|"story"|"chapters"|"journal"|"benefits"|"footer";
@@ -50,9 +51,12 @@ function Editable({id,selected,select,children,className="",rank=99}:{id:Part;se
 }
 function VisualPreview({value,catalog,selected,onSelect,viewport,slideIndex}:{value:EditionTwoConfig;catalog:EdCatalog;selected:Part;onSelect:(id:Part)=>void;viewport:"desktop"|"mobile";slideIndex:number}){
  const slide=value.hero[slideIndex]||value.hero[0];
- const saleItems=(value.festival.productIds?.length?
-   value.festival.productIds.map(id=>catalog.products.find(p=>p.id===id)).filter((p):p is EdCatalog["products"][number]=>!!p):
-   catalog.products).filter(p=>typeof p.price==="number"&&typeof p.comparePrice==="number"&&p.comparePrice>p.price&&(p.inventory??1)>0).slice(0,8);
+ const candidates=catalog.products.filter(p=>(p.inventory??1)>0);
+ const discounted=candidates.filter(p=>typeof p.price==="number"&&typeof p.comparePrice==="number"&&p.comparePrice>p.price);
+ const explicit=value.festival.productIds?.map(id=>candidates.find(p=>p.id===id)).filter((p):p is EdCatalog["products"][number]=>Boolean(p))||[];
+ const saleItems=(value.festival.productIds?.length?explicit:[
+  ...discounted,...candidates.filter(p=>!discounted.some(d=>d.id===p.id))
+ ]).slice(0,12);
  const sectionRank=(key:string)=>Math.max(0,(value.sectionOrder||editionTwoDefaults.sectionOrder).indexOf(key))+1;
  const categoryList=value.categories.items;
  const features=(value.featured.productIds.length?value.featured.productIds.map(id=>catalog.products.find(x=>x.id===id)).filter((x):x is EdCatalog["products"][number]=>Boolean(x)):catalog.products).slice(0,4);
@@ -335,9 +339,9 @@ export function EditionTwoHomeEditor(){
         فقط محصولاتی که در پنل محصولات «قیمت قبل از تخفیف» بالاتر از «قیمت فروش» دارند و موجود هستند، در جشنواره نمایش داده می‌شوند.
         اگر محصولی انتخاب نکنید، تمام محصولات واجد شرایط به‌صورت خودکار نشان داده می‌شوند.
        </div>
-       <EntityChoices label="محصولات تخفیف‌دار جشنواره (اختیاری)" max={8}
-         items={catalog.products.filter(p=>typeof p.price==="number"&&typeof p.comparePrice==="number"&&p.comparePrice>p.price&&(p.inventory??1)>0)}
-         selected={value.festival.productIds||[]} onChange={ids=>edit(v=>{v.festival.productIds=ids})}/>
+       <FestivalProductManager catalog={catalog} selected={value.festival.productIds||[]}
+        onChange={ids=>edit(v=>{v.festival.productIds=ids})}
+        onCreated={item=>setCatalog(current=>({...current,products:[item,...current.products]}))} max={12}/>
        <Field label="برچسب کوتاه جشنواره" value={value.festival.eyebrow} onChange={x=>edit(v=>{v.festival.eyebrow=x})}/>
        <Field label="عنوان کمپین" multiline value={value.festival.title} onChange={x=>editorField("festival","title",x)}/>
        <Field label="توضیحات" multiline value={value.festival.description} onChange={x=>editorField("festival","description",x)}/>
