@@ -12,7 +12,7 @@ const copy=z.object({title:z.string().max(160),description:z.string().max(800),i
  mobileImageUrl:image.optional(),secondaryImageUrl:image.optional(),ctaLabel:z.string().max(60),target});
 export const editionTwoSchema=z.object({
  version:z.literal(2),
- sectionOrder:z.array(z.enum(["hero","festival","categories","featured","campaign","story","chapters","journal","benefits"])).length(9).refine(items=>new Set(items).size===9,"هر بخش دقیقاً یک بار باید در ترتیب باشد").default(editionTwoDefaults.sectionOrder),
+ sectionOrder:z.array(z.enum(["hero","festival","categories","featured","campaign","story","chapters","journal","benefits"])).length(9).refine(items=>new Set(items).size===9,"هر بخش دقیقاً یک بار باید در ترتیب باشد").default(editionTwoDefaults.sectionOrder as Array<"hero"|"festival"|"categories"|"featured"|"campaign"|"story"|"chapters"|"journal"|"benefits">),
  announcement:z.string().max(180),
  hero:z.array(z.object({id:z.string().max(80),title:z.string().max(160),description:z.string().max(800),
   eyebrow:z.string().max(90),imageUrl:image,mobileImageUrl:image,ctaLabel:z.string().max(60),
