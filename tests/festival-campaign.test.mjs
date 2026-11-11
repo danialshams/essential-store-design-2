@@ -52,3 +52,12 @@ test("sale festival shows up to eight products, matching the admin selection lim
  assert.match(schema,/productIds:z\.array\(z\.string\(\)\.max\(150\)\)\.max\(8\)/);
  assert.match(editor,/max=\{8\}/);
 });
+
+test("visual editor festival mirrors product grid and both original/current prices",()=>{
+ const editor=read("src/components/admin/EditionTwoHomeEditor.tsx");
+ const styles=read("src/app/festival.css");
+ assert.match(editor,/ed2-preview-sale-prices/);
+ assert.match(editor,/تصاویر جشنواره از تصاویر محصولات/);
+ assert.doesNotMatch(editor,/photoField\("تصویر جشنواره"/);
+ assert.match(styles,/Match visual CMS preview to the published product-grid festival/);
+});
