@@ -117,6 +117,7 @@ export function EditionTwoHomeEditor(){
   }catch(e){setError(e instanceof Error?e.message:"خطا در بارگذاری صفحه")}finally{setLoading(false)}
  },[]);
  useEffect(()=>{void load()},[load]);
+ useEffect(()=>{if(!message)return;const timer=window.setTimeout(()=>setMessage(""),7000);return()=>window.clearTimeout(timer)},[message]);
  useEffect(()=>{
   const before=(e:BeforeUnloadEvent)=>{if(dirty){e.preventDefault();e.returnValue=""}};
   window.addEventListener("beforeunload",before);return()=>window.removeEventListener("beforeunload",before);
@@ -175,7 +176,7 @@ export function EditionTwoHomeEditor(){
   {DEMO_MODE&&<div className="ed2-demo-hint">حالت آزمایشی: تغییرات فقط در همین نشست پنل نمایش داده می‌شوند و فروشگاه زنده را تغییر نمی‌دهند.</div>}
   {dirty&&<div className="ed2-draft-hint">تغییرات ذخیره‌نشده دارید.</div>}
   {error&&<div className="ed2-message error" role="alert">{error}</div>}
-  {message&&<div className="ed2-message success" role="status">{message}</div>}
+  {message&&<div className="ed2-message success ed2-toast-confirmed" role="status" aria-live="polite"><Check size={18}/><span>{message}</span><button type="button" onClick={()=>setMessage("")} aria-label="بستن اعلان">×</button></div>}
   <div className="ed2-builder-layout">
    <div className="ed2-preview-column">
     <div className="ed2-preview-toolbar"><div><strong>پیش‌نمایش فروشگاه</strong><small>برای ویرایش، بخش موردنظر را انتخاب کنید.</small></div>
