@@ -4,14 +4,14 @@
 export const entries=[
   [
     "editorial/chapter-detail.webp",
-    "photo-1539533018447-63fcce2678e3",
+    "photo-1529139574466-a303027c1d8b",
     "editorial/chapter-form.webp",
     1600,
     1360
   ],
   [
     "editorial/hero-main.webp",
-    "photo-1503341504253-dff4815485f1",
+    "photo-1509631179647-0177331693ae",
     "editorial/story-portrait.webp",
     1600,
     1360
@@ -46,7 +46,7 @@ export const entries=[
   ],
   [
     "editorial/chapter-form.webp",
-    "photo-1515886657613-9f3515b0c78f",
+    "photo-1520975954732-35dd22299614",
     "editorial/chapter-form.webp",
     1400,
     1848
@@ -137,7 +137,7 @@ export const entries=[
   ],
   [
     "products/bag-main.webp",
-    "photo-1566150905458-1bf1fc113f0d",
+    "photo-1584917865442-de89df76afd3",
     "products/bag-main.webp",
     1100,
     1364
