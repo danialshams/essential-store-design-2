@@ -9,6 +9,7 @@ import {targetUrl} from "@/lib/edition-two-content";
 import {editionTwoDefaults} from "@/lib/admin/edition-two";
 import {FestivalCountdown} from "@/components/FestivalCountdown";
 import {FestivalEntrance} from "@/components/FestivalEntrance";
+import {showcasePhoto} from "@/lib/showcase-photos";
 import {EditorialMotion} from "@/components/EditorialMotion";
 import {HeroCarousel,type EditorialSlide} from "@/components/HeroCarousel";
 
@@ -32,7 +33,7 @@ const legacyDemoArt=new Set([
  "/images/sneakers.webp","/images/sunglasses.webp","/images/classic-watch.webp",
 ]);
 const editorialPhoto=(url:string|null|undefined,fallback:string)=>
- url&&!legacyDemoArt.has(url)?url:fallback;
+ showcasePhoto(url&&!legacyDemoArt.has(url)?url:fallback);
 function categoryImage(category:StoreCategory){
   const fallback=editorialImages[category.id];
   // A custom image from the admin overrides the template's editorial demo photography.
@@ -51,10 +52,10 @@ export default async function Home(){
   const festival={...editionTwoDefaults.festival,...(edition?.festival||{}),
     enabled:legacyFestival?true:(edition?.festival?.enabled??true)};
   const oldFestivalPhoto="https://essential-store-design-2.vercel.app/images/editorial/campaign.webp";
-  const festivalImage=festival.imageUrl&&festival.imageUrl!==oldFestivalPhoto?
-    festival.imageUrl:editionTwoDefaults.festival.imageUrl;
-  const festivalMobileImage=festival.mobileImageUrl&&festival.mobileImageUrl!==oldFestivalPhoto?
-    festival.mobileImageUrl:festivalImage;
+  const festivalImage=showcasePhoto(festival.imageUrl&&festival.imageUrl!==oldFestivalPhoto?
+    festival.imageUrl:editionTwoDefaults.festival.imageUrl);
+  const festivalMobileImage=showcasePhoto(festival.mobileImageUrl&&festival.mobileImageUrl!==oldFestivalPhoto?
+    festival.mobileImageUrl:festivalImage);
   const discounted=store.products.filter(p=>p.inventory>0&&typeof p.comparePrice==="number"&&p.comparePrice>p.price);
   const saleProducts=(festival.productIds?.length?
     festival.productIds.map(id=>discounted.find(p=>p.id===id)).filter((p):p is Product=>Boolean(p)):
@@ -62,7 +63,8 @@ export default async function Home(){
   const bestDiscount=saleProducts.reduce((best,p)=>Math.max(best,Math.round((1-p.price/p.comparePrice!)*100)),0);
   const allowedOrder=editionTwoDefaults.sectionOrder;
   const sectionOrder=[...new Set([...(edition?.sectionOrder||allowedOrder).filter(id=>allowedOrder.includes(id)),...allowedOrder])];
-  if(legacyFestival){const at=sectionOrder.indexOf("festival");if(at!==-1)sectionOrder.splice(at,1);sectionOrder.splice(1,0,"festival");}
+  for(const id of ["hero","festival"]){const i=sectionOrder.indexOf(id);if(i>=0)sectionOrder.splice(i,1)}
+  sectionOrder.unshift("hero","festival");
   const sectionNumber=(id:string)=>String(sectionOrder.indexOf(id)+1).padStart(2,"0");
 
   const sections=[...(store.settings.homeSections||[])].filter(section=>section.enabled).sort((a,b)=>a.position-b.position);
@@ -82,15 +84,15 @@ export default async function Home(){
   const selectedCategories=edition?edition.categories.items.map(item=>({category:store.categories.find(c=>c.dbId===item.categoryId||c.id===item.categoryId),image:item.imageUrl})).filter(x=>Boolean(x.category)):store.categories.slice(0,4).map(category=>({category,image:undefined}));
   const selectedArticles=edition?.journal.articleIds.length?edition.journal.articleIds.map(id=>store.articles.find(a=>a.id===id)).filter((a):a is (typeof store.articles)[number]=>Boolean(a)):store.articles;
   const otherBanners=store.banners.slice(1,2); // One supporting banner keeps the homepage focused.
-  const lookbookImage=edition?.campaign.imageUrl||editorialPhoto(firstBanner?.imageUrl,"/images/editorial/campaign.webp");
+  const lookbookImage=showcasePhoto(edition?.campaign.imageUrl||editorialPhoto(firstBanner?.imageUrl,"/images/editorial/campaign.webp"));
   const editorialHeading=sections[1];
-  const storyImage=edition?.story.imageUrl||editorialPhoto(editorialHeading?.imageUrl,"/images/editorial/story-portrait.webp");
-  const storyDetail=edition?.story.secondaryImageUrl||editorialPhoto(editorialHeading?.secondaryImageUrl,"/images/editorial/story-detail.webp");
+  const storyImage=showcasePhoto(edition?.story.imageUrl||editorialPhoto(editorialHeading?.imageUrl,"/images/editorial/story-portrait.webp"));
+  const storyDetail=showcasePhoto(edition?.story.secondaryImageUrl||editorialPhoto(editorialHeading?.secondaryImageUrl,"/images/editorial/story-detail.webp"));
   const storyCta=edition?targetUrl(edition.story.target,store):editorialHeading?.ctaHref?.startsWith("/")?editorialHeading.ctaHref:"/info/about";
   const heading=hero?.title||"زیبایی در سادگی\nاتفاق می‌افتد.";
   const heroCta=hero?.ctaHref?.startsWith("/")?hero.ctaHref:"/products";
   const heroSlides:EditorialSlide[]=edition?edition.hero.filter(slide=>slide.enabled).map(slide=>({
-   id:slide.id,image:slide.imageUrl||fallbackEditorial.hero,mobileImage:slide.mobileImageUrl||slide.imageUrl,
+   id:slide.id,image:showcasePhoto(slide.imageUrl||fallbackEditorial.hero),mobileImage:showcasePhoto(slide.mobileImageUrl||slide.imageUrl),
    title:slide.title,description:slide.description,eyebrow:slide.eyebrow,ctaLabel:slide.ctaLabel,
    ctaHref:targetUrl(slide.target,store),hasCta:slide.target.kind!=="none",alt:slide.title
   })):[
@@ -120,7 +122,7 @@ categories:(<>
         <div className="ed-categories-grid" data-editorial-grid>
           {selectedCategories.map((entry,index)=>{
             const category=entry.category!;
-            const image=entry.image||categoryImage(category);
+            const image=showcasePhoto(entry.image||categoryImage(category));
             return <Link href={`/category/${category.id}`} key={category.id} className={`ed-category-tile ed-cat-${index+1}`} data-editorial-frame>
               <span className="ed-category-image-stage" aria-hidden="true"><FrameImage src={image} alt="" fill loading="eager" decoding="async" sizes="(max-width: 760px) 50vw, 25vw" unoptimized={image.startsWith("http")} className="ed-category-photo"/></span>
               <div className="ed-category-overlay"/>
