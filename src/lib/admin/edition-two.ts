@@ -64,7 +64,7 @@ export const editionTwoDefaults:EditionTwoConfig={
   {id:"nav-journal",label:"ژورنال",target:{kind:"page",id:"blog"}}
  ]
 };
-export type EdEntity={id:string;name:string;slug:string;imageUrl?:string;status?:string};
+export type EdEntity={id:string;name:string;slug:string;imageUrl?:string;status?:string;price?:number;comparePrice?:number|null;inventory?:number};
 export type EdCatalog={products:EdEntity[];categories:EdEntity[];articles:EdEntity[];pages:EdEntity[]};
 export function resolveTarget(target:Destination,catalog:EdCatalog):string{
  switch(target.kind){
