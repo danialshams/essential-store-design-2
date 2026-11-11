@@ -57,7 +57,31 @@ test("visual editor festival mirrors product grid and both original/current pric
  const editor=read("src/components/admin/EditionTwoHomeEditor.tsx");
  const styles=read("src/app/festival.css");
  assert.match(editor,/ed2-preview-sale-prices/);
- assert.match(editor,/تصاویر جشنواره از تصاویر محصولات/);
- assert.doesNotMatch(editor,/photoField\("تصویر جشنواره"/);
+ assert.match(editor,/عکس شاخص بنر جشنواره/);
+ assert.match(editor,/type="datetime-local"/);
+ assert.match(editor,/نمایش تایمر شمارش معکوس/);
  assert.match(styles,/Match visual CMS preview to the published product-grid festival/);
+});
+
+test("Edition 02 keeps legacy festivals visible while shipping a real photo banner and countdown",()=>{
+ const page=read("src/app/page.tsx");
+ const admin=read("src/components/admin/EditionTwoHomeEditor.tsx");
+ const defaults=read("src/lib/admin/edition-two.ts");
+ const schema=read("src/lib/admin/edition-two-schema.ts");
+ const clock=read("src/components/FestivalCountdown.tsx");
+ const css=read("src/app/festival.css");
+ assert.match(page,/legacyFestival/);
+ assert.match(page,/sectionOrder.splice\(1,0,"festival"\)/);
+ assert.match(page,/ed2-festival-banner-media/);
+ assert.match(page,/ed2-festival-discount-seal/);
+ assert.match(page,/FestivalCountdown endsAt=/);
+ assert.match(admin,/photoField\("عکس شاخص بنر جشنواره"/);
+ assert.match(admin,/dateTimeLocal\(value.festival.endsAt\)/);
+ assert.match(defaults,/showCountdown:true,endsAt:"2026-12-31/);
+ assert.match(schema,/endsAt:z.string\(\).datetime/);
+ assert.match(clock,/window.setInterval\(tick,1000\)/);
+ assert.match(clock,/role="timer"/);
+ assert.match(css,/\.ed2-festival-banner\{/);
+ assert.match(css,/\.ed2-festival-banner-media img/);
+ assert.match(css,/max-width:760px/);
 });
