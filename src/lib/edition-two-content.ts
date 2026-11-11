@@ -3,7 +3,7 @@
 export type Destination={kind:"none"|"home"|"products"|"product"|"category"|"page"|"article"|"external";id?:string;url?:string};
 export type HeroSlide={id:string;title:string;description:string;eyebrow:string;imageUrl:string;mobileImageUrl:string;ctaLabel:string;target:Destination;enabled:boolean};
 export type ImageCopy={title:string;description:string;imageUrl:string;mobileImageUrl?:string;secondaryImageUrl?:string;ctaLabel:string;target:Destination};
-export type FestivalContent=ImageCopy&{enabled:boolean;eyebrow:string;productIds?:string[]};
+export type FestivalContent=ImageCopy&{enabled:boolean;eyebrow:string;productIds?:string[];showCountdown?:boolean;endsAt?:string;expiredText?:string};
 export type EditionTwoContent={
  version:2;announcement:string;sectionOrder?:string[];
  hero:HeroSlide[];
