@@ -8,6 +8,7 @@ import type {Product} from "@/lib/catalog";
 import {targetUrl} from "@/lib/edition-two-content";
 import {editionTwoDefaults} from "@/lib/admin/edition-two";
 import {FestivalCountdown} from "@/components/FestivalCountdown";
+import {FestivalEntrance} from "@/components/FestivalEntrance";
 import {EditorialMotion} from "@/components/EditorialMotion";
 import {HeroCarousel,type EditorialSlide} from "@/components/HeroCarousel";
 
@@ -151,6 +152,7 @@ campaign:(<>
 </>),
 festival:(<>
 {festival.enabled&&<section className="ed2-sale-festival premium-container" data-scene="festival" aria-labelledby="ed2-festival-title">
+ <FestivalEntrance/>
   <div className="ed2-festival-banner">
     <div className="ed2-festival-banner-copy">
       <span className="ed2-festival-offer-tag"><span aria-hidden="true"/> جشنواره فروش ویژه</span>
