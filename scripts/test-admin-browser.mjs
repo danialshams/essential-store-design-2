@@ -207,6 +207,31 @@ try{
   assert.ok(editor.count>=9&&editor.controls>=9,view.name+": all nine homepage parts must be editable");
   assert.ok(editor.width<=view.w+5,view.name+": visual editor has horizontal overflow "+JSON.stringify(editor));
   assert.ok(editor.preview>220&&editor.settings>260,view.name+": editor preview and inspector are too narrow "+JSON.stringify(editor));
+
+  // Every viewport must be able to edit, disable and re-enable the new
+  // standalone campaign without affecting its title or requiring a reload.
+  await evalJS('Array.from(document.querySelectorAll(".ed2-part-selector button")).find(x=>x.textContent.includes("جشنواره"))?.click();true');
+  await waitFor(()=>evalJS('!!document.querySelector(".ed2-festival-enable input")'),
+   view.name+" optional festival controls");
+  const festivalOn=await evalJS('document.querySelector(".ed2-festival-enable input").checked');
+  assert.ok(festivalOn,view.name+": sample festival must be initially enabled");
+  await evalJS('document.querySelector(".ed2-festival-enable input").click();true');
+  await waitFor(()=>evalJS('!!document.querySelector(".ed2-festival-disabled")'),
+   view.name+" festival disabled preview");
+  await evalJS('document.querySelector(".ed2-festival-enable input").click();true');
+  await waitFor(()=>evalJS('!document.querySelector(".ed2-festival-disabled")'),
+   view.name+" festival enabled preview");
+  const festivalCard=await evalJS(`(() => {
+   const node=document.querySelector(".ed2-preview-section[aria-label='ویرایش جشنواره و کمپین']");
+   if(!node)return null;
+   const bounds=node.getBoundingClientRect();
+   return {width:bounds.width,left:bounds.left,right:bounds.right,client:innerWidth,
+    heading:!!node.querySelector("h2"),picture:!!node.querySelector("img")};
+  })()`);
+  assert.ok(festivalCard?.heading&&festivalCard.picture,
+   view.name+": campaign preview missing title or sample image");
+  assert.ok(festivalCard.width>180&&festivalCard.left>=-5&&festivalCard.right<=view.w+5,
+   view.name+": campaign preview escapes viewport "+JSON.stringify(festivalCard));
   await evalJS('document.querySelectorAll(".ed2-part-selector button")[1].click();true');
   await waitFor(()=>evalJS('document.querySelector(".ed2-inspector-title h2")?.textContent.includes("کالکشن")'),
     view.name+" category editor");
