@@ -61,9 +61,10 @@ export default async function Home(){
   const chosen=festival.productIds?.map(id=>inStock.find(p=>p.id===id)).filter((p):p is Product=>Boolean(p))||[];
   // When no manual selection exists, populate the full festival from available items:
   // genuine sale items first, then regular-priced curated picks (never invent discounts).
-  const saleProducts=(chosen.length?chosen:[
-    ...discounted,...inStock.filter(p=>!discounted.some(d=>d.id===p.id))
-  ]).slice(0,12);
+  const saleProducts=[
+    ...chosen,...discounted.filter(p=>!chosen.some(s=>s.id===p.id)),
+    ...inStock.filter(p=>!chosen.some(s=>s.id===p.id)&&!discounted.some(d=>d.id===p.id))
+  ].slice(0,12);
   const bestDiscount=saleProducts.filter(p=>p.comparePrice&&p.comparePrice>p.price)
     .reduce((best,p)=>Math.max(best,Math.round((1-p.price/p.comparePrice!)*100)),0);
   const allowedOrder=editionTwoDefaults.sectionOrder;
