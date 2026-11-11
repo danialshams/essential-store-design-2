@@ -72,9 +72,21 @@ const scaleFromMatrix=(m)=>{
      window.scrollTo({top:Math.max(0,window.scrollY+r.top-innerHeight*.69),
       behavior:"instant"});
     });
-    await page.waitForFunction(({selector,index})=>{
-     return document.querySelectorAll(selector)[index]?.getAttribute("data-photo-reveal-state")==="playing";
-    },job,{timeout:7000});
+    try{
+     await page.waitForFunction(({selector,index})=>{
+      return document.querySelectorAll(selector)[index]?.getAttribute("data-photo-reveal-state")==="playing";
+     },job,{timeout:7000});
+    }catch(error){
+     const diagnostic=await node.evaluate(el=>({
+      state:el.getAttribute("data-photo-reveal-state"),
+      rect:{top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom,height:el.getBoundingClientRect().height},
+      window:{y:scrollY,height:innerHeight},
+      media:{complete:el.querySelector("img")?.complete,naturalWidth:el.querySelector("img")?.naturalWidth,src:el.querySelector("img")?.currentSrc},
+      document:{motion:document.querySelector(".editorial-site")?.getAttribute("data-motion-status"),intro:document.documentElement.dataset.introState}
+     }));
+     console.error("PHOTO REVEAL DIAGNOSTIC",job.label,JSON.stringify(diagnostic));
+     throw error;
+    }
     await page.waitForTimeout(270);
     const during=await node.evaluate(reading);
     await page.screenshot({path:`${out}/${job.label}-during.png`,fullPage:false,animations:"allow"});
