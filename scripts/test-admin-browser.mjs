@@ -222,7 +222,7 @@ try{
   await waitFor(()=>evalJS('!document.querySelector(".ed2-festival-disabled")'),
    view.name+" festival enabled preview");
   const festivalCard=await evalJS(`(() => {
-   const node=document.querySelector(".ed2-preview-section[aria-label='ویرایش جشنواره و کمپین']");
+   const node=document.querySelector(".ed2-preview-section[aria-label^='ویرایش جشنواره']");
    if(!node)return null;
    const bounds=node.getBoundingClientRect();
    return {width:bounds.width,left:bounds.left,right:bounds.right,client:innerWidth,
@@ -304,6 +304,49 @@ try{
    await waitFor(()=>evalJS('document.querySelector(".ed2-library-grid")!==null'),view.name+" media library");
    const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
    writeFileSync(join(outputDir,view.name+"-library.png"),Buffer.from(shot.data,"base64"));
+  }
+
+  if(view.name==="desktop"||view.name==="mobile"){
+    // End-to-end cross-page audit: page health, real sale prices, menu and
+    // viewport overflow, beyond the isolated visual admin drawer.
+    const storefrontRoutes=["/","/products","/category/bags","/product/minimal-leather-bag","/cart"];
+    for(const route of storefrontRoutes){
+      await send("Page.navigate",{url:appURL+route});
+      await waitFor(()=>evalJS("document.readyState==='complete' && document.querySelector('main, .ed-home, .container')!==null"),
+       view.name+" storefront page "+route,30000);
+      if(view.w<=600){
+        await send("Emulation.setDeviceMetricsOverride",{
+          width:view.w,height:view.h,deviceScaleFactor:1,mobile:true,screenWidth:view.w,screenHeight:view.h
+        });
+        await send("Emulation.setTouchEmulationEnabled",{enabled:true,maxTouchPoints:1});
+      }
+      await sleep(380);
+      const audit=await evalJS(`(() => {
+        const visible=[...document.images].filter(img=>{
+          const rect=img.getBoundingClientRect();
+          return rect.width>16&&rect.height>16&&rect.bottom>=-40&&rect.top<=innerHeight+80&&img.currentSrc;
+        });
+        const broken=visible.filter(img=>img.complete&&img.naturalWidth===0).map(img=>img.currentSrc);
+        const festival=document.querySelector(".ed2-sale-festival"),hero=document.querySelector(".ed-hero");
+        return {width:document.documentElement.scrollWidth,viewport:innerWidth,broken,
+          hero:!!hero,festival:!!festival,festivalImmediatelyAfterHero:festival?.previousElementSibling===hero,
+          discountedCards:document.querySelectorAll(".ed2-sale-product").length,
+          brokenDiscounts:[...document.querySelectorAll(".ed2-sale-product")].filter(card=>
+             !card.querySelector("del")||!card.querySelector("strong")).length,
+          pageText:document.body.innerText.length};
+      })()`);
+      assert.ok(audit.pageText>150,view.name+": page missing content "+route);
+      assert.ok(audit.width<=view.w+6,view.name+": storefront horizontal overflow on "+route+" "+JSON.stringify(audit));
+      assert.deepEqual(audit.broken,[],view.name+": broken images on "+route);
+      if(route==="/"){
+        assert.ok(audit.hero&&audit.festival&&audit.festivalImmediatelyAfterHero,
+          view.name+": festival must be visibly directly BELOW hero "+JSON.stringify(audit));
+        assert.ok(audit.discountedCards>=1,view.name+": sample festival contains no actual discounted products");
+        assert.equal(audit.brokenDiscounts,0,view.name+": festival product hides original/current price");
+        const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+        writeFileSync(join(outputDir,view.name+"-storefront-home.png"),Buffer.from(shot.data,"base64"));
+      }
+    }
   }
   summary.push({view:view.name,modal:"correct",confirm:"centered",order:"complete",editorial:"interactive"});
  }
