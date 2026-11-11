@@ -27,7 +27,7 @@ type ResponseData={mode:string;settings:StoreSettings|null;categories:RemoteCate
 
 /** Public catalogue only: a short shared cache avoids a backend round-trip
  * on every page navigation. Order placement still validates against the server.
- * Updates from the admin become visible within approximately 15 seconds.
+ * Updates from the admin become visible within approximately 5 seconds.
  */
 const getPublicBootstrap=unstable_cache(async(origin:string):Promise<ResponseData>=>{
  const response=await fetch(`${origin}/api/store/bootstrap`,{
@@ -35,7 +35,7 @@ const getPublicBootstrap=unstable_cache(async(origin:string):Promise<ResponseDat
  });
  if(!response.ok)throw Error(`Upstream catalog ${response.status}`);
  return await response.json() as ResponseData;
-},["edition02-public-catalogue-v2"],{revalidate:15});
+},["edition02-public-catalogue-v2"],{revalidate:5});
 
 const getLocalBootstrap=unstable_cache(async():Promise<ResponseData>=>{
   // The storefront and visual administrator live in one Next.js application.
@@ -44,7 +44,7 @@ const getLocalBootstrap=unstable_cache(async():Promise<ResponseData>=>{
   const response=await GET();
   if(!response.ok)throw Error("Local catalog "+response.status);
   return await response.json() as ResponseData;
-},["edition02-local-public-catalog-v1"],{revalidate:15});
+},["edition02-local-public-catalog-v1"],{revalidate:5});
 
 /** Kept per request; no browser CORS, no client secret, and never rewrites demo fixtures. */
 export const loadStore=cache(async():Promise<StoreData>=>{
