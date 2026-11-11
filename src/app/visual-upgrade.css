@@ -1,0 +1,39 @@
+/* Essential 02 — full-screen first impression and non-cropped quiet-luxury images */
+.ed-home .ed-hero-minimal.ed-hero-carousel.ed-hero{height:calc(100svh - 111px)!important;min-height:calc(100svh - 111px)!important;max-height:calc(100svh - 111px)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+.ed-home .ed-hero-minimal .ed-hero-visual{height:auto!important;min-height:0!important;max-height:none!important;flex:1 1 auto!important;background:#d9cec1!important}
+.ed-home .ed-hero-minimal .ed-hero-content{height:auto!important;flex:0 0 auto!important;min-height:92px!important;padding-top:19px!important;padding-bottom:19px!important}
+.ed-home .ed-hero-minimal .ed-hero-slide .ed-hero-photo{object-fit:contain!important;object-position:center!important;background:#d9cec1!important}
+.ed-home .premium-product-media .premium-product-photo{object-fit:contain!important;object-position:center!important;background:#f4f0e9!important}
+.ed-home .ed-categories-grid .ed-category-tile .ed-category-photo,.ed-home .ed-story-visual .ed-story-photo,.ed-home .ed-story-inset img,.ed-home .ed-journal-photo img,.ed-home .ed-lookbook .ed-lookbook-photo{object-fit:contain!important;object-position:center!important;background:#eee7dd!important}
+.ed-home [data-chapter-frame] img,.ed-home .ed-mobile-chapter-photo img,.ed-home .ed-admin-story-picture img{object-fit:contain!important;object-position:center!important;background:#e8dfd3!important}
+.ed-home .ed2-festival-banner-media img{object-fit:contain!important;object-position:center!important;background:#d3c6b6!important}
+.ed2-festival-banner{box-shadow:0 30px 100px #1b120c2c!important}
+.ed2-festival-discount-seal{transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.ed2-festival-banner:hover .ed2-festival-discount-seal{transform:rotate(-4deg) scale(1.07)}
+.festival-motion-ready .ed2-festival-banner-copy>*{opacity:0;transform:translateY(28px)}
+.festival-motion-entered .ed2-festival-banner-copy>*{animation:ed2FestivalRise .82s cubic-bezier(.22,1,.36,1) both}
+.festival-motion-entered .ed2-festival-banner-copy>*:nth-child(2){animation-delay:.09s}
+.festival-motion-entered .ed2-festival-banner-copy>*:nth-child(3){animation-delay:.18s}
+.festival-motion-entered .ed2-festival-banner-copy>*:nth-child(4){animation-delay:.27s}
+.festival-motion-entered .ed2-festival-banner-copy>*:nth-child(5){animation-delay:.36s}
+.festival-motion-entered .ed2-festival-banner-copy>*:nth-child(n+6){animation-delay:.45s}
+.festival-motion-ready .ed2-festival-banner-media{clip-path:inset(0 0 100% 0)}
+.festival-motion-entered .ed2-festival-banner-media{animation:ed2FestivalWipe 1.25s cubic-bezier(.22,1,.36,1) both}
+.festival-motion-ready .ed2-festival-discount-seal{opacity:0}
+.festival-motion-entered .ed2-festival-discount-seal{animation:ed2FestivalSeal .65s cubic-bezier(.16,1,.3,1) .72s both}
+.festival-motion-ready .ed2-sale-section-title{opacity:0;transform:translateY(24px)}
+.festival-motion-entered .ed2-sale-section-title{animation:ed2FestivalRise .82s cubic-bezier(.22,1,.36,1) .5s both}
+.festival-motion-ready .ed2-sale-product{opacity:0;transform:translateY(35px)}
+.festival-motion-entered .ed2-sale-product{animation:ed2FestivalRise .85s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(.59s + var(--product-index,0) * .085s)}
+.festival-motion-entered .ed2-sale-product:nth-child(2){--product-index:1}
+.festival-motion-entered .ed2-sale-product:nth-child(3){--product-index:2}
+.festival-motion-entered .ed2-sale-product:nth-child(4){--product-index:3}
+.festival-motion-entered .ed2-sale-product:nth-child(5){--product-index:4}
+.festival-motion-entered .ed2-sale-product:nth-child(6){--product-index:5}
+.festival-motion-entered .ed2-sale-product:nth-child(7){--product-index:6}
+.festival-motion-entered .ed2-sale-product:nth-child(8){--product-index:7}
+@keyframes ed2FestivalRise{to{opacity:1;transform:translateY(0)}}
+@keyframes ed2FestivalWipe{to{clip-path:inset(0 0 0 0)}}
+@keyframes ed2FestivalSeal{from{opacity:0;transform:rotate(-20deg) scale(.75)}to{opacity:1;transform:rotate(-10deg) scale(1)}}
+@media(max-width:760px){.ed-home .ed-hero-minimal.ed-hero-carousel.ed-hero{height:calc(100svh - 158px)!important;min-height:calc(100svh - 158px)!important;max-height:calc(100svh - 158px)!important}.ed-home .ed-hero-minimal .ed-hero-visual{min-height:0!important}.ed-home .ed-hero-minimal .ed-hero-content{min-height:123px!important;padding:17px 20px!important}.ed-home .ed-hero-minimal .ed-hero-image-caption{right:24px;bottom:25px;max-width:calc(100% - 45px)}.ed-home .ed2-festival-banner-media img{object-fit:contain!important}.ed-home .ed2-sale-products{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.festival-motion-ready .ed2-festival-banner-copy>*,.festival-motion-ready .ed2-festival-banner-media,.festival-motion-ready .ed2-sale-product,.festival-motion-ready .ed2-sale-section-title,.festival-motion-ready .ed2-festival-discount-seal{animation:none!important;opacity:1!important;transform:none!important;clip-path:none!important}}

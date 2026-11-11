@@ -15,8 +15,9 @@ export type EditionTwoConfig={
  footerColumns:Array<{id:string;title:string;links:Array<{id:string;label:string;target:Destination}>}>;
  navigation:Array<{id:string;label:string;target:Destination}>;
 };
+import {showcasePhoto} from "@/lib/showcase-photos";
 const origin="https://essential-store-design-2.vercel.app/images/editorial/";
-const photo=(file:string)=>origin+file;
+const photo=(file:string)=>showcasePhoto(origin+file);
 const products:Destination={kind:"products"};
 const category:Destination={kind:"category",id:"bags"};
 export const editionTwoDefaults:EditionTwoConfig={

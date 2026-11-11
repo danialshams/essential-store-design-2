@@ -67,14 +67,34 @@ const scaleFromMatrix=(m)=>{
     const before=await node.evaluate(reading);
     // Reveal begins when the image reaches about 70% of the viewport
     // height. This captures the start instead of testing a finished reveal.
-    await node.evaluate(el=>{
-     const r=el.getBoundingClientRect();
-     window.scrollTo({top:Math.max(0,window.scrollY+r.top-innerHeight*.69),
-      behavior:"instant"});
-    });
-    await page.waitForFunction(({selector,index})=>{
-     return document.querySelectorAll(selector)[index]?.getAttribute("data-photo-reveal-state")==="playing";
-    },job,{timeout:7000});
+    // A preceding pinned GSAP chapter can change scroll geometry AFTER
+    // the first jump. Re-align until this photo is actually in the viewport.
+    for(let attempt=0;attempt<6;attempt++){
+     const placement=await node.evaluate(el=>{
+      const r=el.getBoundingClientRect();
+      if(r.top>innerHeight*.72||r.bottom<innerHeight*.22){
+       window.scrollBy({top:r.top-innerHeight*.67,behavior:"instant"});
+      }
+      return {top:r.top,bottom:r.bottom,height:innerHeight};
+     });
+     if(placement.top<=placement.height*.72&&placement.bottom>=placement.height*.22)break;
+     await page.waitForTimeout(85);
+    }
+    try{
+     await page.waitForFunction(({selector,index})=>{
+      return document.querySelectorAll(selector)[index]?.getAttribute("data-photo-reveal-state")==="playing";
+     },job,{timeout:7000});
+    }catch(error){
+     const diagnostic=await node.evaluate(el=>({
+      state:el.getAttribute("data-photo-reveal-state"),
+      rect:{top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom,height:el.getBoundingClientRect().height},
+      window:{y:scrollY,height:innerHeight},
+      media:{complete:el.querySelector("img")?.complete,naturalWidth:el.querySelector("img")?.naturalWidth,src:el.querySelector("img")?.currentSrc},
+      document:{motion:document.querySelector(".editorial-site")?.getAttribute("data-motion-status"),intro:document.documentElement.dataset.introState}
+     }));
+     console.error("PHOTO REVEAL DIAGNOSTIC",job.label,JSON.stringify(diagnostic));
+     throw error;
+    }
     await page.waitForTimeout(270);
     const during=await node.evaluate(reading);
     await page.screenshot({path:`${out}/${job.label}-during.png`,fullPage:false,animations:"allow"});
