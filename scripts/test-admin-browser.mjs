@@ -222,7 +222,7 @@ try{
   await waitFor(()=>evalJS('!document.querySelector(".ed2-festival-disabled")'),
    view.name+" festival enabled preview");
   const festivalCard=await evalJS(`(() => {
-   const node=document.querySelector(".ed2-preview-section[aria-label='ویرایش جشنواره و کمپین']");
+   const node=document.querySelector(".ed2-preview-section[aria-label^='ویرایش جشنواره']");
    if(!node)return null;
    const bounds=node.getBoundingClientRect();
    return {width:bounds.width,left:bounds.left,right:bounds.right,client:innerWidth,
