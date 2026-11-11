@@ -1,0 +1,23 @@
+.ed2-seasonal-festival{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(30px,8vw,140px);align-items:center;min-height:610px;padding-top:clamp(75px,10vw,175px);padding-bottom:clamp(75px,10vw,170px);direction:ltr}
+.ed2-festival-image{position:relative;height:clamp(440px,54vw,710px);overflow:hidden;background:#ded9d0}
+.ed2-festival-photo{object-fit:cover;object-position:center;transition:transform 1.25s cubic-bezier(.2,.8,.2,1)}
+.ed2-seasonal-festival:hover .ed2-festival-photo{transform:scale(1.03)}
+.ed2-festival-copy{direction:rtl;text-align:right;padding:25px 0;min-width:0}
+.ed2-festival-copy .premium-eyebrow{font-size:10px;letter-spacing:.16em;direction:ltr;color:#777066}
+.ed2-festival-rule{display:block;width:60px;height:1px;margin:35px 0;background:#a39b91}
+.ed2-festival-copy h2{font-size:clamp(45px,5.3vw,98px);font-weight:400;letter-spacing:-.065em;line-height:1.28;white-space:pre-line;margin:0 0 25px}
+.ed2-festival-copy p{font-size:clamp(13px,1.1vw,17px);line-height:2.4;max-width:450px;color:#777168;margin:0 0 32px}
+.ed2-festival-link{display:inline-flex;align-items:center;gap:22px;border-bottom:1px solid #676056;padding:0 0 12px;color:#292824!important;text-decoration:none;font-size:13px;transition:gap .3s}
+.ed2-festival-link:hover{gap:30px}
+.ed2-festival-caption{display:block;margin-top:85px;font-size:10px;letter-spacing:.14em;color:#a49e93;direction:ltr}
+.ed2-preview-festival{display:grid!important;grid-template-columns:1.05fr 1fr;gap:18px;align-items:center;background:#efede9;padding:13px;margin:20px 0}
+.ed2-preview-festival-photo{aspect-ratio:4/3;overflow:hidden}.ed2-preview-festival-photo img{width:100%;height:100%;object-fit:cover}
+.ed2-preview-festival-copy{padding:12px;text-align:right}.ed2-preview-festival-copy small{font-size:9px;letter-spacing:.12em;color:#8b8376;direction:ltr;display:block}
+.ed2-preview-festival-copy h2{font-size:clamp(20px,2vw,34px);line-height:1.35;font-weight:400;margin:12px 0;white-space:pre-line}
+.ed2-preview-festival-copy p{font-size:11px;line-height:1.9;color:#817b72}.ed2-preview-festival-copy span{font-size:11px;border-bottom:1px solid #afa59b;padding-bottom:4px}
+.ed2-festival-disabled{opacity:.52;filter:grayscale(.5)}
+.ed2-festival-enable{display:flex;align-items:center;gap:12px;padding:16px;border:1px solid #d9d4cc;background:#f5f3f0;font-size:12px;cursor:pointer}
+.ed2-festival-enable input{width:18px;height:18px;accent-color:#514b44}.ed2-festival-enable span{flex:1}
+@media(max-width:900px){.ed2-seasonal-festival{display:flex;flex-direction:column;gap:23px;padding:80px 22px;min-height:0}.ed2-festival-image{width:100%;height:clamp(390px,105vw,580px)}.ed2-festival-copy{width:100%;max-width:650px}.ed2-festival-copy h2{font-size:clamp(48px,10vw,75px)}.ed2-festival-caption{margin-top:55px}}
+@media(max-width:550px){.ed2-seasonal-festival{padding:66px 16px}.ed2-festival-image{height:clamp(365px,110vw,500px)}.ed2-preview-festival{grid-template-columns:1fr;padding:9px}.ed2-preview-festival-photo{aspect-ratio:16/9}.ed2-preview-festival-copy{padding:12px}}
+@media(prefers-reduced-motion:reduce){.ed2-festival-photo,.ed2-festival-link{transition:none}}
