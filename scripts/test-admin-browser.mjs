@@ -226,10 +226,11 @@ try{
    if(!node)return null;
    const bounds=node.getBoundingClientRect();
    return {width:bounds.width,left:bounds.left,right:bounds.right,client:innerWidth,
-    heading:!!node.querySelector("h2"),picture:!!node.querySelector("img")};
+    heading:!!node.querySelector("h2"),picture:!!node.querySelector(".ed2-preview-festival-stage-media img"),
+    countdown:!!node.querySelector(".ed2-festival-clock"),offer:node.textContent.includes("جشنواره فروش ویژه")};
   })()`);
-  assert.ok(festivalCard?.heading&&festivalCard.picture,
-   view.name+": campaign preview missing title or sample image");
+  assert.ok(festivalCard?.heading&&festivalCard.picture&&festivalCard.countdown&&festivalCard.offer,
+   view.name+": festival editor must show photo banner, live countdown, and visible campaign label");
   assert.ok(festivalCard.width>180&&festivalCard.left>=-5&&festivalCard.right<=view.w+5,
    view.name+": campaign preview escapes viewport "+JSON.stringify(festivalCard));
   await evalJS('document.querySelectorAll(".ed2-part-selector button")[1].click();true');
@@ -330,6 +331,10 @@ try{
         const festival=document.querySelector(".ed2-sale-festival"),hero=document.querySelector(".ed-hero");
         return {width:document.documentElement.scrollWidth,viewport:innerWidth,broken,
           hero:!!hero,festival:!!festival,festivalImmediatelyAfterHero:festival?.previousElementSibling===hero,
+          banner:!!festival?.querySelector(".ed2-festival-banner"),
+          bannerPhoto:!!festival?.querySelector(".ed2-festival-banner-media img"),
+          timer:!!festival?.querySelector('[role="timer"]'),
+          discountText:festival?.textContent.includes("جشنواره فروش ویژه"),
           discountedCards:document.querySelectorAll(".ed2-sale-product").length,
           brokenDiscounts:[...document.querySelectorAll(".ed2-sale-product")].filter(card=>
              !card.querySelector("del")||!card.querySelector("strong")).length,
@@ -341,6 +346,7 @@ try{
       if(route==="/"){
         assert.ok(audit.hero&&audit.festival&&audit.festivalImmediatelyAfterHero,
           view.name+": festival must be visibly directly BELOW hero "+JSON.stringify(audit));
+        assert.ok(audit.banner&&audit.bannerPhoto&&audit.timer&&audit.discountText,view.name+": luxury festival banner/image/timer missing "+JSON.stringify(audit));
         assert.ok(audit.discountedCards>=1,view.name+": sample festival contains no actual discounted products");
         assert.equal(audit.brokenDiscounts,0,view.name+": festival product hides original/current price");
         const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});

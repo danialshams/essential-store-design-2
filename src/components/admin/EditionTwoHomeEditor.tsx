@@ -6,11 +6,19 @@ import {ArrowLeft,ArrowUp,ArrowDown,ArrowUpLeft,Check,Eye,Loader2,Monitor,Smartp
 import {adminFetch,DEMO_MODE} from "@/lib/admin/demo-api";
 import {DestinationPicker,MediaField,EntityChoices} from "@/components/admin/EditionTwoControls";
 import {editionTwoDefaults,editionTwoTitleFor,type EditionTwoConfig,type EdCatalog,type EdImageText,type Destination} from "@/lib/admin/edition-two";
+import {FestivalCountdown} from "@/components/FestivalCountdown";
 
 type Part="hero"|"categories"|"featured"|"campaign"|"festival"|"story"|"chapters"|"journal"|"benefits"|"footer";
 const parts:Part[]=["hero","categories","featured","campaign","festival","story","chapters","journal","benefits","footer"];
 const empty:EdCatalog={products:[],categories:[],articles:[],pages:[]};
-const photo=(url:string)=>url||"https://essential-store-design-2.vercel.app/images/editorial/chapter-detail.webp";
+const photo=(url:string)=>url||"/images/editorial/chapter-detail.webp";
+const legacyFestivalPhoto="https://essential-store-design-2.vercel.app/images/editorial/campaign.webp";
+const campaignPhoto=(url?:string)=>!url||url===legacyFestivalPhoto?editionTwoDefaults.festival.imageUrl:url;
+function dateTimeLocal(iso:string){
+ const date=new Date(iso);if(!Number.isFinite(date.getTime()))return "";
+ const pad=(n:number)=>String(n).padStart(2,"0");
+ return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 function fallbackName(id:string,catalog:EdCatalog){return catalog.categories.find(x=>x.id===id||x.slug===id)?.name||
  ({bags:"کیف",clothing:"پوشاک",shoes:"کفش",accessories:"اکسسوری"} as Record<string,string>)[id]||"کالکشن";}
 function Field({label,value,onChange,multiline=false,placeholder=""}:{label:string;value:string;onChange:(s:string)=>void;multiline?:boolean;placeholder?:string}){
@@ -43,7 +51,7 @@ function VisualPreview({value,catalog,selected,onSelect,viewport,slideIndex}:{va
  const slide=value.hero[slideIndex]||value.hero[0];
  const saleItems=(value.festival.productIds?.length?
    value.festival.productIds.map(id=>catalog.products.find(p=>p.id===id)).filter((p):p is EdCatalog["products"][number]=>!!p):
-   catalog.products).filter(p=>typeof p.price==="number"&&typeof p.comparePrice==="number"&&p.comparePrice>p.price&&(p.inventory??1)>0).slice(0,4);
+   catalog.products).filter(p=>typeof p.price==="number"&&typeof p.comparePrice==="number"&&p.comparePrice>p.price&&(p.inventory??1)>0).slice(0,8);
  const sectionRank=(key:string)=>Math.max(0,(value.sectionOrder||editionTwoDefaults.sectionOrder).indexOf(key))+1;
  const categoryList=value.categories.items;
  const features=(value.featured.productIds.length?value.featured.productIds.map(id=>catalog.products.find(x=>x.id===id)).filter((x):x is EdCatalog["products"][number]=>Boolean(x)):catalog.products).slice(0,4);
@@ -76,14 +84,23 @@ function VisualPreview({value,catalog,selected,onSelect,viewport,slideIndex}:{va
   </Editable>
 
   <Editable id="festival" rank={sectionRank("festival")} selected={selected} select={onSelect} className={"ed2-preview-festival "+(!value.festival.enabled?"ed2-festival-disabled":"")}>
-    <div className="ed2-preview-festival-photo"><img src={photo(viewport==="mobile"?value.festival.mobileImageUrl||value.festival.imageUrl:value.festival.imageUrl)} alt=""/></div>
-    <div className="ed2-preview-festival-copy"><small>{value.festival.enabled?value.festival.eyebrow:"CAMPAIGN HIDDEN"}</small>
-      <h2>{value.festival.title}</h2><p>{value.festival.description}</p><span>{value.festival.ctaLabel} ↗</span></div>
-
+    <div className="ed2-preview-festival-stage">
+      <div className="ed2-preview-festival-stage-copy">
+        <span className="ed2-mini-sale-label">جشنواره فروش ویژه</span>
+        <small>{value.festival.eyebrow||"PRIVATE SALE / LIMITED TIME"}</small>
+        <h2>{value.festival.title}</h2><p>{value.festival.description}</p>
+        {value.festival.showCountdown&&<FestivalCountdown endsAt={value.festival.endsAt} expiredText={value.festival.expiredText}/>}
+        <span className="ed2-preview-sale-cta">{value.festival.ctaLabel||"مشاهده محصولات جشنواره"} ↗</span>
+      </div>
+      <div className="ed2-preview-festival-stage-media">
+        <img src={photo(campaignPhoto(viewport==="mobile"?value.festival.mobileImageUrl||value.festival.imageUrl:value.festival.imageUrl))} alt="" loading="lazy"/>
+      </div>
+    </div>
     <div className="ed2-preview-sale-items">
       {saleItems.map(p=><div className="ed2-preview-sale-item" key={p.id}>
         {p.imageUrl?<img src={p.imageUrl} alt=""/>:<PackageCheck size={20}/>}
         <strong>{p.name}</strong><small>{Math.round((1-(p.price||1)/(p.comparePrice||1))*100).toLocaleString("fa-IR")}٪ تخفیف</small>
+        <div className="ed2-preview-sale-prices"><s>{(p.comparePrice??0).toLocaleString("fa-IR")} تومان</s><b>{(p.price??0).toLocaleString("fa-IR")} تومان</b></div>
       </div>)}
       {!saleItems.length&&<small>محصول تخفیف‌دار فعال ثبت نشده است.</small>}
     </div>
@@ -126,9 +143,14 @@ export function EditionTwoHomeEditor(){
    const r=await adminFetch("/api/admin/edition-2");
    const data=await r.json();
    if(!r.ok)throw Error(data.error||"اطلاعات صفحه اصلی دریافت نشد");
-   setValue({...editionTwoDefaults,...(data.draft||{}),
-   festival:{...editionTwoDefaults.festival,...(data.draft?.festival||{})},
-   sectionOrder:data.draft?.sectionOrder?.length===editionTwoDefaults.sectionOrder.length?data.draft.sectionOrder:[...editionTwoDefaults.sectionOrder]});setCatalog(data.catalog||empty);setHasDraft(Boolean(data.hasUnpublishedDraft));setDirty(false);
+   const incoming=data.draft||{};
+   const legacy=!incoming.festival?.endsAt;
+   const order=incoming.sectionOrder?.length===editionTwoDefaults.sectionOrder.length?
+     [...incoming.sectionOrder]:[...editionTwoDefaults.sectionOrder];
+   if(legacy){const i=order.indexOf("festival");if(i>=0)order.splice(i,1);order.splice(1,0,"festival");}
+   setValue({...editionTwoDefaults,...incoming,
+    festival:{...editionTwoDefaults.festival,...(incoming.festival||{}),enabled:legacy?true:incoming.festival.enabled},
+    sectionOrder:order});setCatalog(data.catalog||empty);setHasDraft(Boolean(data.hasUnpublishedDraft));setDirty(false);
   }catch(e){setError(e instanceof Error?e.message:"خطا در بارگذاری صفحه")}finally{setLoading(false)}
  },[]);
  useEffect(()=>{void load()},[load]);
@@ -163,6 +185,9 @@ export function EditionTwoHomeEditor(){
     const confirmed=await verification.json();
     if(!confirmed.published||confirmed.published.festival?.enabled!==value?.festival.enabled||
       confirmed.published.festival?.title!==value?.festival.title||
+      confirmed.published.festival?.endsAt!==value?.festival.endsAt||
+      confirmed.published.festival?.showCountdown!==value?.festival.showCountdown||
+      confirmed.published.festival?.imageUrl!==value?.festival.imageUrl||
       JSON.stringify(confirmed.published.festival?.productIds||[])!==JSON.stringify(value?.festival.productIds||[])||
       JSON.stringify(confirmed.published.sectionOrder||[])!==JSON.stringify(value?.sectionOrder||[])){
       throw Error("انتشار در پایگاه داده هنوز تأیید نشده؛ پیش از تکرار، وضعیت سایت را بررسی کنید.");
@@ -315,8 +340,18 @@ export function EditionTwoHomeEditor(){
        <Field label="برچسب کوتاه جشنواره" value={value.festival.eyebrow} onChange={x=>edit(v=>{v.festival.eyebrow=x})}/>
        <Field label="عنوان کمپین" multiline value={value.festival.title} onChange={x=>editorField("festival","title",x)}/>
        <Field label="توضیحات" multiline value={value.festival.description} onChange={x=>editorField("festival","description",x)}/>
-       {photoField("تصویر جشنواره",value.festival.imageUrl,x=>editorField("festival","imageUrl",x))}
-       {photoField("تصویر موبایل (اختیاری)",value.festival.mobileImageUrl||"",x=>editorField("festival","mobileImageUrl",x))}
+       <div className="ed2-hint">تصویر بنر و محصولات تخفیف‌دار جداگانه مدیریت می‌شوند. بنر همیشه بالای شبکه محصولات نمایش داده می‌شود.</div>
+       {photoField("عکس شاخص بنر جشنواره",value.festival.imageUrl,x=>editorField("festival","imageUrl",x))}
+       {photoField("عکس بنر موبایل (اختیاری)",value.festival.mobileImageUrl||"",x=>editorField("festival","mobileImageUrl",x))}
+       <label className="ed2-festival-enable"><input type="checkbox" checked={value.festival.showCountdown}
+          onChange={e=>edit(v=>{v.festival.showCountdown=e.target.checked})}/>
+          <span>نمایش تایمر شمارش معکوس</span><small>{value.festival.showCountdown?"فعال":"غیرفعال"}</small></label>
+       <label className="ed2-field"><span className="ed2-field-label">تاریخ و ساعت پایان جشنواره (بر اساس ساعت دستگاه شما)</span>
+         <input type="datetime-local" value={dateTimeLocal(value.festival.endsAt)}
+          onChange={e=>{const date=new Date(e.target.value);if(e.target.value&&Number.isFinite(date.getTime()))edit(v=>{v.festival.endsAt=date.toISOString()})}}/>
+       </label>
+       <Field label="متن بعد از اتمام تایمر" value={value.festival.expiredText}
+         onChange={x=>edit(v=>{v.festival.expiredText=x})}/>
        <Field label="متن دکمه" value={value.festival.ctaLabel} onChange={x=>editorField("festival","ctaLabel",x)}/>
        {target(value.festival.target,x=>editorField("festival","target",x))}
       </div>}

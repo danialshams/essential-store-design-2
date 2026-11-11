@@ -2,7 +2,7 @@
 export type Destination={kind:"none"|"home"|"products"|"product"|"category"|"page"|"article"|"external";id?:string;url?:string};
 export type EdSlide={id:string;title:string;description:string;eyebrow:string;imageUrl:string;mobileImageUrl:string;ctaLabel:string;target:Destination;enabled:boolean};
 export type EdImageText={title:string;description:string;imageUrl:string;mobileImageUrl?:string;secondaryImageUrl?:string;ctaLabel:string;target:Destination};
-export type EdFestival=EdImageText&{enabled:boolean;eyebrow:string;productIds:string[]};
+export type EdFestival=EdImageText&{enabled:boolean;eyebrow:string;productIds:string[];showCountdown:boolean;endsAt:string;expiredText:string};
 export type EditionTwoConfig={
  version:2;announcement:string;hero:EdSlide[];sectionOrder:string[];
  categories:{title:string;items:Array<{categoryId:string;imageUrl?:string}>};
@@ -28,7 +28,7 @@ export const editionTwoDefaults:EditionTwoConfig={
  ],
  categories:{title:"کالکشن را کشف کنید",items:[{categoryId:"clothing",imageUrl:photo("category-clothing.webp")},{categoryId:"bags",imageUrl:photo("category-bags.webp")},{categoryId:"shoes",imageUrl:photo("category-shoes.webp")},{categoryId:"accessories",imageUrl:photo("category-accessories.webp")}]},
  featured:{title:"منتخب این فصل",description:"قطعاتی برای امروز؛ انتخاب‌هایی برای سال‌های بعد.",productIds:[]},
- festival:{enabled:true,productIds:[],eyebrow:"A PRIVATE EDITION / SEASONAL EVENT",title:"انتخاب‌های ویژه این فصل.",description:"روایتی کوتاه از انتخاب‌های این فصل؛ بی‌هیاهو، دقیق و خاص.",imageUrl:"https://essential-store-design-2.vercel.app/images/editorial/campaign.webp",mobileImageUrl:"https://essential-store-design-2.vercel.app/images/editorial/campaign.webp",ctaLabel:"کشف ادیشن",target:{kind:"products"}},
+ festival:{enabled:true,productIds:[],showCountdown:true,endsAt:"2026-12-31T20:29:59.000Z",expiredText:"زمان این جشنواره به پایان رسیده است",eyebrow:"PRIVATE SALE / LIMITED TIME",title:"جشنواره انتخاب‌های ویژه",description:"فرصتی محدود برای انتخاب قطعات خاص، با قیمت‌های ویژه و همان کیفیت همیشگی.",imageUrl:"/images/editorial/story-portrait.webp",mobileImageUrl:"/images/editorial/story-portrait.webp",ctaLabel:"مشاهده محصولات جشنواره",target:{kind:"products"}},
  campaign:{title:"جزئیاتی که\nتفاوت می‌سازند.",description:"طراحی‌هایی که هر روز همراهتان می‌مانند.",imageUrl:photo("campaign.webp"),ctaLabel:"دیدن کالکشن",target:category},
  story:{title:"کمتر انتخاب کن.\nبهتر انتخاب کن.",description:"استایل یعنی ترکیب سادگی و شخصیت.",imageUrl:photo("story-portrait.webp"),secondaryImageUrl:photo("story-detail.webp"),ctaLabel:"داستان این نگاه",target:{kind:"page",id:"about"}},
  chapters:[
