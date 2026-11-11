@@ -1,3 +1,4 @@
+import {Fragment,type ReactNode} from "react";
 import Link from "next/link";
 import {FrameImage} from "@/components/FrameImage";
 import {ArrowLeft, ArrowUpLeft, Headphones, PackageCheck, Truck, ShieldCheck} from "lucide-react";
@@ -42,6 +43,13 @@ export default async function Home(){
   const store=await loadStore();
   const edition=store.settings.editorialConfig;
   const festival=edition?.festival??editionTwoDefaults.festival;
+  const discounted=store.products.filter(p=>p.inventory>0&&typeof p.comparePrice==="number"&&p.comparePrice>p.price);
+  const saleProducts=(festival.productIds?.length?
+    festival.productIds.map(id=>discounted.find(p=>p.id===id)).filter((p):p is Product=>Boolean(p)):
+    discounted).slice(0,6);
+  const allowedOrder=editionTwoDefaults.sectionOrder;
+  const sectionOrder=[...new Set([...(edition?.sectionOrder||allowedOrder).filter(id=>allowedOrder.includes(id)),...allowedOrder])];
+
   const sections=[...(store.settings.homeSections||[])].filter(section=>section.enabled).sort((a,b)=>a.position-b.position);
   const hero=sections[0];
   const heroImage=editorialPhoto(hero?.imageUrl,fallbackEditorial.hero);
@@ -84,11 +92,12 @@ export default async function Home(){
   ]; // Always retain all three stories; even matching merchant photos have distinct copy.
 
 
-  return <EditorialMotion>
-    <div className="ed-home">
-      <HeroCarousel slides={heroSlides}/>
-
-      <section className="ed-categories-section premium-container" id="ed-categories" data-scene="categories">
+  const homepageSections:Record<string,ReactNode>={
+hero:(<>
+<HeroCarousel slides={heroSlides}/>
+</>),
+categories:(<>
+<section className="ed-categories-section premium-container" id="ed-categories" data-scene="categories">
         <div className="ed-section-heading" data-reveal="up">
           <div><span className="premium-eyebrow">EXPLORE THE EDITION / 01</span><h2>{edition?.categories.title||<>کالکشن را <em>کشف کنید</em></>}</h2></div>
           <Link href="/products" className="ed-inline-link">تمام محصولات <ArrowUpLeft size={18}/></Link>
@@ -106,13 +115,15 @@ export default async function Home(){
           })}
         </div>
       </section>
-
-      <section className="ed-products-section premium-container" id="ed-selected" data-scene="products">
+</>),
+featured:(<>
+<section className="ed-products-section premium-container" id="ed-selected" data-scene="products">
         <div className="ed-section-heading" data-reveal="up"><div><span className="premium-eyebrow">THE SELECTED PIECES / 02</span><h2>{edition?.featured.title||<>منتخب <em>این فصل</em></>}</h2><p>{edition?.featured.description||"قطعاتی برای امروز؛ انتخاب‌هایی برای سال‌های بعد."}</p></div><Link href="/products" className="ed-inline-link">مشاهده مجموعه <ArrowUpLeft size={18}/></Link></div>
         <div className="ed-featured-grid" data-stagger>{selectedProducts.map(product=><ProductCard key={product.id} product={product}/>)}</div>
       </section>
-
-      <section className="ed-lookbook ed-full-bleed" aria-labelledby="ed-lookbook-title" data-campaign data-scene="campaign">
+</>),
+campaign:(<>
+<section className="ed-lookbook ed-full-bleed" aria-labelledby="ed-lookbook-title" data-campaign data-scene="campaign">
         <div className="ed-lookbook-media" data-editorial-frame data-image-wipe><FrameImage src={lookbookImage} alt={firstBanner?.title||"کالکشن کیف و اکسسوری چرمی"} fill sizes="100vw" unoptimized={lookbookImage.startsWith("http")} className="ed-lookbook-photo" data-parallax/></div>
         
         <div className="ed-lookbook-copy">
@@ -123,23 +134,25 @@ export default async function Home(){
           
         </div>
       </section>
-
-
-      {festival.enabled&&<section className="ed2-seasonal-festival premium-container" aria-labelledby="ed2-festival-title" data-scene="festival">
-        <div className="ed2-festival-image" data-image-wipe data-editorial-frame>
-          <picture className="ed2-festival-picture"><source media="(max-width:760px)" srcSet={festival.mobileImageUrl||festival.imageUrl||"/images/editorial/campaign.webp"}/><FrameImage src={festival.imageUrl||"/images/editorial/campaign.webp"} alt={festival.title}
-            fill sizes="(max-width: 760px) 100vw, 55vw" unoptimized={festival.imageUrl.startsWith("http")} className="ed2-festival-photo"/></picture>
-        </div>
-        <div className="ed2-festival-copy" data-reveal="up">
-          <span className="premium-eyebrow">{festival.eyebrow}</span>
-          <span className="ed2-festival-rule" aria-hidden="true"/>
-          <h2 id="ed2-festival-title">{festival.title}</h2>
-          <p>{festival.description}</p>
-          {festival.target.kind!=="none"&&<Link href={targetUrl(festival.target,store)} className="ed2-festival-link">{festival.ctaLabel||"کشف انتخاب‌ها"} <ArrowUpLeft size={18}/></Link>}
-          <span className="ed2-festival-caption">A MOMENT IN THE EDITION / 2026</span>
-        </div>
-      </section>}
-      <section className="ed-editorial-story premium-container" data-scene="story">
+</>),
+festival:(<>
+{festival.enabled&&<section className="ed2-sale-festival premium-container" data-scene="festival" aria-labelledby="ed2-festival-title">
+  <div className="ed2-sale-head" data-reveal="up">
+    <div><span className="premium-eyebrow">{festival.eyebrow||"THE SEASONAL EDIT / LIMITED OFFERS"}</span>
+      <h2 id="ed2-festival-title">{festival.title}</h2><p>{festival.description}</p></div>
+    {festival.target.kind!=="none"&&<Link href={targetUrl(festival.target,store)} className="ed2-festival-link">{festival.ctaLabel||"همه محصولات"} <ArrowUpLeft size={17}/></Link>}
+  </div>
+  <div className="ed2-sale-products" data-stagger>
+    {saleProducts.map(p=><div className="ed2-sale-product" key={p.id}>
+      <span className="ed2-sale-percent">{Math.round((1-p.price/p.comparePrice!)*100).toLocaleString("fa-IR")}٪ تخفیف</span>
+      <ProductCard product={p}/>
+    </div>)}
+    {!saleProducts.length&&<div className="ed2-sale-empty" role="status">محصول تخفیف‌دار فعالی برای این جشنواره ثبت نشده است. محصولات واجد شرایط پس از تعیین قیمت قبل از تخفیف در پنل نمایش داده می‌شوند.</div>}
+  </div>
+</section>}
+</>),
+story:(<>
+<section className="ed-editorial-story premium-container" data-scene="story">
         <div className="ed-story-collage" data-reveal="right">
           <div className="ed-story-visual" data-editorial-frame data-image-wipe><FrameImage src={storyImage} alt={editorialHeading?.title||"استایل کلاسیک و مینیمال"} fill sizes="(max-width: 760px) 100vw, 47vw" unoptimized={storyImage.startsWith("http")} className="ed-story-photo"/><span>AN EDITORIAL PERSPECTIVE</span></div>
           <div className="ed-story-inset" data-editorial-frame data-story-inset><FrameImage src={storyDetail} alt="جزئیات استایل" fill sizes="(max-width: 760px) 35vw, 17vw" unoptimized={storyDetail.startsWith("http")}/></div>
@@ -147,8 +160,10 @@ export default async function Home(){
         </div>
         <div className="ed-story-copy" data-reveal="left"><span className="premium-eyebrow">A NOTE ON STYLE / 04</span><h2>{edition?.story.title||editorialHeading?.title||"کمتر انتخاب کن.\nبهتر انتخاب کن."}</h2><div className="ed-story-rule"/><p>{edition?.story.description||editorialHeading?.description||"برای ما، استایل یعنی ترکیب سادگی و شخصیت. انتخاب‌هایی باکیفیت که برای مد زودگذر ساخته نشده‌اند و در هر فصل همراهتان هستند."}</p>{edition?.story.target.kind!=="none"&&<Link href={storyCta} className="ed-inline-link">{edition?.story.ctaLabel||editorialHeading?.ctaLabel||"داستان این نگاه"} <ArrowUpLeft size={18}/></Link>}</div>
       </section>
-
-      <section className="ed-chapter" data-chapter aria-label="روایت تصویری کالکشن">
+</>),
+chapters:(<>
+<>
+<section className="ed-chapter" data-chapter aria-label="روایت تصویری کالکشن">
         <div className="ed-chapter-scene" data-chapter-scene>
           <div className="ed-chapter-photographs">
             <div className="ed-chapter-frame" data-chapter-frame data-chapter-intro><FrameImage src={edition?.chapters[0]?.imageUrl||"/images/editorial/chapter-form.webp"} alt="فصل اول: فرم و استایل ماندگار" fill sizes="60vw" unoptimized={Boolean(edition?.chapters[0]?.imageUrl?.startsWith("http"))}/></div>
@@ -166,8 +181,7 @@ export default async function Home(){
           </div>
         </div>
       </section>
-
-      <section className="ed-mobile-chapters" aria-label="دو فصل تصویری کالکشن">
+<section className="ed-mobile-chapters" aria-label="دو فصل تصویری کالکشن">
         <article className="ed-mobile-chapter" data-reveal="up">
           <div className="ed-mobile-chapter-photo" data-editorial-frame data-image-wipe><FrameImage src={edition?.chapters[0]?.mobileImageUrl||edition?.chapters[0]?.imageUrl||"/images/editorial/chapter-form.webp"} alt="فصل فرم؛ استایل آرام و ماندگار" fill sizes="100vw" unoptimized={Boolean(edition?.chapters[0]?.imageUrl?.startsWith("http"))}/></div>
           <div className="ed-mobile-chapter-copy"><span className="premium-eyebrow">CHAPTER 01 / FORM</span><h2>{edition?.chapters[0]?.title||editorialHeading?.title||"هر انتخاب، یک روایت."}</h2><p>{edition?.chapters[0]?.description||editorialHeading?.description||"زیبایی واقعی از جنس جزئیاتی است که با دقت کنار هم قرار می‌گیرند."}</p></div>
@@ -177,25 +191,19 @@ export default async function Home(){
           <div className="ed-mobile-chapter-copy"><span className="premium-eyebrow">CHAPTER 02 / DETAIL</span><h2>{edition?.chapters[1]?.title||firstBanner?.title||"کیفیتی که می‌ماند."}</h2><p>{edition?.chapters[1]?.description||firstBanner?.subtitle||"انتخاب‌هایی که هر فصل، بخشی از سبک شخصی شما می‌مانند."}</p></div>
         </article>
       </section>
-
-      {(edition?[]:sections.slice(2)).map((section,index)=><section className={`ed-admin-story premium-container ${index%2?"is-reversed":""} ${section.layout?`ed-layout-${section.layout}`:""}`} data-motion={section.animation||"mask"} key={section.id}>
-        {section.imageUrl&&<div className="ed-admin-story-picture" data-editorial-frame data-reveal={index%2?"left":"right"} data-image-wipe><FrameImage src={section.imageUrl} alt={section.title} fill sizes="(max-width: 760px) 100vw, 45vw" unoptimized={section.imageUrl.startsWith("http")}/>
-          {section.secondaryImageUrl&&<span className="ed-admin-story-detail" data-editorial-frame><FrameImage src={section.secondaryImageUrl} alt="" fill sizes="(max-width:760px) 30vw, 15vw" unoptimized={section.secondaryImageUrl.startsWith("http")}/></span>}
-        </div>}
-        <div className="ed-admin-story-copy" data-reveal={index%2?"right":"left"}><span className="premium-eyebrow">CURATED STORY / {String(index+5).padStart(2,"0")}</span><h2>{section.title}</h2><p>{section.description}</p><Link href={section.ctaHref?.startsWith("/")?section.ctaHref:"/products"} className="ed-inline-link">{section.ctaLabel||"کشف بیشتر"} <ArrowUpLeft size={18}/></Link></div>
-      </section>)}
-
-      {otherBanners.map((banner,index)=><section key={banner.id} className="ed-secondary-banner premium-container" data-reveal="up"><div><span className="premium-eyebrow">DISCOVER THE COLLECTION / {String(index+6).padStart(2,"0")}</span><h2>{banner.title}</h2><p>{banner.subtitle}</p><Link href={banner.target?targetUrl(banner.target,store):banner.linkUrl?.startsWith("/")?banner.linkUrl:"/products"} className="ed-dark-button">مشاهده بیشتر <ArrowUpLeft size={18}/></Link></div>{banner.imageUrl&&<div className="ed-secondary-banner-image" data-editorial-frame><FrameImage src={editorialPhoto(banner.imageUrl,"/images/editorial/campaign.webp")} alt={banner.title} fill unoptimized sizes="(max-width: 760px) 100vw, 50vw"/></div>}</section>)}
-
-      <section className="ed-journal premium-container" data-journal data-scene="journal">
+</>
+</>),
+journal:(<>
+<section className="ed-journal premium-container" data-journal data-scene="journal">
         <div className="ed-section-heading"><div><span className="premium-eyebrow">THE JOURNAL / 05</span><h2>{edition?.journal.title||<>از نگاه <em>ژورنال</em></>}</h2></div><Link href="/blog" className="ed-inline-link">ورود به ژورنال <ArrowUpLeft size={18}/></Link></div>
         <div className="ed-journal-grid" data-stagger>
           <Link href={selectedArticles[0]?`/blog/${selectedArticles[0].slug}`:"/blog"} className="ed-journal-card"><div className="ed-journal-photo" data-editorial-frame><FrameImage src={editorialPhoto(selectedArticles[0]?.coverUrl,"/images/editorial/journal-style.webp")} alt="نگاهی به هنر پوشیدن" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(selectedArticles[0]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 01</div><h3>{selectedArticles[0]?.title||"هنر ساختن یک استایل ماندگار"}</h3><p>{selectedArticles[0]?.summary||"از پارچه‌ها و فرم‌ها تا ظرافت‌هایی که در نگاه اول دیده نمی‌شوند."}</p><span>ادامه مطلب <ArrowUpLeft size={17}/></span></Link>
           <Link href={selectedArticles[1]?`/blog/${selectedArticles[1].slug}`:"/info/about"} className="ed-journal-card"><div className="ed-journal-photo" data-editorial-frame><FrameImage src={editorialPhoto(selectedArticles[1]?.coverUrl,"/images/editorial/journal-details.webp")} alt="جزئیات و اکسسوری‌ها" fill sizes="(max-width: 760px) 100vw, 50vw" unoptimized={Boolean(selectedArticles[1]?.coverUrl?.startsWith("http"))}/></div><div className="ed-journal-meta">THE JOURNAL — 02</div><h3>{selectedArticles[1]?.title||"چرا جزئیات، مهم‌ترین بخش استایل‌اند؟"}</h3><p>{selectedArticles[1]?.summary||"روایتی کوتاه از نقش انتخاب‌های کوچک در شخصیت یک استایل."}</p><span>بیشتر بخوانید <ArrowUpLeft size={17}/></span></Link>
         </div>
       </section>
-
-      <section className="ed-benefits premium-container" data-reveal="up" aria-label="خدمات فروشگاه">
+</>),
+benefits:(<>
+<section className="ed-benefits premium-container" data-reveal="up" aria-label="خدمات فروشگاه">
         {(edition?.benefits||[
           {id:"shipping",title:"روش‌های ارسال متنوع",description:"انتخاب روش ارسال هنگام ثبت سفارش",icon:"truck"},
           {id:"products",title:"جزئیات شفاف محصولات",description:"قیمت و موجودی متصل به پنل",icon:"package"},
@@ -205,7 +213,16 @@ export default async function Home(){
          <strong>{x.title}</strong><span>{x.description}</span>
         </div>)}
       </section>
-      
-    </div>
-  </EditorialMotion>;
+</>),
+};
+return <EditorialMotion><div className="ed-home">
+ {sectionOrder.map(id=><Fragment key={id}>{homepageSections[id]}</Fragment>)}
+ {(edition?[]:sections.slice(2)).map((section,index)=><section className={`ed-admin-story premium-container ${index%2?"is-reversed":""} ${section.layout?`ed-layout-${section.layout}`:""}`} data-motion={section.animation||"mask"} key={section.id}>
+        {section.imageUrl&&<div className="ed-admin-story-picture" data-editorial-frame data-reveal={index%2?"left":"right"} data-image-wipe><FrameImage src={section.imageUrl} alt={section.title} fill sizes="(max-width: 760px) 100vw, 45vw" unoptimized={section.imageUrl.startsWith("http")}/>
+          {section.secondaryImageUrl&&<span className="ed-admin-story-detail" data-editorial-frame><FrameImage src={section.secondaryImageUrl} alt="" fill sizes="(max-width:760px) 30vw, 15vw" unoptimized={section.secondaryImageUrl.startsWith("http")}/></span>}
+        </div>}
+        <div className="ed-admin-story-copy" data-reveal={index%2?"right":"left"}><span className="premium-eyebrow">CURATED STORY / {String(index+5).padStart(2,"0")}</span><h2>{section.title}</h2><p>{section.description}</p><Link href={section.ctaHref?.startsWith("/")?section.ctaHref:"/products"} className="ed-inline-link">{section.ctaLabel||"کشف بیشتر"} <ArrowUpLeft size={18}/></Link></div>
+      </section>)}
+{otherBanners.map((banner,index)=><section key={banner.id} className="ed-secondary-banner premium-container" data-reveal="up"><div><span className="premium-eyebrow">DISCOVER THE COLLECTION / {String(index+6).padStart(2,"0")}</span><h2>{banner.title}</h2><p>{banner.subtitle}</p><Link href={banner.target?targetUrl(banner.target,store):banner.linkUrl?.startsWith("/")?banner.linkUrl:"/products"} className="ed-dark-button">مشاهده بیشتر <ArrowUpLeft size={18}/></Link></div>{banner.imageUrl&&<div className="ed-secondary-banner-image" data-editorial-frame><FrameImage src={editorialPhoto(banner.imageUrl,"/images/editorial/campaign.webp")} alt={banner.title} fill unoptimized sizes="(max-width: 760px) 100vw, 50vw"/></div>}</section>)}
+</div></EditorialMotion>;
 }
