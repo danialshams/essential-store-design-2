@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 export const metadata:Metadata={title:"پنل مدیریت | ESSENTIAL 02",robots:{index:false,follow:false}};
 import "./admin-base.css";
 import "./edition-two-admin.css";
+import "./seo-studio.css";
 import {redirect} from "next/navigation";
 import {currentAdmin,publicOpenEditorEnabled} from "@/lib/admin/security";
 import {EditionTwoShell} from "@/components/admin/EditionTwoShell";
