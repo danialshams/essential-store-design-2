@@ -165,7 +165,7 @@ const bringIntoRevealZone=async locator=>{
    "Product frame must not be clipped: "+JSON.stringify(galleryStyle));
   await page.screenshot({path:"artifacts/edition02-product-desktop.png",fullPage:true,animations:"disabled"});
   const imagePath=await page.locator(".product-main-photo img").getAttribute("src");
-  assert.ok(imagePath&&decodeURIComponent(imagePath).includes("/images/real-photo-v2/products-bag-main.jpg"),
+  assert.ok(imagePath&&decodeURIComponent(imagePath).includes("/images/real-photo-v3/products-bag-main.jpg"),
    "Product detail must use the NEW authentic brown-handbag photo: "+imagePath);
   assert.equal(errors.length,0,"Uncaught browser errors: "+errors.join(" / "));
   const mobile=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
