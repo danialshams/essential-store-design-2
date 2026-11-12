@@ -79,6 +79,13 @@ for file in paths:
         new[:,:,1]=np.where(red,136,new[:,:,1])
         new[:,:,2]=np.where(red,np.clip(V*.72,0,255),new[:,:,2])
         mask=np.maximum(mask,np.where(red,.94*central,0))
+        # Remove the last coral/red edges from the luxury handbag itself.
+        # This is localized to the actual product photo, not other red pixels.
+        cognac=(H<38)&(S>49)&(V>34)&(file.name=="products-bag-main.webp")
+        new[:,:,0]=np.where(cognac,19,new[:,:,0])
+        new[:,:,1]=np.where(cognac,115,new[:,:,1])
+        new[:,:,2]=np.where(cognac,np.clip(V*.74,0,255),new[:,:,2])
+        mask=np.maximum(mask,np.where(cognac,.99,0))
         # Neutral cream materials become soft ivory rather than cold blue.
         neutral=(S<44)&(V>126)&(V<244)
         new[:,:,0]=np.where(neutral,21,new[:,:,0])
