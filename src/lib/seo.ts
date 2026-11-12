@@ -96,7 +96,7 @@ export function seoMeta(store:StoreData,path:string,info:{
   alternates:{canonical},applicationName:company,
   robots:{index:allowIndex,follow:allowIndex,noarchive:override.noarchive||false,
    googleBot:{index:allowIndex,follow:allowIndex,"max-image-preview":"large","max-snippet":-1,"max-video-preview":-1}},
-  openGraph:{type:info.type||"website",locale:config.language==="fa-IR"?"fa_IR":config.language.replace("-","_"),
+  openGraph:{type:info.type||"website",locale:(config.language||"fa-IR").replace("-","_"),
    siteName:company,url:canonical,title:fullTitle,description,images:imageData,
    ...(info.type==="article"&&info.createdAt?{publishedTime:info.createdAt,modifiedTime:info.modifiedAt}: {})},
   twitter:{card:image?"summary_large_image":"summary",title:fullTitle,description,images:image?[seoUrl(image,config)]:undefined,
