@@ -76,6 +76,7 @@ model StoreSettings {
   orderNoticeEmail String?
   seoTitle String?
   seoDescription String?
+  seoConfig Json @default("{}")
   homeSections Json @default("[]")
   editorialConfig Json?
   editorialDraft Json?
