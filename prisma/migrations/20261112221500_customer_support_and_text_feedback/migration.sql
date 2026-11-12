@@ -43,3 +43,9 @@ CREATE TABLE IF NOT EXISTS "SupportSettings" (
   "enabled" BOOLEAN NOT NULL DEFAULT TRUE,
   "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Clearly editable sample FAQs for the public demo.
+INSERT INTO "FaqItem" ("id","question","answer","published","createdAt","updatedAt") VALUES ('demo-faq-1','چطور سفارش را پیگیری کنم؟','بعد از ثبت سفارش، وضعیت آن را از بخش حساب کاربری بررسی کنید. برای راهنمایی بیشتر می‌توانید در چت آنلاین پیام بگذارید.',TRUE,NOW(),NOW()) ON CONFLICT ("id") DO NOTHING;
+INSERT INTO "FaqItem" ("id","question","answer","published","createdAt","updatedAt") VALUES ('demo-faq-2','چطور رنگ و سایز انتخاب کنم؟','در صفحه محصول، رنگ یا سایز موردنظر را انتخاب کنید. گزینه‌های ناموجود قابل انتخاب نیستند.',TRUE,NOW(),NOW()) ON CONFLICT ("id") DO NOTHING;
+INSERT INTO "FaqItem" ("id","question","answer","published","createdAt","updatedAt") VALUES ('demo-faq-3','زمان ارسال سفارش چقدر است؟','زمان تقریبی ارسال به روش ارسال و مقصد بستگی دارد و هنگام ثبت سفارش مشخص می‌شود.',TRUE,NOW(),NOW()) ON CONFLICT ("id") DO NOTHING;
+INSERT INTO "FaqItem" ("id","question","answer","published","createdAt","updatedAt") VALUES ('demo-faq-4','چطور درباره محصول سؤال بپرسم؟','دکمه گرد گفتگو در گوشه پایین صفحه را باز کنید و موضوع «مشاوره محصول» را انتخاب کنید.',TRUE,NOW(),NOW()) ON CONFLICT ("id") DO NOTHING;
