@@ -72,6 +72,13 @@ for file in paths:
         new[:,:,0]=np.where(cool,19+(H-115)/80*5,H)
         new[:,:,1]=np.where(cool,np.clip(65+S*.26,66,135),S)
         mask=np.where(cool,.90*central,mask)
+        # Cognac leather replaces red/salmon bags in the smoky collection.
+        # Shift the item material itself; never alter the UI container.
+        red=(H<18)&(S>90)&(V>60)&("bag" in file.name)
+        new[:,:,0]=np.where(red,18,new[:,:,0])
+        new[:,:,1]=np.where(red,136,new[:,:,1])
+        new[:,:,2]=np.where(red,np.clip(V*.72,0,255),new[:,:,2])
+        mask=np.maximum(mask,np.where(red,.94*central,0))
         # Neutral cream materials become soft ivory rather than cold blue.
         neutral=(S<44)&(V>126)&(V<244)
         new[:,:,0]=np.where(neutral,21,new[:,:,0])
