@@ -3,14 +3,15 @@ import {isEditionTwo,type EditionTwoContent} from "@/lib/edition-two-content";
 import {unstable_cache} from "next/cache";
 import {categories as demoCategories,demoProducts,IMAGE_FALLBACK,type Product} from "@/lib/catalog";
 import {showcasePhoto} from "@/lib/showcase-photos";
+import {readSeoConfig,type SeoConfig} from "@/lib/seo";
 
 export type StoreCategory={id:string;dbId?:string;name:string;description:string;image:string};
 export type StoreBanner={id:string;title:string;subtitle:string;imageUrl:string|null;linkUrl:string|null;target?:import("@/lib/edition-two-content").Destination|null};
 export type StorePage={id?:string;slug:string;title:string;body:string;seoTitle?:string|null;seoDescription?:string|null};
-export type StoreArticle={id?:string;slug:string;title:string;summary:string;body:string;coverUrl:string|null;createdAt:string};
+export type StoreArticle={id?:string;slug:string;title:string;summary:string;body:string;coverUrl:string|null;createdAt:string;updatedAt?:string;seoTitle?:string|null;seoDescription?:string|null};
 export type StoreShipping={id:string;title:string;cost:number;freeAbove:number|null;estimatedDays?:string|null};
 export type StoreReview={productId:string;author:string;rating:number;body:string;createdAt:string};
-export type StoreSettings={storeName:string;description:string;logoUrl?:string|null;contactEmail?:string|null;contactPhone?:string|null;address?:string|null;instagram?:string|null;seoTitle?:string|null;seoDescription?:string|null;editorialConfig?:EditionTwoContent|null;homeSections?:Array<{id:string;title:string;description:string;imageUrl?:string|null;mobileImageUrl?:string|null;secondaryImageUrl?:string|null;ctaLabel?:string;ctaHref?:string;layout?:"split"|"overlap"|"full";animation?:"mask"|"fade"|"slide";enabled:boolean;position:number}>};
+export type StoreSettings={storeName:string;description:string;logoUrl?:string|null;contactEmail?:string|null;contactPhone?:string|null;address?:string|null;instagram?:string|null;seoTitle?:string|null;seoDescription?:string|null;seoConfig?:SeoConfig;editorialConfig?:EditionTwoContent|null;homeSections?:Array<{id:string;title:string;description:string;imageUrl?:string|null;mobileImageUrl?:string|null;secondaryImageUrl?:string|null;ctaLabel?:string;ctaHref?:string;layout?:"split"|"overlap"|"full";animation?:"mask"|"fade"|"slide";enabled:boolean;position:number}>};
 export type StoreData={products:Product[];categories:StoreCategory[];settings:StoreSettings;banners:StoreBanner[];pages:StorePage[];articles:StoreArticle[];shipping:StoreShipping[];reviews:StoreReview[];live:boolean};
 const demo:StoreData={products:demoProducts,categories:demoCategories,settings:{storeName:"ESSENTIAL",description:"انتخاب‌هایی باکیفیت برای سلیقه‌های ماندگار؛ از لباس‌های خوش‌دوخت تا اکسسوری‌های ظریف."},banners:[],pages:[],articles:[],shipping:[],reviews:[],live:false};
 const cleanUrl=(url:unknown)=>typeof url==="string"&&(url.startsWith("https://")||url.startsWith("/images/"))?url:null;
@@ -56,6 +57,7 @@ export const loadStore=cache(async():Promise<StoreData>=>{
   const data=local?await getLocalBootstrap():await getPublicBootstrap(origin!);
   if(data.mode!=="live"||!Array.isArray(data.products)||!Array.isArray(data.categories))throw Error("Invalid catalog response");
   const cats:StoreCategory[]=data.categories.map(c=>({id:c.slug,dbId:c.id,name:c.name,description:c.description||"",image:showcasePhoto(cleanUrl(c.imageUrl))||showcasePhoto(demoCategories.find(x=>x.id===c.slug)?.image)||IMAGE_FALLBACK}));
+  const config=readSeoConfig(data.settings?.seoConfig);
   const products:Product[]=data.products.map(p=>{
    const original=demoProducts.find(x=>x.slug===p.slug);
    const imgs=Array.isArray(p.gallery)?p.gallery.map(cleanUrl).filter((x):x is string=>typeof x==="string"&&!oldDemoProductImage.has(x)):[];
@@ -65,13 +67,14 @@ export const loadStore=cache(async():Promise<StoreData>=>{
    return {id:String(p.id),slug:text(p.slug),name:text(p.name),description:text(p.description),
     subtitle:original?.subtitle||"",price:money(p.price),comparePrice:p.comparePrice==null?undefined:money(p.comparePrice),
     category:p.category?.slug||"other",categoryLabel:p.category?.name||"سایر محصولات",image:cover,
+    seoImageAlt:config.pages?.["/product/"+p.slug]?.imageAlt||undefined,
     gallery:[cover,...imgs.filter(image=>image!==cover)],inventory:money(p.inventory),featured:Boolean(p.featured),
     newArrival:Date.now()-new Date(p.createdAt).getTime()<30*86400000,
     sku:text(p.sku),specs:Object.fromEntries(Object.entries(attrs).map(([key,value])=>[key,text(value)])),
     variants:Array.isArray(p.variants)?p.variants.map(v=>({id:String(v.id),label:text(v.label),sku:text(v.sku),
       price:v.price==null?undefined:money(v.price),inventory:money(v.inventory)})):[]};
   });
-  return {live:true,products,categories:cats,settings:{...demo.settings,...data.settings,editorialConfig:isEditionTwo(data.settings?.editorialConfig)?data.settings?.editorialConfig:null},
+  return {live:true,products,categories:cats,settings:{...demo.settings,...data.settings,seoConfig:readSeoConfig(data.settings?.seoConfig),editorialConfig:isEditionTwo(data.settings?.editorialConfig)?data.settings?.editorialConfig:null},
    banners:Array.isArray(data.banners)?data.banners:[],pages:Array.isArray(data.pages)?data.pages:[],
    articles:Array.isArray(data.articles)?data.articles:[],shipping:Array.isArray(data.shipping)?data.shipping:[],
    reviews:Array.isArray(data.reviews)?data.reviews:[]};

@@ -18,7 +18,7 @@ export async function GET(){
   ]);
   const [pages,articles]=await Promise.all([
    db.page.findMany({where:{status:"PUBLISHED"},select:{id:true,slug:true,title:true,body:true,seoTitle:true,seoDescription:true}}),
-   db.article.findMany({where:{status:"PUBLISHED"},orderBy:{createdAt:"desc"},take:100,select:{id:true,slug:true,title:true,summary:true,body:true,coverUrl:true,createdAt:true,seoTitle:true,seoDescription:true}})
+   db.article.findMany({where:{status:"PUBLISHED"},orderBy:{createdAt:"desc"},take:100,select:{id:true,slug:true,title:true,summary:true,body:true,coverUrl:true,createdAt:true,updatedAt:true,seoTitle:true,seoDescription:true}})
   ]);
   const [shipping,reviews]=await Promise.all([
    db.shippingMethod.findMany({where:{enabled:true},orderBy:{title:"asc"}}),
@@ -29,7 +29,7 @@ export async function GET(){
    siteType:settings.siteType,themeId:settings.themeId,storeName:settings.storeName,
    description:settings.description,logoUrl:settings.logoUrl,contactEmail:settings.contactEmail,
    contactPhone:settings.contactPhone,address:settings.address,instagram:settings.instagram,
-   seoTitle:settings.seoTitle,seoDescription:settings.seoDescription,homeSections:settings.homeSections,
+   seoTitle:settings.seoTitle,seoDescription:settings.seoDescription,seoConfig:settings.seoConfig,homeSections:settings.homeSections,
    editorialConfig:settings.editorialConfig
   }:null;
   return NextResponse.json({mode:"live",settings:publicSettings,categories,products,banners,pages,articles,shipping,reviews},

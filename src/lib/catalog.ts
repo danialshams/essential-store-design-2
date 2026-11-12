@@ -2,7 +2,7 @@ import {showcasePhoto} from "@/lib/showcase-photos";
 export type Variant={id:string;label:string;sku?:string;price?:number;inventory:number};
 export type Product={
  id:string;slug:string;name:string;subtitle:string;description:string;price:number;
- comparePrice?:number;category:string;categoryLabel:string;image:string;
+ comparePrice?:number;category:string;categoryLabel:string;image:string;seoImageAlt?:string;
  gallery:string[];inventory:number;featured?:boolean;newArrival?:boolean;
  variants?:Variant[];sku:string;specs:Record<string,string>;
 };

@@ -3,6 +3,7 @@ import Link from "next/link";
 import {FrameImage} from "@/components/FrameImage";
 import {ArrowLeft, ArrowUpLeft, Headphones, PackageCheck, Truck, ShieldCheck} from "lucide-react";
 import {loadStore,type StoreCategory} from "@/lib/live-store";
+import {seoMeta,websiteSchema,jsonLd} from "@/lib/seo";
 import {ProductCard} from "@/components/ProductCard";
 import type {Product} from "@/lib/catalog";
 import {targetUrl} from "@/lib/edition-two-content";
@@ -41,6 +42,11 @@ function categoryImage(category:StoreCategory){
     "/images/linen-shirt.webp","/images/bag.webp","/images/sneakers.webp","/images/sunglasses.webp"
   ].includes(category.image);
   return isStock&&fallback?fallback:category.image||fallback||"/images/editorial/category-accessories.webp";
+}
+export async function generateMetadata(){
+ const store=await loadStore();
+ return seoMeta(store,"/",{title:store.settings.seoTitle||store.settings.storeName,
+  description:store.settings.seoDescription||store.settings.description});
 }
 export default async function Home(){
   const store=await loadStore();
@@ -262,7 +268,7 @@ benefits:(<>
       </section>
 </>),
 };
-return <EditorialMotion><div className="ed-home">
+return <EditorialMotion><div className="ed-home"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(websiteSchema(store))}}/>
  {sectionOrder.map(id=><Fragment key={id}>{homepageSections[id]}</Fragment>)}
  {(edition?[]:sections.slice(2)).map((section,index)=><section className={`ed-admin-story premium-container ${index%2?"is-reversed":""} ${section.layout?`ed-layout-${section.layout}`:""}`} data-motion={section.animation||"mask"} key={section.id}>
         {section.imageUrl&&<div className="ed-admin-story-picture" data-editorial-frame data-reveal={index%2?"left":"right"} data-image-wipe><FrameImage src={section.imageUrl} alt={section.title} fill sizes="(max-width: 760px) 100vw, 45vw" unoptimized={section.imageUrl.startsWith("http")}/>

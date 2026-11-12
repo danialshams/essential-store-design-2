@@ -5,7 +5,6 @@
 import {mkdir,copyFile,writeFile,access} from "node:fs/promises";
 import {entries} from "./curated-photo-manifest.mjs";
 import {join,dirname} from "node:path";
-import {existsSync} from "node:fs";
 const root=process.cwd();
 const photos={};;let fetched=0;let fallback=0;let retained=0;
 const queue=[...entries];const failures=[];
@@ -15,13 +14,9 @@ async function worker(){
   const [key,id,fallbackFile,width,height]=row;
   const target="/images/curated/"+key.replaceAll("/","-");
   const destination=join(root,"public"+target);
-  const paletteTarget="/images/palette-smoky-v1/"+key.replaceAll("/","-");
-  const finalTarget=existsSync(join(root,"public"+paletteTarget))?paletteTarget:target;
-  // Cache-busting path to the actual recolored product file, never a CSS overlay.
-  photos["/images/"+key]=finalTarget;
-  photos[target]=finalTarget;
   await mkdir(dirname(destination),{recursive:true});
   // Guaranteed usable even when no internet is available during a build.
+  photos["/images/"+key]=target;
   try{await access(destination);retained++;continue;}catch{/* prepare missing file */}
   await copyFile(join(root,"public/images",fallbackFile),destination);
   try{

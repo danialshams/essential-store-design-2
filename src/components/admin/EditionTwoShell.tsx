@@ -4,7 +4,7 @@ import {usePathname,useRouter} from "next/navigation";
 import {useEffect,useState,type ReactNode} from "react";
 import {LayoutDashboard,PanelsTopLeft,Package,FolderOpen,ShoppingBag,Users,TicketPercent,
  Truck,CreditCard,MessageSquare,NotebookPen,Images,FileText,Settings,LogOut,
- Menu,X,ArrowUpLeft,House,ChevronLeft,Image as ImageIcon} from "lucide-react";
+ Menu,X,ArrowUpLeft,House,ChevronLeft,Image as ImageIcon,Search} from "lucide-react";
 import {adminFetch,DEMO_MODE} from "@/lib/admin/demo-api";
 type NavItem={href:string;label:string;icon:typeof House};
 const groups:{name:string;items:NavItem[]}[]=[
@@ -25,7 +25,8 @@ const groups:{name:string;items:NavItem[]}[]=[
   {href:"/admin/payments",label:"تراکنش‌ها",icon:CreditCard},
   {href:"/admin/reviews",label:"دیدگاه‌ها",icon:MessageSquare}]},
  {name:"فروشگاه من",items:[
-  {href:"/admin/settings",label:"تنظیمات و سئو",icon:Settings}]}
+  {href:"/admin/settings",label:"تنظیمات فروشگاه",icon:Settings},
+  {href:"/admin/seo",label:"سئو و نمایش در گوگل",icon:Search}]}
 ];
 export function EditionTwoShell({children,email,publicAdmin=false}:{children:ReactNode;email:string;publicAdmin?:boolean}){
  const pathname=usePathname(),router=useRouter();

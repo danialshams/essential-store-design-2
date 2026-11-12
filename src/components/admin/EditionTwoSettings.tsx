@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useState,type FormEvent} from "react";
+import Link from "next/link";
 import {Save,Check,Store,Search,Phone,ShieldCheck} from "lucide-react";
 import {adminFetch,DEMO_MODE} from "@/lib/admin/demo-api";
 import {MediaField} from "@/components/admin/EditionTwoControls";
@@ -58,7 +59,7 @@ export function EditionTwoSettings(){
    <div className="ed2-surface ed2-setting-group"><header><Search size={19}/><div><h2>نمایش در گوگل (سئو)</h2><small>عنوان و توضیح پیش‌فرض صفحات فروشگاه</small></div></header>
     <TextInput label="عنوان سایت در جستجو" value={state.seoTitle||""} change={x=>update("seoTitle",x)}/>
     <TextInput label="توضیحات سایت در جستجو" value={state.seoDescription||""} change={x=>update("seoDescription",x)} large/>
-    <p className="ed2-hint">عنوان و توضیح هر محصول و مقاله در صفحه مدیریت همان مورد ثبت می‌شود.</p>
+    <p className="ed2-hint">برای متادیتای اختصاصی هر محصول، دسته و مقاله، عکس اشتراک‌گذاری، ساختار گوگل، دامنه اصلی و فایل‌های فنی به استودیوی SEO بروید.</p><Link href="/admin/seo" className="ed2-button ed2-button-outline">باز کردن استودیوی پیشرفته SEO <Search size={17}/></Link>
    </div>
    {error&&<p className="ed2-message error" role="alert">{error}</p>}
    {success&&<p className="ed2-message success" role="status">{success}</p>}

@@ -32,7 +32,7 @@ export function ProductCard({product,compact=false}:{product:Product,compact?:bo
  return <article className={`premium-product-card ${compact?"is-compact":""}`}>
   <div className="premium-product-media" onMouseEnter={()=>{if(window.matchMedia("(hover:hover)").matches)setHover(true)}} onMouseLeave={()=>setHover(false)}>
     <Link href={`/product/${product.slug}`} aria-label={`مشاهده ${product.name}`}>
-      <Image src={product.image} alt={product.name} width={660} height={825} loading="lazy" sizes="(max-width: 640px) 46vw, (max-width: 1050px) 31vw, 280px" unoptimized={product.image.startsWith("http")} className="premium-product-photo"/>
+      <Image src={product.image} alt={product.seoImageAlt||product.name} width={660} height={825} loading="lazy" sizes="(max-width: 640px) 46vw, (max-width: 1050px) 31vw, 280px" unoptimized={product.image.startsWith("http")} className="premium-product-photo"/>
       {alternate&&hover&&<Image src={alternate} alt={`${product.name}، نمای دوم`} width={660} height={825} loading="lazy" unoptimized={alternate.startsWith("http")} className="premium-product-photo premium-product-second"/>}
     </Link>
     {isNew?<span className="premium-product-label">جدید</span>:product.comparePrice&&product.comparePrice>product.price?<span className="premium-product-label">پیشنهاد ویژه</span>:null}

@@ -24,7 +24,9 @@ export async function POST(req:NextRequest){
   if(!format)return NextResponse.json({error:"فقط JPG، PNG یا WebP مجاز است"},{status:400});
   const s3=new S3Client({region:process.env.S3_REGION||"auto",endpoint:process.env.S3_ENDPOINT,forcePathStyle:true,
     credentials:{accessKeyId:process.env.S3_ACCESS_KEY_ID,secretAccessKey:process.env.S3_SECRET_ACCESS_KEY}});
-  const key="media/"+new Date().toISOString().slice(0,7)+"/"+randomUUID()+"."+format.ext;
+  const baseName=file.name.replace(/\.[^.]+$/,"").normalize("NFKC")
+   .toLowerCase().replace(/[^\\p{L}\\p{N}]+/gu,"-").replace(/^-+|-+$/g,"").slice(0,68)||"image";
+  const key="media/"+new Date().toISOString().slice(0,7)+"/"+baseName+"-"+randomUUID().slice(0,8)+"."+format.ext;
   try{
     await s3.send(new PutObjectCommand({Bucket:process.env.S3_BUCKET,Key:key,Body:bytes,ContentType:format.type,CacheControl:"public,max-age=31536000,immutable"}));
     const url=process.env.S3_PUBLIC_URL.replace(/\/$/,"")+"/"+key;
