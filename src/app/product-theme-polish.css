@@ -38,3 +38,53 @@
 @media(hover:none){.premium-product-media .premium-product-fav{opacity:1!important;background:#f8f6f3e8!important}}
 @media(max-width:760px){.premium-product-info{padding-top:10px}.premium-product-price{min-height:51px;display:flex;align-items:flex-start;justify-content:center;flex-direction:column;gap:2px}.premium-product-price del{font-size:10px}.ed2-sale-product>.ed2-sale-percent{top:8px;right:8px;padding:5px 7px}.ed2-sale-section-title>div>span:first-child{flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.premium-product-photo,.premium-product-card,.ed2-sale-product{transition:none!important}}
+
+/* Final brand-media sizing: stable section-specific canvases, no letterboxing,
+ * no layout jump when photography loads, no hue-changing filters. */
+.ed-hero-minimal .ed-hero-slide{inset:0!important;overflow:hidden!important}
+.ed-hero-minimal .ed-hero-slide .ed-hero-photo{
+ width:100%!important;height:100%!important;object-fit:cover!important;
+ object-position:50% 45%!important;filter:none!important;display:block;
+}
+.ed-hero-minimal .ed-hero-slide:nth-child(2) .ed-hero-photo{object-position:50% 43%!important}
+.ed-hero-minimal .ed-hero-slide:nth-child(3) .ed-hero-photo{object-position:50% 47%!important}
+.ed-hero-minimal .ed-hero-slide .ed-hero-mobile-photo{display:none!important}
+.ed-home .ed-categories-grid{align-items:stretch!important}
+.ed-home .ed-categories-grid .ed-category-tile{
+ aspect-ratio:6/7!important;height:auto!important;overflow:hidden!important;
+}
+.ed-home .ed-categories-grid .ed-category-image-stage{inset:0!important}
+.ed-home .ed-categories-grid .ed-category-photo,
+.ed-home .ed-story-photo,.ed-home .ed-story-inset img,
+.ed-home .ed-journal-photo img,.ed-home .ed-mobile-chapter-photo img,
+.ed-home .ed-chapter-frame img,.ed-home .ed-admin-story-picture>img,
+.ed-home .ed-admin-story-detail img,.ed-home .ed-secondary-banner-image img,
+.ed-home .ed-lookbook-photo{
+ width:100%!important;height:100%!important;object-fit:cover!important;
+ object-position:50% 45%!important;background:transparent!important;
+}
+.ed-home .ed-story-collage .ed-story-visual{aspect-ratio:3/4!important;overflow:hidden!important}
+.ed-home .ed-story-inset{aspect-ratio:1/1!important;overflow:hidden!important}
+.ed-home .ed-journal-photo{aspect-ratio:7/5!important;overflow:hidden!important}
+.ed-home .ed-mobile-chapter-photo,.ed-home .ed-chapter-frame{aspect-ratio:3/4!important;overflow:hidden!important}
+.ed-home .ed-admin-story-picture{aspect-ratio:4/5!important;overflow:hidden!important}
+.ed-home .ed-admin-story-detail{aspect-ratio:1/1!important;overflow:hidden!important}
+.ed-home .ed-secondary-banner-image{aspect-ratio:4/3!important;overflow:hidden!important}
+.ed-home .ed-full-bleed .ed-lookbook-media{aspect-ratio:7/8!important;overflow:hidden!important}
+.ed-home .premium-product-media,.premium-product-media{aspect-ratio:4/5!important}
+.ed-home .premium-product-photo,.premium-product-photo{object-fit:cover!important;object-position:center!important}
+@media(min-width:761px){
+ .ed-hero-minimal .ed-hero-slide .ed-hero-desktop-photo{display:block!important}
+ .ed-hero-minimal .ed-hero-slide .ed-hero-mobile-photo{display:none!important}
+}
+@media(max-width:760px){
+ .ed-hero-minimal .ed-hero-visual{height:clamp(360px,54svh,540px)!important;overflow:hidden!important}
+ .ed-hero-minimal .ed-hero-slide .ed-hero-desktop-photo{display:none!important}
+ .ed-hero-minimal .ed-hero-slide .ed-hero-mobile-photo{
+  display:block!important;object-fit:cover!important;object-position:50% 34%!important;
+ }
+ .ed-hero-minimal .ed-hero-slide:nth-child(2) .ed-hero-mobile-photo{object-position:50% 36%!important}
+ .ed-hero-minimal .ed-hero-slide:nth-child(3) .ed-hero-mobile-photo{object-position:50% 44%!important}
+ .ed-home .ed-categories-grid .ed-category-tile{aspect-ratio:6/7!important}
+ .ed-home .ed-full-bleed .ed-lookbook-media{aspect-ratio:4/5!important}
+}
