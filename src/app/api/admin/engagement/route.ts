@@ -20,11 +20,11 @@ export async function GET(req:NextRequest){
   if(view==="faq")return reply({items:await db.faqItem.findMany({orderBy:{createdAt:"desc"},take:100})});
   if(view==="settings")return reply({item:await db.supportSettings.findUnique({where:{id:"main"}})});
   if(view==="threads"||view==="thread"){
-   // A temporarily public demo editor must never disclose real visitor chats.
-   if(publicOpenEditorEnabled())return reply({error:"گفتگوهای واقعی فقط برای مدیر احرازشده قابل مشاهده است."},403);
-   if(view==="threads")return reply({items:await db.supportThread.findMany({orderBy:{updatedAt:"desc"},take:80,select:{id:true,visitorName:true,subject:true,status:true,updatedAt:true,_count:{select:{messages:true}}}})});
+   // Public demo editor can see only new demo-tagged chats, never real visitor histories.
+   const demoScope=publicOpenEditorEnabled()?{tokenHash:{startsWith:"t"}}:{};
+   if(view==="threads")return reply({items:await db.supportThread.findMany({where:demoScope,orderBy:{updatedAt:"desc"},take:80,select:{id:true,visitorName:true,subject:true,status:true,updatedAt:true,_count:{select:{messages:true}}}})});
    const id=text(req.nextUrl.searchParams.get("id"),80);
-   const thread=await db.supportThread.findUnique({where:{id},select:{id:true,visitorName:true,subject:true,status:true}});
+   const thread=await db.supportThread.findFirst({where:{id,...demoScope},select:{id:true,visitorName:true,subject:true,status:true}});
    if(!thread)return reply({error:"گفتگو یافت نشد."},404);
    const messages=await db.supportMessage.findMany({where:{threadId:id},orderBy:{createdAt:"asc"},take:150,select:{id:true,role:true,body:true,createdAt:true}});
    return reply({thread,messages});
@@ -67,8 +67,8 @@ export async function POST(req:NextRequest){
    return reply({success:true});
   }
   if(action==="chatReply"||action==="chatStatus"){
-   if(publicOpenEditorEnabled())return reply({error:"پاسخ به پیام مشتری نیازمند ورود مدیر است."},403);
-   const thread=await db.supportThread.findUnique({where:{id}});
+   const demoScope=publicOpenEditorEnabled()?{tokenHash:{startsWith:"t"}}:{};
+   const thread=await db.supportThread.findFirst({where:{id,...demoScope}});
    if(!thread)return reply({error:"گفتگو پیدا نشد."},404);
    if(action==="chatStatus"){
     const status=text(data.status,20);
