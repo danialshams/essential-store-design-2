@@ -12,10 +12,10 @@ const realPhotoIds={
   // Distinct desktop landscapes and mobile portraits; never upscale a narrow
   // 2:3 source into the full-width hero, and never alter the garment colors.
   "editorial/hero-stage-1.webp": 14039947,
-  "editorial/hero-stage-2.webp": 9142805,
+  "editorial/hero-stage-2.webp": 1205706,
   "editorial/hero-stage-3.webp": 13018960,
   "editorial/hero-stage-1-mobile.webp": 14039947,
-  "editorial/hero-stage-2-mobile.webp": 9142805,
+  "editorial/hero-stage-2-mobile.webp": 1205706,
   "editorial/hero-stage-3-mobile.webp": 13018960,
   "editorial/chapter-detail.webp": 11332384,
   "editorial/hero-main.webp": 36327188,
