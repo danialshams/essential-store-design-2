@@ -47,7 +47,7 @@ async function worker(){
   const stockId=realPhotoIds[key];
   const legacyPath="/images/curated/"+key.replaceAll("/","-");
   const oldRecolorPath="/images/palette-smoky-v1/"+key.replaceAll("/","-");
-  const finalPath=stockId?"/images/real-photo-v2/"+key.replaceAll("/","-").replace(/\\.webp$/,".jpg"):legacyPath;
+  const finalPath=stockId?"/images/real-photo-v2/"+key.replaceAll("/","-").replace(/\.webp$/,".jpg"):legacyPath;
   // Both the canonical template URL and any previously published recolored URL resolve to a REAL photograph.
   photos["/images/"+key]=finalPath;
   photos[legacyPath]=finalPath;
@@ -86,8 +86,8 @@ async function worker(){
  }
 }
 await Promise.all(Array.from({length:5},()=>worker()));
-const output="/** AUTO-GENERATED at build time. New natural photography; no recoloring. */\\n"+
- "export const generatedShowcasePhotos:Record<string,string>="+JSON.stringify(photos,null,1)+";\\n";
+const output="/** AUTO-GENERATED at build time. New natural photography; no recoloring. */\n"+
+ "export const generatedShowcasePhotos:Record<string,string>="+JSON.stringify(photos,null,1)+";\n";
 await writeFile(join(root,"src/lib/generated-showcase-photos.ts"),output);
 console.log("[real photography] "+fetched+" downloaded; "+retained+" retained; "+fallback+" original photo fallbacks");
 if(failures.length)console.warn("[real photography] missing photo sources: "+failures.join("; "));
