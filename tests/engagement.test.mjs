@@ -36,7 +36,11 @@ test("Responsive support bubble and scent-specific layout have accessible contro
  assert.match(faq,/action:"faq"/);
 });
 
-test("Guest demo editor cannot browse real visitor conversation histories",()=>{
+test("Public demo chat is tagged and hidden from real customer conversation views",()=>{
  const route=read("src/app/api/admin/engagement/route.ts");
- assert.match(route,/publicOpenEditorEnabled\(\)/);
+ const store=read("src/app/api/store/engagement/route.ts");
+ assert.match(route,/tokenHash:\{startsWith:"t"\}/);
+ assert.match(route,/findFirst\(\{where:\{id,\.\.\.demoScope\}/);
+ assert.match(store,/demoDigest\(secret\)/);
+ assert.match(store,/tokenHash:\{in:\[digest\(secret\),demoDigest\(secret\)\]\}/);
 });

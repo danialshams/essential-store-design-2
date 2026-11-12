@@ -1,15 +1,18 @@
 import {NextRequest,NextResponse} from "next/server";
 import {createHash,randomBytes} from "node:crypto";
 import {db} from "@/lib/admin/db";
+import {publicOpenEditorEnabled} from "@/lib/admin/security";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const response=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"Cache-Control":"private, no-store"}});
 const value=(data:unknown,max:number)=>typeof data==="string"?data.trim().slice(0,max):"";
 const digest=(key:string)=>createHash("sha256").update(key).digest("hex");
+// Marker t is outside hexadecimal SHA-256; it separates temporary demo chats without a database migration.
+const demoDigest=(key:string)=>"t"+digest(key).slice(1);
 async function verifiedThread(req:NextRequest,id:string){
  const secret=req.headers.get("x-support-token")||"";
  if(!/^[\w-]{30,100}$/.test(secret)||!id)return null;
- return db.supportThread.findFirst({where:{id,tokenHash:digest(secret)}});
+ return db.supportThread.findFirst({where:{id,tokenHash:{in:[digest(secret),demoDigest(secret)]}}});
 }
 export async function GET(req:NextRequest){
  const type=req.nextUrl.searchParams.get("type");
@@ -64,7 +67,7 @@ export async function POST(req:NextRequest){
    const settings=await db.supportSettings.findUnique({where:{id:"main"},select:{enabled:true}});
    if(settings?.enabled===false)return response({error:"چت در حال حاضر غیرفعال است."},403);
    const secret=randomBytes(32).toString("base64url");
-   const thread=await db.supportThread.create({data:{visitorName:name,subject,tokenHash:digest(secret)}});
+   const thread=await db.supportThread.create({data:{visitorName:name,subject,tokenHash:publicOpenEditorEnabled()?demoDigest(secret):digest(secret)}});
    return response({threadId:thread.id,token:secret},201);
   }
   if(action==="message"){
