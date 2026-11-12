@@ -90,7 +90,17 @@ export default async function Home(){
    "/images/editorial/chapter-detail.webp","/images/editorial/story-detail.webp",
    "/images/editorial/campaign.webp","/images/editorial/story-portrait.webp",
    "/images/editorial/hero-main.webp","/images/editorial/hero-mobile.webp",
-   "/images/editorial/category-bags.webp"
+   "/images/editorial/category-bags.webp",
+   // Template photo URLs may already be normalized by an earlier build.
+   // Recognize just the seeded images; custom merchant photos are preserved.
+   "/images/real-photo-v3/editorial-chapter-detail.jpg",
+   "/images/real-photo-v3/editorial-story-detail.jpg",
+   "/images/real-photo-v3/editorial-campaign.jpg",
+   "/images/real-photo-v3/editorial-story-portrait.jpg",
+   "/images/real-photo-v3/editorial-hero-main.jpg",
+   "/images/real-photo-v3/editorial-hero-mobile.jpg",
+   "/images/real-photo-v3/editorial-category-bags.jpg",
+   "/images/real-photo-v4/editorial-story-portrait.jpg"
   ]);
   const heroArt=(raw:string|null|undefined,index:number,mobile=false)=>{
    const base=mobile?"-mobile":"";
