@@ -9,12 +9,20 @@ import {entries} from "./curated-photo-manifest.mjs";
 import {join,dirname} from "node:path";
 
 const realPhotoIds={
+  // Distinct desktop landscapes and mobile portraits; never upscale a narrow
+  // 2:3 source into the full-width hero, and never alter the garment colors.
+  "editorial/hero-stage-1.webp": 14039947,
+  "editorial/hero-stage-2.webp": 9142805,
+  "editorial/hero-stage-3.webp": 13018960,
+  "editorial/hero-stage-1-mobile.webp": 14039947,
+  "editorial/hero-stage-2-mobile.webp": 9142805,
+  "editorial/hero-stage-3-mobile.webp": 13018960,
   "editorial/chapter-detail.webp": 11332384,
   "editorial/hero-main.webp": 36327188,
   "editorial/hero-mobile.webp": 36829225,
   "editorial/story-detail.webp": 27174573,
   "editorial/campaign.webp": 8484082,
-  "editorial/story-portrait.webp": 36976479,
+  "editorial/story-portrait.webp": 31030439,
   "editorial/chapter-form.webp": 36829225,
   "editorial/category-clothing.webp": 8483478,
   "editorial/category-bags.webp": 22434767,
@@ -31,7 +39,7 @@ const realPhotoIds={
   "products/bag-main.webp": 22434767,
   "products/sneakers-main.webp": 7193626,
   "products/shirt-blue.webp": 22441291,
-  "products/watch-main.webp": 13273982,
+  "products/watch-main.webp": 35806970,
   "products/bag-everyday.webp": 27174573,
   "products/sneakers-urban.webp": 1456733,
   "products/shirt-beige.webp": 22441297,
@@ -47,7 +55,13 @@ async function worker(){
   const stockId=realPhotoIds[key];
   const legacyPath="/images/curated/"+key.replaceAll("/","-");
   const oldRecolorPath="/images/palette-smoky-v1/"+key.replaceAll("/","-");
-  const finalPath=stockId?"/images/real-photo-v3/"+key.replaceAll("/","-").replace(/\.webp$/,".jpg"):legacyPath;
+  const newPremiumPhotos=new Set([
+   "editorial/story-portrait.webp","products/watch-main.webp",
+   "editorial/hero-stage-1.webp","editorial/hero-stage-2.webp","editorial/hero-stage-3.webp",
+   "editorial/hero-stage-1-mobile.webp","editorial/hero-stage-2-mobile.webp","editorial/hero-stage-3-mobile.webp"
+  ]);
+  const edition=newPremiumPhotos.has(key)?"v4":"v3";
+  const finalPath=stockId?"/images/real-photo-"+edition+"/"+key.replaceAll("/","-").replace(/\.webp$/,".jpg"):legacyPath;
   // Both the canonical template URL and any previously published recolored URL resolve to a REAL photograph.
   photos["/images/"+key]=finalPath;
   photos[legacyPath]=finalPath;
