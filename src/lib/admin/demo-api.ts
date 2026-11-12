@@ -86,6 +86,29 @@ export async function adminFetch(input:RequestInfo|URL,init?:RequestInit):Promis
    editionTwoPublished=editionTwoDraft;editionTwoDraft=undefined;return response({published:true})}
  }
 
+  if(path==="/api/admin/seo"){
+  if(method==="GET"){
+   const s=data.settings;
+   const items=[
+    {path:"/",title:"صفحه اصلی",imageUrl:null},
+    {path:"/products",title:"همه محصولات",imageUrl:null},
+    {path:"/blog",title:"مقالات و آموزش",imageUrl:null},
+    ...data.records.products.filter(p=>p.status==="ACTIVE").map(p=>({path:"/product/"+p.slug,title:String(p.name),imageUrl:p.coverUrl||null})),
+    ...data.records.categories.map(p=>({path:"/category/"+p.slug,title:String(p.name),imageUrl:p.imageUrl||null})),
+    ...data.records.articles.filter(p=>p.status==="PUBLISHED").map(p=>({path:"/blog/"+p.slug,title:String(p.title),imageUrl:p.coverUrl||null})),
+    ...data.records.pages.filter(p=>p.status==="PUBLISHED").map(p=>({path:"/info/"+p.slug,title:String(p.title),imageUrl:null}))
+   ];
+   return response({seoTitle:s.seoTitle||"",seoDescription:s.seoDescription||"",
+    seoConfig:s.seoConfig||{},storeName:s.storeName,items});
+  }
+  if(method==="PUT"){
+   const body=JSON.parse(String(init?.body||"{}"));
+   if(body.seoConfig?.indexSite&&!body.seoConfig.siteUrl)return response({error:"ابتدا دامنه اصلی را ثبت کنید."},400);
+   data.settings={...data.settings,seoTitle:body.seoTitle||"",seoDescription:body.seoDescription||"",seoConfig:body.seoConfig||{}};
+   return response({saved:true,seoTitle:data.settings.seoTitle,seoDescription:data.settings.seoDescription,
+    seoConfig:data.settings.seoConfig});
+  }
+ }
  if(path==="/api/admin/upload")return response({error:"آپلود در دمو غیرفعال است. از آدرس تصویر استفاده کن."},400);
  if(path==="/api/admin/settings"){
   if(method==="GET")return response({settings:data.settings});
