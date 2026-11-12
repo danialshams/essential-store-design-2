@@ -57,6 +57,7 @@ export const loadStore=cache(async():Promise<StoreData>=>{
   const data=local?await getLocalBootstrap():await getPublicBootstrap(origin!);
   if(data.mode!=="live"||!Array.isArray(data.products)||!Array.isArray(data.categories))throw Error("Invalid catalog response");
   const cats:StoreCategory[]=data.categories.map(c=>({id:c.slug,dbId:c.id,name:c.name,description:c.description||"",image:showcasePhoto(cleanUrl(c.imageUrl))||showcasePhoto(demoCategories.find(x=>x.id===c.slug)?.image)||IMAGE_FALLBACK}));
+  const config=readSeoConfig(data.settings?.seoConfig);
   const products:Product[]=data.products.map(p=>{
    const original=demoProducts.find(x=>x.slug===p.slug);
    const imgs=Array.isArray(p.gallery)?p.gallery.map(cleanUrl).filter((x):x is string=>typeof x==="string"&&!oldDemoProductImage.has(x)):[];
@@ -66,6 +67,7 @@ export const loadStore=cache(async():Promise<StoreData>=>{
    return {id:String(p.id),slug:text(p.slug),name:text(p.name),description:text(p.description),
     subtitle:original?.subtitle||"",price:money(p.price),comparePrice:p.comparePrice==null?undefined:money(p.comparePrice),
     category:p.category?.slug||"other",categoryLabel:p.category?.name||"سایر محصولات",image:cover,
+    seoImageAlt:config.pages?.["/product/"+p.slug]?.imageAlt||undefined,
     gallery:[cover,...imgs.filter(image=>image!==cover)],inventory:money(p.inventory),featured:Boolean(p.featured),
     newArrival:Date.now()-new Date(p.createdAt).getTime()<30*86400000,
     sku:text(p.sku),specs:Object.fromEntries(Object.entries(attrs).map(([key,value])=>[key,text(value)])),
