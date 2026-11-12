@@ -7,13 +7,20 @@ export const dynamic="force-dynamic";
 /** Public presentation data only. Never expose users, orders or coupon secrets. */
 export async function GET(){
  try{
-  const [settings,categories,products,banners,pages,articles,shipping,reviews]=await Promise.all([
+  // Limit per-request DB concurrency to stay below small serverless pools.
+  const [settings,categories]=await Promise.all([
    db.storeSettings.findUnique({where:{id:"main"}}),
-   db.category.findMany({orderBy:{name:"asc"}}),
+   db.category.findMany({orderBy:{name:"asc"}})
+  ]);
+  const [products,banners]=await Promise.all([
    db.product.findMany({where:{status:"ACTIVE"},orderBy:{createdAt:"desc"},take:600,include:{category:{select:{name:true,slug:true}},variants:true}}),
-   db.banner.findMany({where:{active:true},orderBy:{position:"asc"}}),
+   db.banner.findMany({where:{active:true},orderBy:{position:"asc"}})
+  ]);
+  const [pages,articles]=await Promise.all([
    db.page.findMany({where:{status:"PUBLISHED"},select:{id:true,slug:true,title:true,body:true,seoTitle:true,seoDescription:true}}),
-   db.article.findMany({where:{status:"PUBLISHED"},orderBy:{createdAt:"desc"},take:100,select:{id:true,slug:true,title:true,summary:true,body:true,coverUrl:true,createdAt:true,seoTitle:true,seoDescription:true}}),
+   db.article.findMany({where:{status:"PUBLISHED"},orderBy:{createdAt:"desc"},take:100,select:{id:true,slug:true,title:true,summary:true,body:true,coverUrl:true,createdAt:true,seoTitle:true,seoDescription:true}})
+  ]);
+  const [shipping,reviews]=await Promise.all([
    db.shippingMethod.findMany({where:{enabled:true},orderBy:{title:"asc"}}),
    db.review.findMany({where:{status:"APPROVED"},orderBy:{createdAt:"desc"},take:400,select:{productId:true,author:true,rating:true,body:true,createdAt:true}})
   ]);
