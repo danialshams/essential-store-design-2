@@ -5,6 +5,7 @@ import {ShopProvider} from "@/components/ShopProvider";
 import {Header} from "@/components/Header";
 import {BottomNav} from "@/components/BottomNav";
 import {Footer} from "@/components/Footer";
+import {SupportChat} from "@/components/SupportChat";
 import {SiteMotion} from "@/components/SiteMotion";
 import type {StoreData} from "@/lib/live-store";
 /** Same deployment hosts both the visual storefront and its private /admin UI.
@@ -12,5 +13,5 @@ import type {StoreData} from "@/lib/live-store";
 export function StoreChrome({children,store}:{children:ReactNode;store:StoreData}){
  const pathname=usePathname()||"/";
  if(pathname.startsWith("/admin")||pathname==="/login")return <>{children}</>;
- return <ShopProvider store={store}><Header/><main id="main-content"><SiteMotion>{children}</SiteMotion></main><Footer/><BottomNav/></ShopProvider>;
+ return <ShopProvider store={store}><Header/><main id="main-content"><SiteMotion>{children}</SiteMotion></main><Footer/><BottomNav/><SupportChat/></ShopProvider>;
 }

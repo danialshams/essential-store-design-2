@@ -18,6 +18,7 @@ import "./editorial-quality-pass.css";
 import "./editorial-precision.css";
 import "./visual-upgrade.css";
 import "./product-theme-polish.css";
+import "./engagement.css";
 export async function generateMetadata():Promise<Metadata>{
  const store=await loadStore();
  const base=seoMeta(store,"/",{title:store.settings.seoTitle||store.settings.storeName,

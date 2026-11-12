@@ -22,7 +22,7 @@ export async function GET(){
   ]);
   const [shipping,reviews]=await Promise.all([
    db.shippingMethod.findMany({where:{enabled:true},orderBy:{title:"asc"}}),
-   db.review.findMany({where:{status:"APPROVED"},orderBy:{createdAt:"desc"},take:400,select:{productId:true,author:true,rating:true,body:true,createdAt:true}})
+   db.review.findMany({where:{status:"APPROVED"},orderBy:{createdAt:"desc"},take:400,select:{productId:true,author:true,rating:true,body:true,adminReply:true,createdAt:true}})
   ]);
   if(settings?.siteType==="CORPORATE")return NextResponse.json({error:"Storefront is not enabled"},{status:404});
   const publicSettings=settings?{

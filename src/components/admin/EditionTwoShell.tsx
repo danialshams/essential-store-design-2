@@ -4,7 +4,7 @@ import {usePathname,useRouter} from "next/navigation";
 import {useEffect,useState,type ReactNode} from "react";
 import {LayoutDashboard,PanelsTopLeft,Package,FolderOpen,ShoppingBag,Users,TicketPercent,
  Truck,CreditCard,MessageSquare,NotebookPen,Images,FileText,Settings,LogOut,
- Menu,X,ArrowUpLeft,House,ChevronLeft,Image as ImageIcon,Search} from "lucide-react";
+ Menu,X,ArrowUpLeft,House,ChevronLeft,Image as ImageIcon,Search,MessageCircle,HelpCircle} from "lucide-react";
 import {adminFetch,DEMO_MODE} from "@/lib/admin/demo-api";
 type NavItem={href:string;label:string;icon:typeof House};
 const groups:{name:string;items:NavItem[]}[]=[
@@ -23,7 +23,9 @@ const groups:{name:string;items:NavItem[]}[]=[
   {href:"/admin/customers",label:"مشتریان",icon:Users},
   {href:"/admin/shipping",label:"حمل‌ونقل",icon:Truck},
   {href:"/admin/payments",label:"تراکنش‌ها",icon:CreditCard},
-  {href:"/admin/reviews",label:"دیدگاه‌ها",icon:MessageSquare}]},
+  {href:"/admin/reviews",label:"دیدگاه‌ها",icon:MessageSquare},
+  {href:"/admin/support",label:"چت آنلاین و پاسخ‌گویی",icon:MessageCircle},
+  {href:"/admin/faq",label:"سؤال‌های متداول",icon:HelpCircle}]},
  {name:"فروشگاه من",items:[
   {href:"/admin/settings",label:"تنظیمات فروشگاه",icon:Settings},
   {href:"/admin/seo",label:"سئو و نمایش در گوگل",icon:Search}]}

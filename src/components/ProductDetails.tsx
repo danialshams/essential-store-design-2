@@ -7,6 +7,7 @@ import type {Product} from "@/lib/catalog";
 import {toman,numberFa} from "@/lib/catalog";
 import {useShop} from "@/components/ShopProvider";
 import {ProductCard} from "@/components/ProductCard";
+import {ReviewBox} from "@/components/ReviewBox";
 
 export function ProductDetails({product}:{product:Product}){
  const {store,add,isFavorite,toggleFavorite,notify}=useShop();
@@ -17,7 +18,11 @@ export function ProductDetails({product}:{product:Product}){
  const selected=product.variants?.find(v=>v.id===variantId);
  const price=selected?.price??product.price;
  const inventory=selected?selected.inventory:product.inventory;
- const related=store.products.filter(p=>p.category===product.category&&p.id!==product.id).slice(0,4);
+ const related=store.products.filter(p=>p.category===product.category&&p.id!==product.id&&(p.inventory>0||!!p.variants?.some(v=>v.inventory>0))).sort((a,b)=>{
+  const aSpec=Object.values(a.specs||{}).filter(x=>Object.values(product.specs||{}).includes(x)).length;
+  const bSpec=Object.values(b.specs||{}).filter(x=>Object.values(product.specs||{}).includes(x)).length;
+  return bSpec-aSpec;
+ }).slice(0,4);
  const reviews=store.reviews.filter(r=>r.productId===product.id);
  function handleAdd(){add(product,variantId||undefined,quantity)}
  async function share(){try{await navigator.clipboard.writeText(window.location.href);notify("لینک محصول کپی شد")}catch{notify("امکان کپی لینک وجود ندارد")}}
@@ -32,7 +37,7 @@ export function ProductDetails({product}:{product:Product}){
       <div className="product-advantages"><div><Truck size={19}/>ارسال سریع سفارش</div><div><ShieldCheck size={19}/>ضمانت اصالت کالا</div><div><RotateCcw size={19}/>امکان درخواست مرجوعی طبق شرایط</div></div>
     </div>
    </div>
-   <section className="product-extra"><div className="product-tabs" role="tablist" aria-label="اطلاعات محصول"><button role="tab" aria-selected={tab==="description"} className={tab==="description"?"active":""} onClick={()=>setTab("description")}>توضیحات محصول</button><button role="tab" aria-selected={tab==="specs"} className={tab==="specs"?"active":""} onClick={()=>setTab("specs")}>مشخصات</button><button role="tab" aria-selected={tab==="reviews"} className={tab==="reviews"?"active":""} onClick={()=>setTab("reviews")}>دیدگاه‌ها</button></div><div className="product-tab-panel" role="tabpanel">{tab==="description"?<p>{product.description}</p>:tab==="specs"?<dl className="specs-table">{Object.entries(product.specs).map(([key,val])=><div key={key}><dt>{key}</dt><dd>{val}</dd></div>)}</dl>:<div className="reviews-placeholder">{reviews.length?reviews.map((review,i)=><div key={i} style={{textAlign:"right",padding:"12px 0",borderBottom:"1px solid #eee"}}><strong>{review.author} — {numberFa(review.rating)} از ۵</strong><p>{review.body}</p></div>):<><Package size={31}/><h3>هنوز دیدگاهی منتشر نشده</h3><p>دیدگاه‌های تأییدشده از پنل مدیریت نمایش داده می‌شوند.</p></>}</div>}</div></section>
+   <section className="product-extra"><div className="product-tabs" role="tablist" aria-label="اطلاعات محصول"><button role="tab" aria-selected={tab==="description"} className={tab==="description"?"active":""} onClick={()=>setTab("description")}>توضیحات محصول</button><button role="tab" aria-selected={tab==="specs"} className={tab==="specs"?"active":""} onClick={()=>setTab("specs")}>مشخصات</button><button role="tab" aria-selected={tab==="reviews"} className={tab==="reviews"?"active":""} onClick={()=>setTab("reviews")}>دیدگاه‌ها</button></div><div className="product-tab-panel" role="tabpanel">{tab==="description"?<p>{product.description}</p>:tab==="specs"?<dl className="specs-table">{Object.entries(product.specs).map(([key,val])=><div key={key}><dt>{key}</dt><dd>{val}</dd></div>)}</dl>:<div className="reviews-placeholder"><ReviewBox productId={product.id} initial={reviews}/></div>}</div></section>
    {related.length>0&&<section className="related-section"><div className="section-heading"><h2>محصولات مرتبط</h2><Link href={`/category/${product.category}`}>مشاهده همه <ChevronLeft size={17}/></Link></div><div className="product-grid">{related.map(p=><ProductCard key={p.id} product={p}/>)}</div></section>}
    <div className="mobile-product-buy"><span>{toman(price)}</span><button disabled={inventory<=0} onClick={handleAdd} className="button button-primary">افزودن به سبد <ShoppingCart size={17}/></button></div>
  </div>;

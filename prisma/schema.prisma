@@ -223,8 +223,9 @@ model Review {
   productId String
   customerId String?
   author String
-  rating Int
+  rating Int @default(0)
   body String
+  adminReply String?
   status ReviewStatus @default(PENDING)
   createdAt DateTime @default(now())
   product Product @relation(fields:[productId],references:[id],onDelete:Cascade)
@@ -312,4 +313,46 @@ model MediaAsset {
   size Int
   createdAt DateTime @default(now())
   @@index([createdAt])
+}
+
+
+model SupportThread {
+  id String @id @default(cuid())
+  visitorName String
+  subject String
+  tokenHash String @unique
+  status String @default("OPEN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  messages SupportMessage[]
+  @@index([status,updatedAt])
+}
+
+model SupportMessage {
+  id String @id @default(cuid())
+  threadId String
+  role String
+  body String
+  createdAt DateTime @default(now())
+  thread SupportThread @relation(fields:[threadId],references:[id],onDelete:Cascade)
+  @@index([threadId,createdAt])
+}
+
+model FaqItem {
+  id String @id @default(cuid())
+  question String
+  answer String?
+  published Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([published,updatedAt])
+}
+
+model SupportSettings {
+  id String @id @default("main")
+  welcome String @default("سلام! چطور می‌توانیم کمکتان کنیم؟")
+  expectedResponse String @default("پشتیبان به‌محض امکان پاسخ می‌دهد.")
+  workingHours String @default("ساعات پاسخ‌گویی را مدیر فروشگاه تعیین می‌کند.")
+  enabled Boolean @default(true)
+  updatedAt DateTime @updatedAt
 }
