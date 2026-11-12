@@ -35,6 +35,37 @@ export function ShopProvider({children,store}:{children:ReactNode;store:StoreDat
  useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(""),3800);return()=>clearTimeout(timer)},[notice]);
  const notify=useCallback((message:string)=>setNotice(message),[]);
  const dismiss=useCallback(()=>setNotice(""),[]);
+
+ /** Do not silently send saved cart IDs that no longer exist in the live catalog.
+  * Never clear a cart while the live store is unavailable and showing demo fallback.
+  * Inventory/variant checks are repeated by the server on order submission.
+  */
+ useEffect(()=>{
+  if(!ready||!store.live||!lines.length)return;
+  let changed=false;
+  const updated:CartLine[]=[];
+  for(const line of lines){
+   const product=store.products.find(item=>item.id===line.productId);
+   const variant=product?.variants?.find(item=>item.id===line.variantId);
+   if(!product||(product.variants?.length&&!variant)){
+    changed=true;
+    continue;
+   }
+   const available=Math.max(0,variant?.inventory??product.inventory);
+   if(available===0){
+    changed=true;
+    continue;
+   }
+   const quantity=Math.min(available,Math.max(1,Math.floor(line.quantity)));
+   const id=product.id+"|"+(line.variantId||"");
+   if(quantity!==line.quantity||id!==line.id)changed=true;
+   updated.push({...line,id,quantity});
+  }
+  if(changed){
+   setLines(updated);
+   notify("سبد خرید با محصولات و موجودی جدید هماهنگ شد. لطفاً آن را بررسی کنید.");
+  }
+ },[ready,store.live,store.products,lines,notify]);
  const add=useCallback((product:Product,variantId?:string,quantity=1)=>{
   const variant=product.variants?.find(v=>v.id===variantId);
   if(product.variants?.length&&!variant){notify("ابتدا رنگ یا سایز محصول را انتخاب کنید");return}
