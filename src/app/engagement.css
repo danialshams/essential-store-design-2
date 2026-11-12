@@ -55,3 +55,5 @@
  .faq-page{margin:30px auto 80px}
 }
 @media(prefers-reduced-motion:reduce){.support-window,.support-launcher,.support-spin{animation:none;transition:none}}
+
+.support-closed{padding:16px;font-size:12px;line-height:2;background:var(--support-surface);margin:0}.support-closed button{margin-inline-start:5px;font:inherit;color:var(--support-accent);background:transparent;border:0;text-decoration:underline;cursor:pointer}
