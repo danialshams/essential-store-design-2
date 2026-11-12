@@ -4,7 +4,11 @@ import {readFileSync} from "node:fs";
 const source=readFileSync(new URL("../scripts/ensure-seo-schema.mjs",import.meta.url),"utf8");
 
 test("Transient Prisma advisory-lock timeouts retry without skipping production schema migration",()=>{
- assert.match(source,/prisma","migrate","deploy/);
+ assert.match(source,/prisma","migrate",operation/);
+ assert.match(source,/run\("status"\)\.ok/);
+ assert.match(source,/run\("deploy"\)/);
+ assert.match(source,/migrationEnv/);
+ assert.match(source,/parsed\.hostname\.replace\("-pooler\.","\."\)/);
  assert.match(source,/P1002/);
  assert.match(source,/Timed out trying to acquire a postgres advisory lock/);
  assert.match(source,/const attempts=4/);
