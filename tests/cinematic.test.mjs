@@ -124,7 +124,8 @@ test("Editorial media use exact intrinsic framing and tailored visible-only moti
  const style=load("src/app/editorial-precision.css");
  assert.match(media,/naturalWidth/);
  assert.match(media,/--frame-ratio/);
- assert.match(product,/--actual-media-ratio/);
+ assert.match(load("src/app/product-theme-polish.css"),/aspect-ratio:4\\/5!important/);
+ assert.doesNotMatch(product,/--actual-media-ratio/);
  assert.match(motion,/IntersectionObserver/);
  assert.match(motion,/rootMargin:window.innerWidth<=760\?/);
  assert.match(motion,/image\(media/);
