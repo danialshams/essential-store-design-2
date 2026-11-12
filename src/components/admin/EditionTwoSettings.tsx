@@ -1,13 +1,12 @@
 "use client";
 import {useEffect,useState,type FormEvent} from "react";
-import Link from "next/link";
-import {Save,Check,Store,Search,Phone,ShieldCheck} from "lucide-react";
+import {Save,Store,Phone} from "lucide-react";
 import {adminFetch,DEMO_MODE} from "@/lib/admin/demo-api";
 import {MediaField} from "@/components/admin/EditionTwoControls";
 import type {EdCatalog} from "@/lib/admin/edition-two";
 type Settings={siteType:"STORE"|"CORPORATE";themeId:string;storeName:string;description:string;
  logoUrl?:string|null;contactEmail?:string|null;contactPhone?:string|null;address?:string|null;
- instagram?:string|null;orderNoticeEmail?:string|null;seoTitle?:string|null;seoDescription?:string|null;
+ instagram?:string|null;orderNoticeEmail?:string|null;
  homeSections:Array<Record<string,unknown>>};
 const empty:EdCatalog={products:[],categories:[],articles:[],pages:[]};
 function TextInput({label,value,change,large=false}:{label:string;value:string;change:(s:string)=>void;large?:boolean}){
@@ -42,7 +41,7 @@ export function EditionTwoSettings(){
  if(loading)return <div className="ed2-editor-loading">در حال بارگذاری تنظیمات...</div>;
  if(!state)return <p className="ed2-error">{error||"اطلاعات دریافت نشد"}</p>;
  return <div className="ed2-settings-page"><div className="ed2-page-heading"><div><small>STORE SETTINGS / EDITION 02</small><h1>تنظیمات فروشگاه</h1>
-  <p>اطلاعات برند، تماس و نمایش در گوگل؛ بدون تنظیمات فنی غیرضروری.</p></div></div>
+  <p>فقط اطلاعات برند و راه‌های تماس؛ تنظیمات سئو صرفاً در بخش مستقل «سئو و نمایش در گوگل» مدیریت می‌شوند.</p></div></div>
   <form className="ed2-setting-form" onSubmit={save}>
    <div className="ed2-surface ed2-setting-group"><header><Store size={19}/><div><h2>هویت فروشگاه</h2><small>نام، لوگو و معرفی کوتاه</small></div></header>
     <MediaField label="لوگوی فروشگاه" value={state.logoUrl||""} onChange={x=>update("logoUrl",x)} catalog={catalog}/>
@@ -55,11 +54,6 @@ export function EditionTwoSettings(){
     <TextInput label="آدرس فروشگاه" value={state.address||""} change={x=>update("address",x)} large/>
     <TextInput label="آیدی یا لینک اینستاگرام" value={state.instagram||""} change={x=>update("instagram",x)}/>
     <TextInput label="ایمیل اطلاع‌رسانی سفارش‌ها" value={state.orderNoticeEmail||""} change={x=>update("orderNoticeEmail",x)}/>
-   </div>
-   <div className="ed2-surface ed2-setting-group"><header><Search size={19}/><div><h2>نمایش در گوگل (سئو)</h2><small>عنوان و توضیح پیش‌فرض صفحات فروشگاه</small></div></header>
-    <TextInput label="عنوان سایت در جستجو" value={state.seoTitle||""} change={x=>update("seoTitle",x)}/>
-    <TextInput label="توضیحات سایت در جستجو" value={state.seoDescription||""} change={x=>update("seoDescription",x)} large/>
-    <p className="ed2-hint">برای متادیتای اختصاصی هر محصول، دسته و مقاله، عکس اشتراک‌گذاری، ساختار گوگل، دامنه اصلی و فایل‌های فنی به استودیوی SEO بروید.</p><Link href="/admin/seo" className="ed2-button ed2-button-outline">باز کردن استودیوی پیشرفته SEO <Search size={17}/></Link>
    </div>
    {error&&<p className="ed2-message error" role="alert">{error}</p>}
    {success&&<p className="ed2-message success" role="status">{success}</p>}
