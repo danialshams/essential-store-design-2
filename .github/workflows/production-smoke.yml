@@ -37,6 +37,17 @@ jobs:
                                  b'ed-mobile-chapters',b'premium-drawer-editorial']:
                       if marker not in home:
                           raise AssertionError('The current cinematic edition did not render: '+marker.decode())
+                  # Verify the published festival grid instead of checking just product API totals.
+                  import re
+                  html=home.decode('utf-8','replace')
+                  match=re.search(r'data-festival-product-count="(\\d+)"',html)
+                  total=int(match.group(1)) if match else 0
+                  visible=html.count('class="ed2-sale-product"')
+                  if total<8 or visible<8:
+                      raise AssertionError(f'Only {visible} luxury festival cards rendered; advertised count={total}')
+                  if 'ed2-sale-count' not in html:
+                      raise AssertionError('Festival product count missing from the editorial headline')
+                  print(f'PASS: {visible} real product cards in luxury festival / count {total}')
                   print('PASS: live cinematic homepage and Maison menu markup are present')
                   for asset in ['/images/editorial/hero-main.webp','/images/editorial/story-portrait.webp','/images/editorial/campaign.webp']:
                       status, headers, body=fetch(asset)
