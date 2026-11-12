@@ -23,7 +23,7 @@ export function EngagementAdmin({start="threads"}:{start?:Tab}){
  },[read]);
  useEffect(()=>{void refresh(tab)},[tab,refresh]);
  useEffect(()=>{if(tab!=="threads")return;const timer=setInterval(()=>void refresh("threads"),7000);return()=>clearInterval(timer)},[tab,refresh]);
- const openThread=useCallback(async id=>{
+ const openThread=useCallback(async (id:string)=>{
   try{const result=await read("thread","&id="+encodeURIComponent(id));setActive(id);setMessages(result.messages||[]);setNotice("")}
   catch(e){setNotice(e instanceof Error?e.message:"دریافت گفتگو ممکن نیست.")}
  },[read]);
