@@ -90,7 +90,8 @@ test("Editorial QA keeps full-image framing and reveals behind the first-load cu
  const layout=load("src/app/layout.tsx");
  assert.doesNotMatch(header,/<span>CLOSE<\/span>/);
  assert.doesNotMatch(hero,/ed-hero-backdrop|ed-carousel-play/);
- assert.match(home,/heroWide\(/);
+ assert.match(home,/heroArt\(/);
+  assert.match(home,/hero-stage-/);
  assert.match(layout,/editorial-quality-pass\.css/);
  assert.match(site,/maison-intro/);
  assert.match(site,/document\.fonts/);

@@ -83,12 +83,25 @@ export default async function Home(){
   const hero=sections[0];
   const heroImage=editorialPhoto(hero?.imageUrl,fallbackEditorial.hero);
   const heroMobileImage=editorialPhoto(hero?.mobileImageUrl,(hero?.imageUrl&&!legacyDemoArt.has(hero.imageUrl))?heroImage:fallbackEditorial.hero);
-  // The old 2:3 campaign portraits were heavily cropped in the new wide hero.
-  // Use locally hosted landscape art for demo imagery while retaining merchant uploads.
-  const heroWide=(image:string,landscape:string)=>[
+  // Demo pictures must be art-directed separately for each slide and viewport.
+  // Preserve any photos the merchant selected/uploaded; only retired template art
+  // is replaced by the correct landscape/portrait photograph.
+  const oldDemoHero=new Set([
+   "/images/editorial/chapter-detail.webp","/images/editorial/story-detail.webp",
+   "/images/editorial/campaign.webp","/images/editorial/story-portrait.webp",
    "/images/editorial/hero-main.webp","/images/editorial/hero-mobile.webp",
-   "/images/editorial/story-portrait.webp","/images/editorial/campaign.webp"
-  ].includes(image)?landscape:image;
+   "/images/editorial/category-bags.webp"
+  ]);
+  const heroArt=(raw:string|null|undefined,index:number,mobile=false)=>{
+   const base=mobile?"-mobile":"";
+   const demo="/images/editorial/hero-stage-"+((index%3)+1)+base+".webp";
+   let src=raw||"";
+   if(src.startsWith("https://essential-store-design-2.vercel.app/")){
+    const path=new URL(src).pathname;
+    if(oldDemoHero.has(path))src=path;
+   }
+   return showcasePhoto(!src||oldDemoHero.has(src)?demo:src);
+  };
   const featured=store.products.filter(p=>p.featured).slice(0,4);
   const collection=featured.length>=4?featured:store.products.slice(0,4);
   const firstBanner=store.banners[0];
@@ -103,19 +116,19 @@ export default async function Home(){
   const storyCta=edition?targetUrl(edition.story.target,store):editorialHeading?.ctaHref?.startsWith("/")?editorialHeading.ctaHref:"/info/about";
   const heading=hero?.title||"زیبایی در سادگی\nاتفاق می‌افتد.";
   const heroCta=hero?.ctaHref?.startsWith("/")?hero.ctaHref:"/products";
-  const heroSlides:EditorialSlide[]=edition?edition.hero.filter(slide=>slide.enabled).map(slide=>({
-   id:slide.id,image:showcasePhoto(slide.imageUrl||fallbackEditorial.hero),mobileImage:showcasePhoto(slide.mobileImageUrl||slide.imageUrl),
+  const heroSlides:EditorialSlide[]=edition?edition.hero.filter(slide=>slide.enabled).map((slide,i)=>({
+   id:slide.id,image:heroArt(slide.imageUrl,i),mobileImage:heroArt(slide.mobileImageUrl||slide.imageUrl,i,true),
    title:slide.title,description:slide.description,eyebrow:slide.eyebrow,ctaLabel:slide.ctaLabel,
    ctaHref:targetUrl(slide.target,store),hasCta:slide.target.kind!=="none",alt:slide.title
   })):[
 
-   {id:"edition-primary",image:heroWide(heroImage,fallbackEditorial.hero),mobileImage:heroWide(heroMobileImage,fallbackEditorial.hero),title:heading,
+   {id:"edition-primary",image:heroArt(heroImage,0),mobileImage:heroArt(heroMobileImage,0,true),title:heading,
     description:hero?.description||"انتخاب‌هایی برای کسانی که زیبایی را در جزئیات پیدا می‌کنند؛ ساده، ماندگار و به دور از تکرار.",
     eyebrow:"کالکشن منتخب فصل",ctaLabel:hero?.ctaLabel||"کشف کالکشن",ctaHref:heroCta,alt:"کمپین اصلی کالکشن ادیتوریال"},
-   {id:"edition-form",image:heroWide(storyImage,"/images/editorial/story-detail.webp"),mobileImage:heroWide(storyImage,"/images/editorial/story-detail.webp"),title:editorialHeading?.title||"فرم‌های ساده.\nاثر ماندگار.",
+   {id:"edition-form",image:heroArt(storyImage,1),mobileImage:heroArt(storyImage,1,true),title:editorialHeading?.title||"فرم‌های ساده.\nاثر ماندگار.",
     description:editorialHeading?.description||"آرامش در فرم و کیفیت در انتخاب؛ نگاهی تازه به استایل هر روز.",
     eyebrow:"روایت دوم / فرم و سبک",ctaLabel:editorialHeading?.ctaLabel||"کشف داستان",ctaHref:storyCta,alt:"عکاسی مد با پالت خنثی"},
-   {id:"edition-details",image:heroWide(lookbookImage,"/images/editorial/category-bags.webp"),mobileImage:heroWide(lookbookImage,"/images/editorial/chapter-detail.webp"),title:firstBanner?.title||"زیبایی در\nجزئیات است.",
+   {id:"edition-details",image:heroArt(lookbookImage,2),mobileImage:heroArt(lookbookImage,2,true),title:firstBanner?.title||"زیبایی در\nجزئیات است.",
     description:firstBanner?.subtitle||"بافت، متریال و جزئیاتی که انتخاب‌های ماندگار را از دیگران متمایز می‌کنند.",
     eyebrow:"روایت سوم / هنر جزئیات",ctaLabel:"دیدن کالکشن",ctaHref:firstBanner?.target?targetUrl(firstBanner.target,store):firstBanner?.linkUrl?.startsWith("/")?firstBanner.linkUrl:"/category/bags",alt:"تصویر کمپین سینمایی مد"}
   ]; // Always retain all three stories; even matching merchant photos have distinct copy.

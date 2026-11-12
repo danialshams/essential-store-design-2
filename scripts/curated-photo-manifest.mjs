@@ -3,6 +3,48 @@
  */
 export const entries=[
   [
+    "editorial/hero-stage-1.webp",
+    "photo-1509631179647-0177331693ae",
+    "editorial/hero-main.webp",
+    1920,
+    1020
+  ],
+  [
+    "editorial/hero-stage-2.webp",
+    "photo-1509631179647-0177331693ae",
+    "editorial/hero-main.webp",
+    1920,
+    1020
+  ],
+  [
+    "editorial/hero-stage-3.webp",
+    "photo-1509631179647-0177331693ae",
+    "editorial/hero-main.webp",
+    1920,
+    1020
+  ],
+  [
+    "editorial/hero-stage-1-mobile.webp",
+    "photo-1509631179647-0177331693ae",
+    "editorial/hero-mobile.webp",
+    900,
+    1250
+  ],
+  [
+    "editorial/hero-stage-2-mobile.webp",
+    "photo-1509631179647-0177331693ae",
+    "editorial/hero-mobile.webp",
+    900,
+    1250
+  ],
+  [
+    "editorial/hero-stage-3-mobile.webp",
+    "photo-1509631179647-0177331693ae",
+    "editorial/hero-mobile.webp",
+    900,
+    1250
+  ],
+  [
     "editorial/chapter-detail.webp",
     "photo-1529139574466-a303027c1d8b",
     "editorial/chapter-form.webp",
