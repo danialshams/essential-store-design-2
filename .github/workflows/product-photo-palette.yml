@@ -22,13 +22,18 @@ jobs:
           python-version: '3.11'
       - name: Install pixel-editing dependencies
         run: pip install --disable-pip-version-check pillow numpy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Replace mismatched product photos with actual cotton and linen shirts
+        run: node scripts/refresh-product-photo-sources.mjs
       - name: Transform the product colors (not photo frames or CSS)
         run: python scripts/colorgrade-product-media.py --palette ${{ contains(github.repository, 'design-1') && 'cool' || 'smoky' }}
       - name: Commit updated product photographs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/images/palette-*/
+          git add public/images/curated/ public/images/palette-*/
           if ! git diff --cached --quiet; then
             git commit -m "Add product-color-matched local photo assets for showroom palette"
             git push origin HEAD:fix/product-photo-palette-20261112
