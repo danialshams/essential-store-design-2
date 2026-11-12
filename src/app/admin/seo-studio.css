@@ -13,3 +13,15 @@
 .seo-footer{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:white;padding:16px;border-radius:13px;border:1px solid var(--seo-line)}.seo-save{display:flex;align-items:center;justify-content:center;gap:9px;background:#243f62;color:#fff;border:0;border-radius:9px;padding:13px 23px;min-height:45px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}.seo-save:disabled{opacity:.55;cursor:wait}.seo-footer>a{font-size:12px;color:#697e98;text-decoration:underline}.seo-error,.seo-success{font-size:12px;line-height:1.9;padding:11px;border-radius:8px;flex-basis:100%;margin:0}.seo-error{background:#fff0f0;color:#b52626}.seo-success{display:flex;gap:8px;background:#eef9f0;color:#278145}.seo-loading{padding:30px}
 @media(max-width:950px){.seo-columns{grid-template-columns:1fr}.seo-pages-list{max-height:280px}}@media(max-width:600px){.seo-studio{padding:10px;gap:14px}.seo-heading{padding:17px}.seo-heading-icon{width:42px;height:42px}.seo-tabs{grid-template-columns:1fr}.seo-tabs button{justify-content:flex-start;padding:0 15px;min-height:42px}.seo-surface{padding:15px;gap:14px}.seo-footer{flex-direction:column;align-items:stretch}.seo-save{width:100%}.seo-google-result{padding:12px}.seo-favicon{top:12px;right:12px}.seo-google-host{margin-right:41px}}
 @media(prefers-reduced-motion:reduce){.seo-tabs button,.seo-save{transition:none}}
+
+/* Beginner guidance: readable before technical controls, responsive and accessible. */
+.seo-onboarding{display:grid;gap:12px;background:var(--seo-surface,#fff);border:1px solid var(--seo-line,#dce4ef);border-radius:15px;padding:18px 21px;line-height:1.9;font-size:13px}
+.seo-onboarding-title{display:flex;align-items:flex-start;gap:10px}.seo-onboarding-title>svg{flex:none;margin-top:5px;color:#3973ad}.seo-onboarding h2{font-size:17px;line-height:1.8;margin:0}.seo-onboarding-title p,.seo-onboarding-tip{margin:0;color:#526580}
+.seo-onboarding ol{display:grid;gap:6px;margin:0;padding-inline-start:24px}.seo-onboarding li{padding-inline-start:4px}
+.seo-onboarding-tip{font-size:12px}
+.seo-onboarding-alert{margin:0;display:flex;align-items:center;gap:8px;font-size:12px;color:#74542c;background:#fff9ed;padding:8px 10px;border-radius:9px}
+.seo-onboarding-alert svg{flex:none}
+.seo-advanced-path{border:1px dashed var(--seo-line,#dce4ef);border-radius:10px;padding:10px 12px}
+.seo-advanced-path summary{cursor:pointer;font-size:12px;font-weight:600;color:#526580}
+.seo-advanced-path .seo-field{margin-top:13px}
+@media(max-width:600px){.seo-onboarding{padding:14px}.seo-onboarding h2{font-size:15px}}

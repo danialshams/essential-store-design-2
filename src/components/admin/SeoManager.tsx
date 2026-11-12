@@ -80,25 +80,35 @@ export function SeoManager(){
  if(!data)return <p role="alert" className="seo-error">{error||"بارگذاری اطلاعات ممکن نشد."}</p>;
  return <div className="seo-studio" dir="rtl">
   <header className="seo-heading"><div><small>SEARCH & DISCOVERABILITY / SEO STUDIO</small><h1>مدیریت پیشرفته سئو</h1>
-   <p>مناسب هر نوع فروشگاه و کسب‌وکار؛ تنظیمات عمومی و اختصاصی هر صفحه مستقل از نوع محصولات هستند.</p></div>
+   <p>در این بخش مشخص می‌کنید گوگل هر صفحه از فروشگاه را با چه نام و توضیحی بشناسد. از تنظیمات پایه شروع کنید؛ بخش‌های تخصصی اختیاری هستند.</p></div>
    <span className="seo-heading-icon"><Search size={27}/></span>
   </header>
+  <section className="seo-onboarding" aria-label="راهنمای ساده شروع سئو">
+   <div className="seo-onboarding-title"><CheckCircle2 size={20}/><div><h2>راهنمای شروع سریع</h2><p>اگر اولین بار است سئو را تنظیم می‌کنید، فقط این سه کار را به‌ترتیب انجام دهید:</p></div></div>
+   <ol>
+    <li><b>معرفی سایت:</b> نام برند، عنوان و توضیح کوتاه را در «هویت در گوگل» بنویسید.</li>
+    <li><b>معرفی محصولات:</b> در «سئوی صفحات و محصولات»، محصول را از فهرست انتخاب کنید و عنوان و توضیح مخصوصش را وارد کنید.</li>
+    <li><b>زمان انتشار واقعی:</b> دامنه نهایی را ثبت کنید؛ فقط وقتی سایت آماده نمایش در گوگل بود، گزینه «اجازه نمایش سایت» را فعال کنید.</li>
+   </ol>
+   <p className="seo-onboarding-tip">تنظیمات تخصصی مانند Canonical، JSON-LD و کدهای تأیید را فقط در صورت نیاز تغییر دهید. در انتها «ذخیره تنظیمات سئو» را بزنید.</p>
+   {!cfg.siteUrl&&<p className="seo-onboarding-alert"><AlertCircle size={16}/> دامنه اصلی هنوز مشخص نشده و نمایش سایت در نتایج گوگل فعلاً غیرفعال است. برای دموی موقت این وضعیت طبیعی است.</p>}
+  </section>
   <nav className="seo-tabs" aria-label="بخش‌های سئو">
    {[{id:"general" as const,title:"هویت در گوگل",icon:Globe2},
      {id:"pages" as const,title:"سئوی صفحات و محصولات",icon:FileText},
-     {id:"technical" as const,title:"سئوی فنی و شبکه‌های اجتماعی",icon:ShieldCheck}].map(t=>
+     {id:"technical" as const,title:"تنظیمات تخصصی (اختیاری)",icon:ShieldCheck}].map(t=>
     <button key={t.id} type="button" aria-pressed={tab===t.id} className={tab===t.id?"active":""}
      onClick={()=>setTab(t.id)}><t.icon size={17}/>{t.title}</button>)}
   </nav>
   <form onSubmit={save} className="seo-form">
    {tab==="general"&&<div className="seo-columns">
     <section className="seo-surface"><h2><Globe2 size={18}/> معرفی کسب‌وکار در جستجو</h2>
-     <Field label="نام برند در نتایج" value={safe(cfg.siteName)} max={120} placeholder={siteName} onChange={v=>changeConfig("siteName",v)}/>
-     <Field label="عنوان صفحه اصلی (SEO Title)" value={data.seoTitle} max={120} onChange={v=>changeRoot("seoTitle",v)} placeholder="مثلاً محصولات منتخب باکیفیت | نام برند"/>
-     <Field label="توضیح زیر نتیجه گوگل (Meta Description)" value={data.seoDescription} max={550} multiline onChange={v=>changeRoot("seoDescription",v)} placeholder="در یک یا دو جمله دقیقاً توضیح بدهید کسب‌وکار شما چه می‌فروشد یا ارائه می‌کند."/>
-     <Field label="آدرس دامنه اصلی سایت" value={safe(cfg.siteUrl)} max={2000} onChange={v=>changeConfig("siteUrl",v)} placeholder="https://example.com" hint="بدون مسیر اضافی و با HTTPS؛ هنگام تحویل به مشتری قابل تغییر است."/>
+     <Field label="نام برند در نتایج" value={safe(cfg.siteName)} max={120} placeholder={siteName} onChange={v=>changeConfig("siteName",v)} hint="نامی که مشتریان شما می‌شناسند؛ در عنوان و اطلاعات سایت استفاده می‌شود."/>
+     <Field label="عنوان صفحه اصلی (SEO Title)" value={data.seoTitle} max={120} onChange={v=>changeRoot("seoTitle",v)} placeholder="مثلاً محصولات منتخب باکیفیت | نام برند" hint="همان عنوان آبی در نتایج جستجو؛ کوتاه و مخصوص فروشگاه شما باشد (ترجیحاً حدود ۵۰ تا ۶۰ نویسه)."/>
+     <Field label="توضیح زیر نتیجه گوگل (Meta Description)" value={data.seoDescription} max={550} multiline onChange={v=>changeRoot("seoDescription",v)} placeholder="در یک یا دو جمله دقیقاً توضیح بدهید کسب‌وکار شما چه می‌فروشد یا ارائه می‌کند." hint="متنی که معمولاً زیر عنوان در گوگل دیده می‌شود؛ در یک یا دو جمله ساده، محصولات و مزیت فروشگاه را معرفی کنید."/>
+     <Field label="آدرس دامنه اصلی سایت" value={safe(cfg.siteUrl)} max={2000} onChange={v=>changeConfig("siteUrl",v)} placeholder="https://example.com" hint="نشانی واقعی و نهایی فروشگاه، مانند https://example.com؛ آدرس صفحه محصول یا پنل را اینجا ننویسید."/>
      <label className="seo-check"><input type="checkbox" checked={cfg.indexSite===true} onChange={e=>changeConfig("indexSite",e.target.checked)}/>
-      <span><b>اجازه نمایش سایت در نتایج گوگل</b><small>فقط پس از تکمیل محتوای واقعی و اتصال دامنه مشتری فعال کنید.</small></span></label>
+      <span><b>اجازه نمایش سایت در نتایج گوگل</b><small>اگر روشن باشد، موتورهای جستجو اجازه فهرست‌کردن سایت را دارند. تا وقتی دامنه و محتوا آماده نیستند، خاموش بماند.</small></span></label>
     </section>
     <section className="seo-surface"><h2><Search size={18}/> پیش‌نمایش نتیجه جستجوی گوگل</h2>
       <div className="seo-google-result"><div className="seo-favicon">S</div>
@@ -114,23 +124,24 @@ export function SeoManager(){
    </div>}
    {tab==="pages"&&<div className="seo-columns">
     <section className="seo-surface"><h2><FileText size={18}/> انتخاب صفحه برای سئوی اختصاصی</h2>
+     <p className="seo-note">نیازی نیست آدرس صفحه را خودتان بنویسید؛ نام محصول، دسته یا مقاله را جستجو کنید و روی آن بزنید.</p>
      <input className="seo-search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="جستجو در نام و آدرس محصول، دسته یا مقاله"/>
      <div className="seo-pages-list" role="group" aria-label="صفحات قابل ویرایش">
       {listed.map(x=><button type="button" key={x.path} className={selected===x.path?"selected":""} aria-pressed={selected===x.path}
        onClick={()=>setSelected(x.path)}><span>{x.title}</span><small dir="ltr">{x.path}</small>{cfg.pages?.[x.path]?.title&&<CheckCircle2 size={15}/>}</button>)}
      </div>
-     <Field label="مسیر سفارشی برای صفحه جدید" value={selected} max={300} onChange={v=>{if(v.startsWith("/")&&!v.startsWith("//"))setSelected(v)}} hint="برای صفحه‌ای که هنوز در فهرست نیست؛ مثلاً /info/about"/>
+     <details className="seo-advanced-path"><summary>گزینه پیشرفته: افزودن آدرس دستی (در حالت معمول لازم نیست)</summary><Field label="مسیر صفحه" value={selected} max={300} onChange={v=>{if(v.startsWith("/")&&!v.startsWith("//"))setSelected(v)}} hint="فقط وقتی صفحه‌ای در فهرست بالا نیست، آدرس داخلی آن را مانند /info/about بنویسید."/></details>
     </section>
     <section className="seo-surface"><h2><Search size={18}/> محتوای سئو: {item?.title||selected}</h2>
-     <Field label="عنوان اختصاصی (SEO Title)" value={safe(page.title)} max={135} onChange={v=>changePage("title",v)} placeholder={currentTitle}/>
-     <Field label="توضیحات اختصاصی (Meta Description)" value={safe(page.description)} max={550} multiline onChange={v=>changePage("description",v)}/>
-     <Field label="آدرس کانونیکال (Canonical)" value={safe(page.canonical)} max={2000} onChange={v=>changePage("canonical",v)} placeholder={base+selected} hint="برای جلوگیری از صفحات تکراری؛ در حالت معمول خالی بماند."/>
-     <Field label="عکس اشتراک‌گذاری (Open Graph)" value={safe(page.imageUrl)} max={2000} onChange={v=>changePage("imageUrl",v)} placeholder={item?.imageUrl||cfg.defaultImage||"/images/og.webp"}/>
-     <Field label="متن جایگزین تصویر (Image ALT)" value={safe(page.imageAlt)} max={250} onChange={v=>changePage("imageAlt",v)} placeholder={"توصیف واقعی عکس "+(item?.title||"")}/>
+     <Field label="عنوان اختصاصی (SEO Title)" value={safe(page.title)} max={135} onChange={v=>changePage("title",v)} placeholder={currentTitle} hint="عنوانی که در نتایج گوگل برای همین محصول یا صفحه دیده می‌شود؛ نام دقیق و مشخص آن را بنویسید."/>
+     <Field label="توضیحات اختصاصی (Meta Description)" value={safe(page.description)} max={550} multiline onChange={v=>changePage("description",v)} hint="یک توضیح کوتاه و منحصر‌به‌فرد درباره همین صفحه؛ مثلاً جنس، کاربرد و ویژگی محصول."/>
+     <Field label="آدرس کانونیکال (Canonical)" value={safe(page.canonical)} max={2000} onChange={v=>changePage("canonical",v)} placeholder={base+selected} hint="وقتی یک محتوا چند نشانی مختلف دارد، اینجا آدرس نسخه اصلی را می‌گذارید. برای بیشتر صفحه‌ها خالی بماند."/>
+     <Field label="عکس اشتراک‌گذاری (Open Graph)" value={safe(page.imageUrl)} max={2000} onChange={v=>changePage("imageUrl",v)} placeholder={item?.imageUrl||cfg.defaultImage||"/images/og.webp"} hint="عکسی که هنگام فرستادن لینک این صفحه در پیام‌رسان‌ها دیده می‌شود؛ می‌توانید آدرس عکس را وارد کنید."/>
+     <Field label="متن جایگزین تصویر (Image ALT)" value={safe(page.imageAlt)} max={250} onChange={v=>changePage("imageAlt",v)} placeholder={"توصیف واقعی عکس "+(item?.title||"")} hint="با یک جمله بنویسید واقعاً چه چیزی در تصویر دیده می‌شود؛ برای دسترس‌پذیری و فهم بهتر تصاویر است."/>
      <p className="seo-note">نام فایل عکس نیز بهتر است معنادار باشد (مثل blue-leather-bag.webp). نام فایل هنگام بارگذاری تعیین می‌شود؛ این فیلد، متن ALT خود تصویر را مدیریت می‌کند.</p>
      <div className="seo-checks">
-      <label className="seo-check"><input type="checkbox" checked={page.noindex===true} onChange={e=>changePage("noindex",e.target.checked)}/><span><b>عدم نمایش این صفحه در گوگل</b><small>برای صفحات موقت یا غیرقابل جست‌وجو</small></span></label>
-      <label className="seo-check"><input type="checkbox" checked={page.noarchive===true} onChange={e=>changePage("noarchive",e.target.checked)}/><span><b>محدودکردن ذخیره نسخه کش</b></span></label>
+      <label className="seo-check"><input type="checkbox" checked={page.noindex===true} onChange={e=>changePage("noindex",e.target.checked)}/><span><b>عدم نمایش این صفحه در گوگل</b><small>اگر روشن شود، همین صفحه از نتایج جستجو کنار گذاشته می‌شود؛ برای محصولات قابل فروش معمولاً خاموش باشد.</small></span></label>
+      <label className="seo-check"><input type="checkbox" checked={page.noarchive===true} onChange={e=>changePage("noarchive",e.target.checked)}/><span><b>محدودکردن ذخیره نسخه کش</b><small>دستور اختیاری برای برخی موتورهای جستجو؛ کاربران عادی لازم نیست تغییرش دهند.</small></span></label>
      </div>
      <div className="seo-google-result compact"><small dir="ltr">{previewUrl}</small><strong className="seo-blue-link">{resultTitle}</strong>
       <p>{metaDescription||"توضیحات اختصاصی صفحه هنوز ثبت نشده است."}</p></div>
@@ -140,18 +151,18 @@ export function SeoManager(){
    </div>}
    {tab==="technical"&&<div className="seo-columns">
     <section className="seo-surface"><h2><ShieldCheck size={18}/> سئوی فنی و معرفی سایت</h2>
-     <Field label="کد تأیید Google Search Console" value={safe(cfg.googleVerification)} max={300} onChange={v=>changeConfig("googleVerification",v)} hint="فقط مقدار content از متاتگ تأیید گوگل را وارد کنید، نه کل HTML."/>
-     <Field label="کد تأیید Bing Webmaster Tools" value={safe(cfg.bingVerification)} max={300} onChange={v=>changeConfig("bingVerification",v)}/>
-     <Field label="زبان سایت" value={safe(cfg.language)} max={12} onChange={v=>changeConfig("language",v)} placeholder="fa-IR"/>
-     <Field label="نام حقوقی/تجاری سازمان (JSON-LD)" value={safe(cfg.companyName)} max={150} onChange={v=>changeConfig("companyName",v)}/>
-     <Field label="آدرس لوگوی سازمان" value={safe(cfg.companyLogo)} max={2000} onChange={v=>changeConfig("companyLogo",v)}/>
-     <Field label="لینک شبکه‌های اجتماعی (هر خط یک آدرس)" value={(cfg.socialProfiles||[]).join("\n")} max={24000} multiline onChange={v=>changeConfig("socialProfiles",v.split("\n").map(x=>x.trim()).filter(Boolean).slice(0,12))}/>
+     <Field label="کد تأیید Google Search Console" value={safe(cfg.googleVerification)} max={300} onChange={v=>changeConfig("googleVerification",v)} hint="پس از افزودن سایت به Google Search Console، روش HTML tag را انتخاب و فقط کد داخل content را اینجا وارد کنید؛ نیازی به نوشتن HTML نیست."/>
+     <Field label="کد تأیید Bing Webmaster Tools" value={safe(cfg.bingVerification)} max={300} onChange={v=>changeConfig("bingVerification",v)} hint="فقط اگر از ابزار وبمستر بینگ استفاده می‌کنید، کد تأیید آن را وارد کنید؛ در غیر این صورت خالی بماند."/>
+     <Field label="زبان سایت" value={safe(cfg.language)} max={12} onChange={v=>changeConfig("language",v)} placeholder="fa-IR" hint="زبان محتوای سایت؛ برای فروشگاه فارسی، مقدار fa-IR مناسب است و معمولاً نیازی به تغییر ندارد."/>
+     <Field label="نام حقوقی/تجاری سازمان (JSON-LD)" value={safe(cfg.companyName)} max={150} onChange={v=>changeConfig("companyName",v)} hint="نام رسمی کسب‌وکار برای داده‌های ساختاریافته‌ای که به موتور جستجو کمک می‌کنند برند را بشناسد."/>
+     <Field label="آدرس لوگوی سازمان" value={safe(cfg.companyLogo)} max={2000} onChange={v=>changeConfig("companyLogo",v)} hint="نشانی تصویر لوگوی واقعی کسب‌وکار؛ در اطلاعات ساختاریافته سازمان استفاده می‌شود."/>
+     <Field label="لینک شبکه‌های اجتماعی (هر خط یک آدرس)" value={(cfg.socialProfiles||[]).join("\n")} max={24000} multiline onChange={v=>changeConfig("socialProfiles",v.split("\n").map(x=>x.trim()).filter(Boolean).slice(0,12))} hint="آدرس کامل صفحه‌های رسمی برند در اینستاگرام، لینکدین و... را هر کدام در یک خط وارد کنید؛ اختیاری است."/>
     </section>
     <section className="seo-surface"><h2><ImageIcon size={18}/> اشتراک‌گذاری و فایل‌های خزنده</h2>
-     <Field label="عکس پیش‌فرض هنگام اشتراک‌گذاری (Open Graph)" value={safe(cfg.defaultImage)} max={2000} onChange={v=>changeConfig("defaultImage",v)} placeholder="/images/social-cover.webp"/>
-     <Field label="ALT عکس پیش‌فرض" value={safe(cfg.defaultImageAlt)} max={250} onChange={v=>changeConfig("defaultImageAlt",v)}/>
-     <Field label="آیدی X / Twitter (اختیاری)" value={safe(cfg.twitterHandle)} max={100} onChange={v=>changeConfig("twitterHandle",v)}/>
-     <Field label="جداکننده عنوان‌ها" value={safe(cfg.titleSeparator)} max={12} onChange={v=>changeConfig("titleSeparator",v)}/>
+     <Field label="عکس پیش‌فرض هنگام اشتراک‌گذاری (Open Graph)" value={safe(cfg.defaultImage)} max={2000} onChange={v=>changeConfig("defaultImage",v)} placeholder="/images/social-cover.webp" hint="اگر برای صفحه‌ای تصویر جدا تعیین نکنید، این عکس هنگام اشتراک‌گذاری لینک آن نمایش داده می‌شود."/>
+     <Field label="ALT عکس پیش‌فرض" value={safe(cfg.defaultImageAlt)} max={250} onChange={v=>changeConfig("defaultImageAlt",v)} hint="شرح کوتاه و واقعی تصویری که در فیلد قبلی انتخاب کردید."/>
+     <Field label="آیدی X / Twitter (اختیاری)" value={safe(cfg.twitterHandle)} max={100} onChange={v=>changeConfig("twitterHandle",v)} hint="فقط اگر حساب رسمی X دارید، شناسه آن را وارد کنید؛ برای بقیه خالی بماند."/>
+     <Field label="جداکننده عنوان‌ها" value={safe(cfg.titleSeparator)} max={12} onChange={v=>changeConfig("titleSeparator",v)} hint="علامتی که بین نام صفحه و نام برند می‌آید؛ مقدار پیش‌فرض | مناسب است."/>
      <div className="seo-technical-links"><h3>فایل‌های فنی به‌صورت خودکار ساخته می‌شوند</h3>
       <a href="/sitemap.xml" rel="noreferrer" target="_blank"><Link2 size={16}/> sitemap.xml <ExternalLink size={15}/></a>
       <a href="/robots.txt" rel="noreferrer" target="_blank"><ShieldCheck size={16}/> robots.txt <ExternalLink size={15}/></a>
