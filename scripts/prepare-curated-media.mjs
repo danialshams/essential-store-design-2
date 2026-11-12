@@ -16,7 +16,7 @@ const realPhotoIds={
   "editorial/campaign.webp": 8484082,
   "editorial/story-portrait.webp": 36976479,
   "editorial/chapter-form.webp": 36829225,
-  "editorial/category-clothing.webp": 11671275,
+  "editorial/category-clothing.webp": 8483478,
   "editorial/category-bags.webp": 22434767,
   "editorial/category-shoes.webp": 7193626,
   "editorial/category-accessories.webp": 25389284,
@@ -26,15 +26,15 @@ const realPhotoIds={
   "hero-mobile.webp": 36829225,
   "bag.webp": 22434767,
   "sneakers.webp": 7193626,
-  "linen-shirt.webp": 11671275,
+  "linen-shirt.webp": 22441297,
   "sunglasses.webp": 25389284,
   "products/bag-main.webp": 22434767,
   "products/sneakers-main.webp": 7193626,
-  "products/shirt-blue.webp": 11671275,
+  "products/shirt-blue.webp": 22441291,
   "products/watch-main.webp": 13273982,
   "products/bag-everyday.webp": 27174573,
   "products/sneakers-urban.webp": 1456733,
-  "products/shirt-beige.webp": 11671275,
+  "products/shirt-beige.webp": 22441297,
   "products/sunglasses-main.webp": 25389284
 };
 const root=process.cwd(),photos={},queue=[...entries];
@@ -47,7 +47,7 @@ async function worker(){
   const stockId=realPhotoIds[key];
   const legacyPath="/images/curated/"+key.replaceAll("/","-");
   const oldRecolorPath="/images/palette-smoky-v1/"+key.replaceAll("/","-");
-  const finalPath=stockId?"/images/real-photo-v2/"+key.replaceAll("/","-").replace(/\.webp$/,".jpg"):legacyPath;
+  const finalPath=stockId?"/images/real-photo-v3/"+key.replaceAll("/","-").replace(/\.webp$/,".jpg"):legacyPath;
   // Both the canonical template URL and any previously published recolored URL resolve to a REAL photograph.
   photos["/images/"+key]=finalPath;
   photos[legacyPath]=finalPath;
