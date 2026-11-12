@@ -168,7 +168,7 @@ festival:(<>
       <h2 id="ed2-festival-title">{festival.title||"جشنواره انتخاب‌های ویژه"}</h2>
       <p>{festival.description}</p>
       {festival.showCountdown!==false&&<FestivalCountdown endsAt={festival.endsAt||editionTwoDefaults.festival.endsAt} expiredText={festival.expiredText}/>}
-      {festival.target.kind!=="none"&&<Link href={targetUrl(festival.target,store)} className="ed2-festival-cta">
+      {festival.target.kind!=="none"&&<Link href={festival.target.kind==="products"?"#festival-products":targetUrl(festival.target,store)} className="ed2-festival-cta">
         {festival.ctaLabel||"مشاهده محصولات جشنواره"} <ArrowUpLeft size={19} strokeWidth={1.8}/>
       </Link>}
       <span className="ed2-festival-small-note">پیشنهادهای منتخب • تعداد محدود</span>
@@ -186,15 +186,15 @@ festival:(<>
     </div>
   </div>
   <div className="ed2-sale-section-title">
-    <div><span>CURATED OFFERS</span><h3>محصولات جشنواره</h3></div>
-    <p>انتخاب‌های ویژه با قیمت پیش از تخفیف و قیمت فروش</p>
+    <div><span>CURATED OFFERS</span><h3>محصولات جشنواره</h3><span className="ed2-sale-count">{saleProducts.length.toLocaleString("fa-IR")} انتخاب ویژه</span></div>
+    <p>تخفیف‌های واقعی و انتخاب‌های برگزیده از کالکشن</p>
   </div>
-  <div className="ed2-sale-products" data-stagger>
+  <div className="ed2-sale-products" id="festival-products" data-festival-product-count={saleProducts.length} data-stagger aria-label={`فهرست ${saleProducts.length.toLocaleString("fa-IR")} محصول جشنواره`}>
     {saleProducts.map(p=><div className="ed2-sale-product" key={p.id}>
       {p.comparePrice&&p.comparePrice>p.price?<span className="ed2-sale-percent">{Math.round((1-p.price/p.comparePrice)*100).toLocaleString("fa-IR")}٪ تخفیف</span>:<span className="ed2-sale-percent ed2-sale-curated">منتخب جشنواره</span>}
       <ProductCard product={p}/>
     </div>)}
-    {!saleProducts.length&&<div className="ed2-sale-empty" role="status">فعلاً محصول تخفیف‌دار فعالی ثبت نشده است. قیمت قبل از تخفیف را در پنل محصولات تعیین کنید.</div>}
+    {!saleProducts.length&&<div className="ed2-sale-empty" role="status">فعلاً محصول فعالی برای جشنواره وجود ندارد. از پنل فروشگاه محصول جدید ایجاد یا محصول موجود را فعال کنید.</div>}
   </div>
 </section>}
 </>),
