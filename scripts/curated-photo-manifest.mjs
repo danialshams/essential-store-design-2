@@ -151,7 +151,7 @@ export const entries=[
   ],
   [
     "products/shirt-blue.webp",
-    "photo-1539008835657-9e8e9680c956",
+    "photo-1603252109303-2751441dd157",
     "products/shirt-blue.webp",
     1100,
     1364
