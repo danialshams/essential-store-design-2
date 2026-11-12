@@ -40,7 +40,7 @@ jobs:
                   # Verify the published festival grid instead of checking just product API totals.
                   import re
                   html=home.decode('utf-8','replace')
-                  match=re.search(r'data-festival-product-count="(\\d+)"',html)
+                  match=re.search(r'data-festival-product-count="(\d+)"',html)
                   total=int(match.group(1)) if match else 0
                   visible=html.count('class="ed2-sale-product"')
                   if total<8 or visible<8:
