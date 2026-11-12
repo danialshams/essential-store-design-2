@@ -7,17 +7,6 @@ import {Heart,ArrowUpLeft,ShoppingBag} from "lucide-react";
 import {useShop} from "@/components/ShopProvider";
 import {toman,type Product} from "@/lib/catalog";
 
-const knownRatios:Record<string,string>={
- "/images/products/bag-main.webp":"1600 / 2263",
- "/images/products/sneakers-main.webp":"2 / 3",
- "/images/products/shirt-blue.webp":"2 / 3",
- "/images/products/watch-main.webp":"2 / 3",
- "/images/products/bag-everyday.webp":"2 / 3",
- "/images/products/sneakers-urban.webp":"3 / 2",
- "/images/products/shirt-beige.webp":"2 / 3",
- "/images/products/sunglasses-main.webp":"3 / 2"
-};
-
 const palette:Record<string,string>={
  "مشکی":"#27231f","قهوه‌ای":"#816044","سفید":"#f7f5ef","کرم":"#d6c4aa",
  "بژ":"#c9ab91","آبی":"#8ca5bf","سرمه‌ای":"#2d3d54","سبز":"#6f8669",
@@ -41,10 +30,10 @@ export function ProductCard({product,compact=false}:{product:Product,compact?:bo
    add(product);
  }
  return <article className={`premium-product-card ${compact?"is-compact":""}`}>
-  <div className="premium-product-media" style={{["--actual-media-ratio" as string]:knownRatios[product.image]||"2 / 3"}} onMouseEnter={()=>{if(window.matchMedia("(hover:hover)").matches)setHover(true)}} onMouseLeave={()=>setHover(false)}>
+  <div className="premium-product-media" onMouseEnter={()=>{if(window.matchMedia("(hover:hover)").matches)setHover(true)}} onMouseLeave={()=>setHover(false)}>
     <Link href={`/product/${product.slug}`} aria-label={`مشاهده ${product.name}`}>
-      <Image src={product.image} alt={product.name} width={660} height={760} loading="lazy" unoptimized={product.image.startsWith("http")} className="premium-product-photo" onLoad={event=>{const img=event.currentTarget;if(img.naturalHeight>0)img.closest<HTMLElement>(".premium-product-media")?.style.setProperty("--actual-media-ratio",img.naturalWidth+" / "+img.naturalHeight)}}/>
-      {alternate&&hover&&<Image src={alternate} alt={`${product.name}، نمای دوم`} width={660} height={760} loading="lazy" unoptimized={alternate.startsWith("http")} className="premium-product-photo premium-product-second"/>}
+      <Image src={product.image} alt={product.name} width={660} height={825} loading="lazy" sizes="(max-width: 640px) 46vw, (max-width: 1050px) 31vw, 280px" unoptimized={product.image.startsWith("http")} className="premium-product-photo"/>
+      {alternate&&hover&&<Image src={alternate} alt={`${product.name}، نمای دوم`} width={660} height={825} loading="lazy" unoptimized={alternate.startsWith("http")} className="premium-product-photo premium-product-second"/>}
     </Link>
     {isNew?<span className="premium-product-label">جدید</span>:product.comparePrice&&product.comparePrice>product.price?<span className="premium-product-label">پیشنهاد ویژه</span>:null}
     <button type="button" className={`premium-product-fav ${isFavorite(product.id)?"is-active":""}`} onClick={()=>toggleFavorite(product.id)} aria-label={isFavorite(product.id)?"حذف از علاقه‌مندی‌ها":"افزودن به علاقه‌مندی‌ها"} aria-pressed={isFavorite(product.id)}><Heart size={18} strokeWidth={1.6} fill={isFavorite(product.id)?"currentColor":"none"}/></button>
