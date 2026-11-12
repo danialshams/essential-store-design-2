@@ -347,10 +347,37 @@ try{
         assert.ok(audit.hero&&audit.festival&&audit.festivalImmediatelyAfterHero,
           view.name+": festival must be visibly directly BELOW hero "+JSON.stringify(audit));
         assert.ok(audit.banner&&audit.bannerPhoto&&audit.timer&&audit.discountText,view.name+": luxury festival banner/image/timer missing "+JSON.stringify(audit));
-        assert.ok(audit.discountedCards>=1,view.name+": sample festival contains no actual discounted products");
+        assert.ok(audit.discountedCards>=8,view.name+": festival must display at least eight real product cards, got "+audit.discountedCards);
         assert.equal(audit.brokenDiscounts,0,view.name+": festival product hides original/current price");
         const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
         writeFileSync(join(outputDir,view.name+"-storefront-home.png"),Buffer.from(shot.data,"base64"));
+        // Verify the second fold rather than accepting a lone product card.
+        await evalJS('document.querySelector("#festival-products")?.scrollIntoView({behavior:"instant",block:"start"});true');
+        await sleep(1850);
+        const merch=await evalJS(`(() => {
+          const grid=document.querySelector("#festival-products");
+          const cards=Array.from(grid?.querySelectorAll(".ed2-sale-product")||[]);
+          const media=cards[0]?.querySelector(".premium-product-media");
+          const style=media?getComputedStyle(media):null;
+          const rect=media?.getBoundingClientRect();
+          const header=document.querySelector(".ed2-sale-count");
+          return {count:cards.length,attribute:Number(grid?.dataset.festivalProductCount),
+           bg:style?.backgroundColor||"",ratio:rect?.width&&rect?.height?rect.width/rect.height:0,
+           header:header?.textContent||"",width:grid?.getBoundingClientRect().width||0,
+           pageWidth:document.documentElement.scrollWidth,viewport:innerWidth};
+        })()`);
+        assert.ok(merch.count>=8&&merch.attribute===merch.count,
+         view.name+": festival grid must contain eight or more visible product cards "+JSON.stringify(merch));
+        assert.ok(merch.header.includes(merch.count.toLocaleString("fa-IR")),
+         view.name+": the festival product count is missing from the heading "+JSON.stringify(merch));
+        assert.equal(merch.bg,"rgb(230, 228, 225)",
+         view.name+": the product image frame is not using this store's smoky theme");
+        assert.ok(merch.ratio>.77&&merch.ratio<.83,
+         view.name+": product photo card ratio is unstable "+JSON.stringify(merch));
+        assert.ok(merch.pageWidth<=merch.viewport+6,
+         view.name+": festival causes horizontal mobile overflow "+JSON.stringify(merch));
+        const festivalShot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});
+        writeFileSync(join(outputDir,view.name+"-storefront-festival.png"),Buffer.from(festivalShot.data,"base64"));
       }
     }
   }
