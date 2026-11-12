@@ -25,3 +25,12 @@ test("All media frames remain covered, stable and use true-color source photogra
  assert.match(css,/\.ed-hero-minimal \.ed-hero-slide \.ed-hero-mobile-photo/);
  assert.match(css,/\.ed-home \.ed-categories-grid \.ed-category-tile/);
 });
+
+test("Published legacy CMS hero URLs resolve to real dedicated widescreen and mobile photography",()=>{
+ const home=read("src/app/page.tsx");
+ assert.match(home,/real-photo-v3\/editorial-chapter-detail\.jpg/);
+ assert.match(home,/real-photo-v3\/editorial-campaign\.jpg/);
+ assert.match(home,/real-photo-v4\/editorial-story-portrait\.jpg/);
+ assert.match(home,/heroArt\(slide\.imageUrl,i\)/);
+ assert.match(home,/heroArt\(slide\.mobileImageUrl\|\|slide\.imageUrl,i,true\)/);
+});
