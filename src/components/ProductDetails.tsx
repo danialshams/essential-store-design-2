@@ -18,7 +18,7 @@ export function ProductDetails({product}:{product:Product}){
  const selected=product.variants?.find(v=>v.id===variantId);
  const price=selected?.price??product.price;
  const inventory=selected?selected.inventory:product.inventory;
- const related=store.products.filter(p=>p.category===product.category&&p.id!==product.id&&p.inventory>0).sort((a,b)=>{
+ const related=store.products.filter(p=>p.category===product.category&&p.id!==product.id&&(p.inventory>0||!!p.variants?.some(v=>v.inventory>0))).sort((a,b)=>{
   const aSpec=Object.values(a.specs||{}).filter(x=>Object.values(product.specs||{}).includes(x)).length;
   const bSpec=Object.values(b.specs||{}).filter(x=>Object.values(product.specs||{}).includes(x)).length;
   return bSpec-aSpec;
