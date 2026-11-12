@@ -1,0 +1,1 @@
+ALTER TABLE "StoreSettings" ADD COLUMN IF NOT EXISTS "seoConfig" JSONB NOT NULL DEFAULT '{}'::jsonb;
