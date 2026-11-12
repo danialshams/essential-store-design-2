@@ -18,7 +18,7 @@ test("Saved cart reconciles live product IDs, sizes and current stock, but not d
  const provider=read("src/components/ShopProvider.tsx");
  assert.match(provider,/if\(!ready\|\|!store\.live\|\|!lines\.length\)return/);
  assert.match(provider,/store\.products\.find\(item=>item\.id===line\.productId\)/);
- assert.match(provider,/product\.variants\?\.find\(item=>item\.id===line\.variantId\)/);
+ assert.match(provider,/product\?\.variants\?\.find\(item=>item\.id===line\.variantId\)/);
  assert.match(provider,/Math\.min\(available,Math\.max\(1,Math\.floor\(line\.quantity\)\)\)/);
  assert.match(provider,/سبد خرید با محصولات و موجودی جدید هماهنگ شد/);
 });
