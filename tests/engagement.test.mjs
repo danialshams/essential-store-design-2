@@ -44,3 +44,14 @@ test("Public demo chat is tagged and hidden from real customer conversation view
  assert.match(store,/demoDigest\(secret\)/);
  assert.match(store,/tokenHash:\{in:\[digest\(secret\),demoDigest\(secret\)\]\}/);
 });
+
+test("Chat anchors right, navigation overlays chat and mobile inputs do not trigger iOS Safari zoom",()=>{
+ const css=read("src/app/engagement.css");
+ assert.match(css,/\.support-root\{position:fixed;bottom:22px;right:22px;left:auto/);
+ assert.match(css,/\.support-window\{position:absolute;bottom:72px;right:0;left:auto/);
+ assert.match(css,/\.support-root\{right:12px;left:auto;bottom:/);
+ assert.ok(css.includes(".premium-drawer-root{z-index:3200}"));
+ assert.ok(css.includes("body:has(.premium-drawer-root.is-open) .support-root"));
+ assert.match(css,/@media \(max-width:767px\)/);
+ assert.match(css,/select\{font-size:16px!important\}/);
+});
